@@ -1,0 +1,8 @@
+# Ontology Index
+# 도메인 목록과 비즈니스 위계. 이 파일이 탐색의 진입점.
+# Claude는 매 요청 시 이 파일을 먼저 읽고, 관련 도메인 파일로 이동한다.
+
+domains:
+
+cross_domain: abox/cross-domain.yaml
+shared_infra: abox/infra.yaml

@@ -1,0 +1,51 @@
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: [wiki/**, ontology/**, site/**]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Linux]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd site
+          npm ci
+
+      - name: Build data (ontology + wiki → JSON)
+        run: |
+          cd site
+          node scripts/build-data.mjs
+
+      - name: Build site
+        run: |
+          cd site
+          npx vite build
+
+      - uses: actions/upload-pages-artifact@v2
+        with:
+          path: site/dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v2

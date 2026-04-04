@@ -1,0 +1,8 @@
+{
+  "team": "hubtwork",
+  "ghe_host": "github.com",
+  "projects": {
+    "required": [],
+    "optional": []
+  }
+}
