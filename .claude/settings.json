@@ -54,7 +54,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "node .claude/statusline/index.mjs"
+    "command": "node ${CLAUDE_PROJECT_DIR}/.claude/statusline/index.mjs"
   },
   "hooks": {
     "PreToolUse": [
@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/branch-guard.mjs"
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/branch-guard.mjs"
           }
         ]
       },
@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/pre-tool-use.mjs"
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/pre-tool-use.mjs"
           }
         ]
       }
@@ -82,7 +82,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/permission-handler.mjs"
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/permission-handler.mjs"
           }
         ]
       }
@@ -92,7 +92,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/session-start.mjs"
+            "command": "node ${CLAUDE_PROJECT_DIR}/.claude/hooks/session-start.mjs"
           }
         ]
       }

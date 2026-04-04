@@ -21,8 +21,9 @@ function extractTitle(mdContent) {
 // ontology
 const index = readYaml(path.join(ROOT, 'ontology/index.yaml'));
 
-const domains = index.domains.map((d) => {
-  const abox = readYaml(path.join(ROOT, 'ontology', d.file));
+const domains = (index.domains ?? []).map((d) => {
+  const aboxPath = path.join(ROOT, 'ontology', d.file);
+  const abox = fs.existsSync(aboxPath) ? readYaml(aboxPath) : {};
   return {
     id: d.id,
     name: abox.domain?.name ?? d.id,
@@ -50,16 +51,18 @@ const domains = index.domains.map((d) => {
   };
 });
 
-const infraYaml = readYaml(path.join(ROOT, 'ontology/abox/infra.yaml'));
-const sharedInfra = (infraYaml.entities ?? []).map((e) => ({
+const infraPath = path.join(ROOT, 'ontology/abox/infra.yaml');
+const infraYaml = fs.existsSync(infraPath) ? readYaml(infraPath) : {};
+const sharedInfra = (infraYaml?.entities ?? []).map((e) => ({
   id: e.id,
   name: e.name,
   type: e.type,
   summary: typeof e.summary === 'string' ? e.summary.trim() : '',
 }));
 
-const crossYaml = readYaml(path.join(ROOT, 'ontology/abox/cross-domain.yaml'));
-const crossDomain = (crossYaml.relations ?? []).map((r) => ({
+const crossPath = path.join(ROOT, 'ontology/abox/cross-domain.yaml');
+const crossYaml = fs.existsSync(crossPath) ? readYaml(crossPath) : {};
+const crossDomain = (crossYaml?.relations ?? []).map((r) => ({
   from: r.from,
   to: r.to,
   type: r.type,
