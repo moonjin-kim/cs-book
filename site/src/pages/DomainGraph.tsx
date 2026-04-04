@@ -91,7 +91,7 @@ export function DomainGraph() {
         setSelectedEntity(null);
       }
     }
-    svgHandlers.onMouseUp(e);
+    svgHandlers.onMouseUp();
   }, [wasDrag, svgHandlers]);
 
   // Entity relations for detail panel
@@ -149,7 +149,7 @@ export function DomainGraph() {
                   fontSize={11}
                   fontWeight={600}
                   letterSpacing={0.5}
-                  textTransform="uppercase"
+                  style={{ textTransform: 'uppercase' }}
                 >
                   {s.label}
                 </text>
