@@ -15,3 +15,4 @@
 ## 공통
 
 - [공통 용어 사전](glossary.md)
+- [온톨로지 설계 배경](ontology-design.md)

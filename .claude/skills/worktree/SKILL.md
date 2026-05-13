@@ -185,11 +185,10 @@ Claude Code의 파일 도구(Read/Edit/Glob/Grep)는 세션 시작 디렉토리 
 
 ## 안전 규칙
 
-- **setup 전**: 디렉토리 이동 경고 → 확인 → 이동 성공 검증
-- **done 전**: uncommitted changes + unpushed commits → 경고 → 해결까지 차단
-- `--force`는 사용자 명시적 확인 후에만
-- 브랜치는 명시적 요청 없이 삭제하지 않음
-- 수동 삭제된 워크트리는 `git -C ${GIT_ROOT} worktree prune`으로 정리
+- **setup 전**: 디렉토리 이동 시 사용자 확인 + 이동 성공 검증
+- **브랜치 삭제**: 사용자가 명시적으로 요청한 경우에만 (`/worktree done`이 이 확인을 포함)
+- **수동 삭제된 워크트리**: `git -C ${GIT_ROOT} worktree prune`으로 정리
+- 미커밋/미푸시 처리·`--force` 확인은 `/worktree done` 절차에 포함되어 있음
 
 ## 에러 처리
 

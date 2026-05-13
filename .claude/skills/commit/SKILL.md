@@ -118,7 +118,7 @@ Arguments:
    - 변경사항 1
    - 변경사항 2"
    ```
-   개행은 쉘 문자열 내에서 직접 포함한다. HEREDOC 중첩(`"$(cat <<'EOF'...)"`)은 zsh에서 파싱 에러를 일으키므로 사용하지 않는다.
+   개행은 쉘 문자열 내에 직접 포함한다. HEREDOC 중첩은 금지 — `.claude/rules/behavior.md § 8` 참조.
 7. 커밋이 실패하면 `git reset HEAD`로 스테이징을 원복한 뒤, step 0에서 캡처한 기존 staged 파일이 있으면 `git add <파일>`로 재스테이징하여 원래 상태를 복원하고, 사용자에게 에러를 보고한다.
 8. `git show --stat HEAD`로 결과 표시
 

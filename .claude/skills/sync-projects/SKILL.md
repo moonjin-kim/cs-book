@@ -149,7 +149,7 @@ clone한 레포가 `workspace.json`의 `required`/`optional` 어디에도 없을
 4. 워크트리의 `.claude/workspace.json`을 Edit으로 수정한다:
    - `projects.optional` 배열에 `{ "repo": "{org}/{repo}", "desc": "{desc}" }` 추가
    - `ghe_host`와 다른 호스트에서 clone한 경우 `"host": "{host}"` 필드도 함께 추가
-5. 커밋 → push → PR 생성:
+5. 커밋 → push → PR 생성. sync-projects는 일괄 자동화 흐름이므로 `/commit`/`/pull-request` 스킬을 거치지 않고 직접 git/gh를 호출한다 (커밋 메시지가 고정 형식이고 이슈 키 입력 단계가 흐름을 멈추기 때문):
    ```bash
    git -C {worktreePath} add .claude/workspace.json
    git -C {worktreePath} commit -m "workspace.json에 {org}/{repo} 등록"
