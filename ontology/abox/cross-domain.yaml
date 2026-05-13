@@ -1,0 +1,11 @@
+# 도메인 간 관계 (Cross-Domain Relations)
+# 둘 이상의 도메인에 걸친 relation만 이 파일에 정의한다.
+# 단일 도메인 내에서 완결되는 relation은 각 도메인 abox 파일에 둔다.
+#
+# from/to 형식: "{도메인id}/{entity-id}"
+# 예: from: commerce-order/order, to: commerce-inventory/stock
+#
+# 도메인 abox가 추가되면 이 파일도 함께 갱신한다.
+# tbox.yaml의 relation_types와 domain_range axiom을 준수한다.
+
+relations: []
