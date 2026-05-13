@@ -11,15 +11,21 @@ PO, 디자이너, FE, BE 등 역할에 관계없이 이 디렉토리에서 Claud
 
 ## 3계층 지식 구조
 
-ontology는 코드에 있는 것의 지도이고, wiki는 코드 밖 비즈니스 맥락을 포함한다. 분리한 이유: ontology는 `repo` + `package`로 코드 존재를 검증할 수 있어야 정합성이 유지되고, 코드에 없는 비즈니스 개념은 이 검증이 불가능하므로 wiki에서 다룬다. 상세: `.claude/rules/ontology-rules.md` → 설계 철학.
+도메인 관련 작업은 **항상 ontology부터** 읽는다. ontology가 진입 지도이고, 비즈니스 맥락이나 실제 구현이 필요하면 entity의 필드를 따라 깊이 진입한다.
 
-| 계층 | 디렉토리 | 담는 것 | 언제 참조 |
-|------|----------|---------|----------|
-| **ontology** | `ontology/` | What(개념), Where(코드 위치), How(관계) — YAML | 코드 작업 전 항상 먼저 |
-| **wiki** | `wiki/` | Why(의사결정), Rule(비즈니스 정책), Flow(시나리오) — Markdown | "왜?"가 필요할 때 |
-| **code** | `projects/` | 실제 구현 | 수정/상세 확인할 때 |
+```
+질문 → ontology/{도메인}.yaml (지도)
+            ├─ wiki_doc → wiki/{도메인}/... (Why / Rule / Flow)
+            └─ repo + package → projects/{repo}/main/... (코드)
+```
 
-도메인 작업 시 Claude의 탐색 절차와 작성 규칙은 `.claude/rules/ontology-rules.md`(ontology) 및 `.claude/rules/wiki-docs.md`(wiki)에 정의되어 있습니다. 대화 중 발견한 ontology/wiki 갱신 후보는 사용자 승인 후 반영하며, 임의 반영은 금지입니다 (상세: `.claude/rules/behavior.md § 10. 피드백 반영`).
+wiki는 ontology가 가리키는 상세 문서이지 독립 탐색 대상이 아니다. brute-force로 wiki 전체를 검색하지 마라.
+
+상세 규칙:
+- ontology 탐색/작성: `.claude/rules/ontology-rules.md`
+- wiki 작성/생애주기: `.claude/rules/wiki-docs.md`
+- 프로젝트 코드 작업: `.claude/rules/project-work.md`(작업 흐름) + `.claude/rules/workspace-structure.md`(격리 구조)
+- ontology/wiki 갱신 후보는 사용자 승인 후 반영: `.claude/rules/behavior.md § 10. 피드백 반영`
 
 ## 테스트
 

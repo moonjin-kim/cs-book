@@ -19,9 +19,9 @@ projects/{repo}/              ← 격리 구조 루트
 
 ## 핵심 규칙
 
-- `main/`은 **읽기 전용**. 코드 탐색, 구조 파악, ontology/wiki 문서화의 근거로만 사용한다.
+- `main/`은 **수정 금지** (Edit/Write 금지). 탐색·구조 파악·ontology/wiki 문서화 근거로 Read만 사용한다.
 - 코드 수정은 워크트리에서 수행한다 (`/worktree create`).
-- 격리 구조가 아닌 프로젝트를 발견하면 `/worktree setup`을 제안한다.
+- 격리 구조가 아닌 프로젝트(`projects/{name}/main/` 디렉토리가 없음)를 발견하면 `/worktree setup`을 제안한다. 트리거: `/sync-projects` 실행 직후, 또는 `projects/{name}/` 첫 접근 시.
 - sync 시 `main/`만 pull한다. 워크트리는 개별 관리.
 
 ## 관련 스킬
