@@ -7,17 +7,23 @@ export function Sidebar() {
   const { ontology, wikiIndex } = useOntology();
   const [domainsOpen, setDomainsOpen] = useState(true);
   const [wikiOpen, setWikiOpen] = useState(true);
+  const [wikiRootOpen, setWikiRootOpen] = useState(true);
   const [wikiDomainOpen, setWikiDomainOpen] = useState<Record<string, boolean>>({});
 
   const totalEntities = ontology?.domains.reduce((s, d) => s + d.entities.length, 0) ?? 0;
 
-  // wiki docs grouped by domain (non-empty domain only)
+  // wiki docs grouped by: root (no domain) + by domain
+  const wikiRootDocs: { path: string; title: string }[] = [];
   const wikiByDomain = new Map<string, { path: string; title: string }[]>();
   if (wikiIndex) {
     for (const doc of wikiIndex.docs) {
-      if (!doc.domain) continue;
+      const entry = { path: doc.path, title: doc.title || doc.path };
+      if (!doc.domain) {
+        wikiRootDocs.push(entry);
+        continue;
+      }
       const list = wikiByDomain.get(doc.domain) ?? [];
-      list.push({ path: doc.path, title: doc.title });
+      list.push(entry);
       wikiByDomain.set(doc.domain, list);
     }
   }
@@ -115,6 +121,42 @@ export function Sidebar() {
           >
             Wiki {wikiOpen ? '−' : '+'}
           </button>
+          {wikiOpen && wikiRootDocs.length > 0 && (
+            <div>
+              <button
+                onClick={() => setWikiRootOpen(!wikiRootOpen)}
+                className="w-full flex items-center gap-2 pl-5 pr-3 py-[6px] rounded-md text-[12px] text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors"
+              >
+                <svg
+                  width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                  className={`shrink-0 transition-transform ${wikiRootOpen ? 'rotate-90' : ''}`}
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+                <span className="font-medium">공통 문서</span>
+                <span className="ml-auto text-[11px] text-text-dim">{wikiRootDocs.length}</span>
+              </button>
+              {wikiRootOpen && wikiRootDocs.map((doc) => (
+                <NavLink
+                  key={doc.path}
+                  to={`/wiki/${doc.path}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-2 pl-9 pr-3 py-[5px] rounded-md text-[12px] transition-colors ${
+                      isActive
+                        ? 'bg-accent-dim text-accent'
+                        : 'text-text-muted hover:bg-bg-hover hover:text-text-primary'
+                    }`
+                  }
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <path d="M14 2v6h6" />
+                  </svg>
+                  <span className="truncate">{doc.title}</span>
+                </NavLink>
+              ))}
+            </div>
+          )}
           {wikiOpen &&
             Array.from(wikiByDomain.entries()).map(([domain, docs]) => {
               const isOpen = wikiDomainOpen[domain] ?? false;
