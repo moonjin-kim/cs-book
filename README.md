@@ -1,5 +1,9 @@
 # Command Center
 
+<!-- deployed-url:start -->
+⏳ 첫 배포 후 자동으로 채워집니다. (`Deploy site to GitHub Pages` 워크플로우가 머지될 때마다 갱신)
+<!-- deployed-url:end -->
+
 AI 기반 공용 작업 공간입니다.
 
 PO, 디자이너, FE, BE 등 역할에 관계없이 이 디렉토리에서 Claude Code를 실행합니다. 코드를 분석하고, 정책 문서를 만들고, 도메인 지식을 쌓아가는 곳입니다.
