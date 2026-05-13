@@ -1,14 +1,16 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { OntologyProvider } from './components/OntologyProvider';
 import { Layout } from './components/Layout';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Home } from './pages/Home';
 import { DomainGraph } from './pages/DomainGraph';
 import { OverviewGraph } from './pages/OverviewGraph';
 import { WikiPage } from './pages/WikiPage';
 
-export function App() {
+function AppShell() {
+  const { pathname } = useLocation();
   return (
-    <HashRouter>
+    <ErrorBoundary resetKey={pathname}>
       <OntologyProvider>
         <Routes>
           <Route element={<Layout />}>
@@ -19,6 +21,14 @@ export function App() {
           </Route>
         </Routes>
       </OntologyProvider>
+    </ErrorBoundary>
+  );
+}
+
+export function App() {
+  return (
+    <HashRouter>
+      <AppShell />
     </HashRouter>
   );
 }

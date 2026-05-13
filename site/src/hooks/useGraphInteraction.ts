@@ -35,12 +35,14 @@ export function useGraphInteraction(options: UseGraphInteractionOptions = {}) {
   );
 
   const onMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    if (panRef.current) {
-      const dx = e.clientX - panRef.current.startX;
-      const dy = e.clientY - panRef.current.startY;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragOccurred.current = true;
-      setTransform((t) => ({ ...t, x: panRef.current!.tx + dx, y: panRef.current!.ty + dy }));
-    }
+    // pan을 지역 변수로 캡쳐: setTransform updater가 나중에 실행될 때
+    // panRef.current가 onMouseUp으로 null이 되어도 안전하게 값에 접근
+    const pan = panRef.current;
+    if (!pan) return;
+    const dx = e.clientX - pan.startX;
+    const dy = e.clientY - pan.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragOccurred.current = true;
+    setTransform((t) => ({ ...t, x: pan.tx + dx, y: pan.ty + dy }));
   }, []);
 
   const onMouseUp = useCallback(() => {

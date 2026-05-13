@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { ThemeToggle } from './ThemeToggle';
+import { ErrorBoundary } from './ErrorBoundary';
 
 function Breadcrumb() {
   const { pathname } = useLocation();
@@ -26,6 +27,7 @@ function Breadcrumb() {
 }
 
 export function Layout() {
+  const { pathname } = useLocation();
   return (
     <div className="flex h-screen bg-bg text-text-primary">
       <Sidebar />
@@ -35,7 +37,9 @@ export function Layout() {
           <ThemeToggle />
         </div>
         <main className="flex-1 overflow-auto p-6">
-          <Outlet />
+          <ErrorBoundary resetKey={pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>
