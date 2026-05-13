@@ -18,5 +18,16 @@ domains:
       - elasticsearch
       - cloudfront
 
+  - id: commerce-order
+    path: 이커머스/주문-결제
+    file: abox/commerce-order.yaml
+    summary: 주문 생성·결제·환불·쿠폰 적용을 다루는 도메인
+    repos:
+      - example-order-api
+    infra:
+      - mysql
+      - redis
+      - kafka
+
 cross_domain: abox/cross-domain.yaml
 shared_infra: abox/infra.yaml
