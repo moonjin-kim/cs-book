@@ -214,7 +214,7 @@ phase-setup에서 결정된 변수를 이후 모든 Phase에서 사용한다:
 - `CC_WORKTREE`: command-center 워크트리 경로. phase-setup 0.5b에서 `DOMAIN_CONTEXT`가 있을 때 생성된다. `worktrees/chore/sync-wiki-<branch>/`. 없으면 빈 상태 (wiki 동기화 불필요).
 - `GIT_PREFIX`를 갱신할 때 `test -d <path>`로 대상 경로 존재를 검증한다. 실패 시 갱신하지 않고 사용자에게 에러를 보고한다.
 - Agent에게 `PROJECT_ROOT` 경로를 항상 전달하여 파일 도구(Read/Write/Edit/Glob/Grep)의 기준점으로 사용하게 한다.
-- 빌드/린트/테스트 명령(`./gradlew`, `npm`, `pytest` 등)을 `PROJECT_ROOT`에서 실행할 때, Bash 작업 디렉토리가 변경되지 않도록 **서브셸**을 사용한다: `(cd ${PROJECT_ROOT} && ./gradlew build)`. 괄호 `()`로 감싸면 서브셸에서 `cd`가 실행되어 부모 셸의 작업 디렉토리가 유지된다. `cd`를 직접 사용하면 이후 `GIT_PREFIX`의 상대경로가 무효화되므로 금지한다.
+- 빌드/린트/테스트 명령(`./gradlew`, `npm`, `pytest` 등)을 `PROJECT_ROOT`에서 실행할 때는 `(cd ${PROJECT_ROOT} && <명령>)` 서브셸 패턴을 사용한다. 직접 `cd`를 호출하면 이후 `GIT_PREFIX`의 상대경로가 무효화된다. 서브셸 패턴 일반 규칙은 `.claude/rules/behavior.md § 8` 참조.
 
 ### 워크트리 정리
 격리 모드에서 워크트리를 정리할 때는 **반드시 `/worktree done` 스킬을 호출**한다. `git worktree remove`, `git branch -d` 등 git 명령을 직접 실행하지 않는다. 파이프라인 완료 후 사용자가 "정리해", "워크트리 삭제해" 등을 요청하면 `/worktree done`으로 처리한다.
