@@ -32,3 +32,4 @@ Settings → Actions → General → Workflow permissions:
 > 두 옵션 모두 켜져야 (a) 사이트 자동 배포, (b) README 상단의 **데모 URL 자동 갱신 PR** 흐름이 동작합니다.
 >
 > **GHE 환경 주의**: "Allow Actions to create/approve PRs"는 admin 정책으로 막혀 있을 수 있습니다. 막혀 있으면 데모 URL 자동 갱신은 동작하지 않으니, README 상단 `<!-- deployed-url:start -->` 마커 사이를 수동으로 채우거나 admin에게 활성화를 요청하세요. 사이트 배포 자체는 정상 동작합니다.
+🌐 **Live demo**: https://hubtwork.github.io/command-center/
