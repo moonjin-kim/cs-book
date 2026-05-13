@@ -14,10 +14,11 @@
 import {
   readStdin, resolveExecDir, gitExec, matchesAny,
   PROTECTED_BRANCHES, DENY_PATTERNS, DENY_ANYWHERE, deny, passThrough,
-  stripEnvPrefix,
+  stripEnvPrefix, enforceMinRuntime,
 } from './config.mjs';
 
 async function main() {
+  enforceMinRuntime('preToolUse');
   const input = await readStdin();
 
   let data;
@@ -30,14 +31,31 @@ async function main() {
   const effective = stripEnvPrefix(command.trim());
   const execDir = resolveExecDir(command.trim(), cwd);
 
+  // deny 함수는 비동기 process.exit에 의존하므로 호출 후 반드시 return으로 흐름을 끊는다.
+  // 그렇지 않으면 같은 명령이 여러 deny 규칙에 매칭될 때 stdout에 JSON이 중복 출력되어
+  // 호출자(Claude Code, e2e parse_decision 등)의 응답 파싱이 깨진다.
+
+  // 명령 유형별 메시지 분기 (DENY_PATTERNS와 DENY_ANYWHERE에서 공용 사용)
+  const denyReasonFor = (cmd) => {
+    if (/gh\s+pr\s+(merge|close|reopen|review)/.test(cmd))
+      return 'GitHub PR 수정(merge/close/reopen/review)은 직접 수행하세요.';
+    if (/gh\s+issue\s+(close|reopen)/.test(cmd))
+      return 'GitHub 이슈 close/reopen은 직접 수행하세요.';
+    if (/gh\s+api\s+.*(-X\s+(POST|PUT|DELETE|PATCH)|--method\s+(POST|PUT|DELETE|PATCH))/.test(cmd))
+      return 'GitHub API 수정 호출(POST/PUT/DELETE/PATCH)은 허용되지 않습니다.';
+    return '이 작업은 허용되지 않습니다.';
+  };
+
   // 단순 명령: DENY_PATTERNS (^ 앵커)
   if (matchesAny(command.trim(), DENY_PATTERNS)) {
-    deny('이 작업은 허용되지 않습니다. PR 머지는 직접 수행하세요.');
+    deny(denyReasonFor(command));
+    return;
   }
 
   // 전체 문자열 검사: 서브셸, 인터프리터 내부 포함 (앵커 없음)
   if (DENY_ANYWHERE.some(p => p.test(command))) {
-    deny('이 작업은 허용되지 않습니다. PR 머지는 직접 수행하세요.');
+    deny(denyReasonFor(command));
+    return;
   }
 
   // 보호 브랜치 직접 commit
@@ -46,6 +64,7 @@ async function main() {
       const branch = gitExec(execDir, 'symbolic-ref --short HEAD');
       if (PROTECTED_BRANCHES.test(branch)) {
         deny(`${branch} 브랜치에서는 커밋할 수 없습니다. 작업 브랜치를 먼저 생성하세요.`);
+        return;
       }
     }
   }
@@ -56,6 +75,7 @@ async function main() {
       const branch = gitExec(execDir, 'symbolic-ref --short HEAD');
       if (PROTECTED_BRANCHES.test(branch)) {
         deny(`${branch} 브랜치에서 merge할 수 없습니다. PR을 생성하세요.`);
+        return;
       }
     }
   }

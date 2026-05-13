@@ -60,7 +60,7 @@
 
 ## 최신 상태 유지
 
-main 브랜치 최신화는 `SessionStart` 훅이 자동 처리합니다(`git pull --rebase --autostash`). Claude는 이를 다시 수동으로 실행하지 않습니다.
+main 브랜치 최신화는 `SessionStart` 훅이 자동 처리합니다(`git pull --rebase --autostash`). Claude는 이를 다시 수동으로 실행하지 않습니다. **워크트리에서 세션을 시작해도 훅은 메인 디렉토리(command-center 루트)의 main을 pull**하므로(`.claude/hooks/config.mjs`가 worktree의 `.git` 파일을 따라 메인 repo를 역추적), 워크트리 사용자가 별도로 메인을 fetch할 필요는 없습니다.
 
 다만 **현재 브랜치가 main이 아닌 경우**, Claude는 **세션 첫 요청 시 1회** 다음을 직접 확인합니다(훅 자동화 범위 밖이며, 동일 세션·동일 브랜치에서는 재확인 불필요):
 

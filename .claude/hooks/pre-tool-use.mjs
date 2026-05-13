@@ -9,13 +9,14 @@
 import { resolve } from 'node:path';
 import {
   readStdin, resolveCCRoot, isInsideCC, isWriteAllowed,
-  allow, deny, passThrough,
+  allow, deny, passThrough, enforceMinRuntime,
 } from './config.mjs';
 
 const READ_TOOLS = new Set(['Read', 'Glob', 'Grep']);
 const WRITE_TOOLS = new Set(['Edit', 'Write', 'NotebookEdit']);
 
 async function main() {
+  enforceMinRuntime('preToolUse');
   const input = await readStdin();
 
   let data;

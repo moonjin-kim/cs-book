@@ -4,12 +4,6 @@
   },
   "permissions": {
     "allow": [
-      "Edit(**/project-command-center/worktrees/**)",
-      "Write(**/project-command-center/worktrees/**)",
-
-      "Edit(**/project-command-center/projects/**/worktrees/**)",
-      "Write(**/project-command-center/projects/**/worktrees/**)",
-
       "Bash(node *)",
       "Bash(python3 *)",
       "Bash(pip3 *)",

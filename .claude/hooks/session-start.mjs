@@ -8,7 +8,7 @@
 
 import { execSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
-import { CC_ROOT, gitExec } from './config.mjs';
+import { CC_ROOT, gitExec, enforceMinRuntime } from './config.mjs';
 import { SESSION_STATUS_FILE } from '../statusline/constants.mjs';
 
 /**
@@ -45,6 +45,7 @@ const MESSAGES = {
 
 // Hook entry point — 직접 실행 시에만 동작
 if (process.argv[1]?.endsWith('session-start.mjs')) {
+  enforceMinRuntime('sessionStart');
   const result = syncRepo(CC_ROOT);
   const msg = MESSAGES[result];
   if (msg) process.stdout.write(msg);

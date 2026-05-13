@@ -17,7 +17,7 @@ import {
   hasWriteOutput, extractWriteTarget, hasShellExpansion,
   SAFE_COMMANDS, BUILD_TEST, GIT_WRITE, FILE_WRITE, DANGEROUS, DENY_PATTERNS,
   DANGEROUS_SHELL_CHARS, SAFE_PIPE_FILTERS,
-  permAllow, permPassThrough,
+  permAllow, permPassThrough, enforceMinRuntime,
 } from './config.mjs';
 
 function decideBash(cmd, cwd, ccRoot) {
@@ -401,6 +401,7 @@ function decideBash(cmd, cwd, ccRoot) {
 }
 
 async function main() {
+  enforceMinRuntime('permissionRequest');
   const input = await readStdin();
 
   let data;

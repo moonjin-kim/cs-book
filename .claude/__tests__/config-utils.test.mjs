@@ -18,6 +18,7 @@ import {
   extractFlatChain,
   stripEnvPrefix,
   ENV_PREFIX,
+  computeRuntimeDecision,
 } from '../hooks/config.mjs';
 
 // ============================================================================
@@ -295,5 +296,59 @@ describe('extractFlatChain', () => {
   it('인용문 내 && 는 분할하지 않음', () => {
     const result = extractFlatChain('echo "a && b" && ls');
     deepStrictEqual(result, ['echo "a && b"', 'ls']);
+  });
+});
+
+// ============================================================================
+// computeRuntimeDecision — 최소 Node 버전 정책
+// ============================================================================
+
+describe('computeRuntimeDecision', () => {
+  describe('minMajor 미설정 또는 통과', () => {
+    it('minMajor가 undefined면 ok', () => {
+      deepStrictEqual(computeRuntimeDecision('preToolUse', undefined, '22.22.2'), { ok: true });
+    });
+    it('minMajor가 0이면 ok (falsy 처리)', () => {
+      deepStrictEqual(computeRuntimeDecision('preToolUse', 0, '22.22.2'), { ok: true });
+    });
+    it('현재 == 최소면 ok', () => {
+      deepStrictEqual(computeRuntimeDecision('preToolUse', 22, '22.0.0'), { ok: true });
+    });
+    it('현재 > 최소면 ok', () => {
+      deepStrictEqual(computeRuntimeDecision('preToolUse', 20, '22.22.2'), { ok: true });
+    });
+  });
+
+  describe('미달 시 mode별 정책', () => {
+    it('preToolUse → failClose', () => {
+      const r = computeRuntimeDecision('preToolUse', 20, '18.12.1');
+      strictEqual(r.ok, false);
+      strictEqual(r.action, 'failClose');
+      strictEqual(r.message.includes('Node 20+ 필요'), true);
+      strictEqual(r.message.includes('18.12.1'), true);
+    });
+    it('permissionRequest → passThrough', () => {
+      const r = computeRuntimeDecision('permissionRequest', 20, '18.12.1');
+      strictEqual(r.ok, false);
+      strictEqual(r.action, 'passThrough');
+    });
+    it('sessionStart → warn (fail-open)', () => {
+      const r = computeRuntimeDecision('sessionStart', 20, '18.12.1');
+      strictEqual(r.ok, false);
+      strictEqual(r.action, 'warn');
+    });
+    it('알 수 없는 mode → failClose 기본', () => {
+      const r = computeRuntimeDecision('unknown', 20, '18.12.1');
+      strictEqual(r.ok, false);
+      strictEqual(r.action, 'failClose');
+    });
+  });
+
+  describe('메시지 포맷', () => {
+    it('업그레이드 안내 포함', () => {
+      const r = computeRuntimeDecision('preToolUse', 20, '18.12.1');
+      strictEqual(r.message.includes('brew install node@20'), true);
+      strictEqual(r.message.includes('nvm'), true);
+    });
   });
 });

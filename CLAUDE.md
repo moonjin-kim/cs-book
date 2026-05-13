@@ -27,15 +27,20 @@ wiki는 ontology가 가리키는 상세 문서이지 독립 탐색 대상이 아
 - 프로젝트 코드 작업: `.claude/rules/project-work.md`(작업 흐름) + `.claude/rules/workspace-structure.md`(격리 구조)
 - ontology/wiki 갱신 후보는 사용자 승인 후 반영: `.claude/rules/behavior.md § 10. 피드백 반영`
 
+## 런타임 셋업
+
+CC의 훅과 statusline은 `node` 명령으로 실행됩니다. 비대화 셸 PATH에 node가 잡혀 있어야 하고 `minRuntime.node` 이상이어야 합니다. 셋업 절차: `.claude/rules/runtime-setup.md`.
+
 ## 테스트
 
-| 대상 | 파일 | 실행 |
-|------|------|------|
-| permission 훅 단위 테스트 | `.claude/__tests__/permission-handler.test.mjs` | `node --test .claude/__tests__/permission-handler.test.mjs` |
-| subagent 허용 패턴 테스트 | `.claude/__tests__/subagent-allow-patterns.test.mjs` | `node --test .claude/__tests__/subagent-allow-patterns.test.mjs` |
-| 훅 E2E 시나리오 테스트 | `.claude/__tests__/hook-e2e.sh` | `bash .claude/__tests__/hook-e2e.sh` |
+`.claude/__tests__/` 하위 테스트들은 다음 한 줄로 실행합니다:
 
-`.claude/` 하위(훅, 스킬, 설정 등)를 수정할 때 관련 테스트를 실행하세요.
+```bash
+node --test .claude/__tests__/branch-guard.test.mjs .claude/__tests__/config-utils.test.mjs .claude/__tests__/permission-handler.test.mjs .claude/__tests__/pre-tool-use.test.mjs .claude/__tests__/session-start.test.mjs .claude/__tests__/subagent-allow-patterns.test.mjs .claude/__tests__/runtime-enforcement.test.mjs
+bash .claude/__tests__/hook-e2e.sh
+```
+
+`.claude/` 하위(훅, 스킬, 설정 등)를 수정할 때 위 테스트를 실행하세요.
 
 ## 작업 범위
 

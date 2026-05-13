@@ -22,8 +22,8 @@ before(() => {
   bareRepo = join(tmpDir, 'bare.git');
   workRepo = join(tmpDir, 'work');
 
-  // bare repo 생성
-  execSync(`git init --bare "${bareRepo}"`, { stdio: 'pipe' });
+  // bare repo 생성 (시스템 git config의 init.defaultBranch에 의존하지 않도록 main 명시)
+  execSync(`git -c init.defaultBranch=main init --bare "${bareRepo}"`, { stdio: 'pipe' });
 
   // clone + 초기 커밋
   execSync(`git clone "${bareRepo}" "${workRepo}"`, { stdio: 'pipe' });
@@ -132,7 +132,7 @@ describe('remote 없는 repo', () => {
 
   before(() => {
     localRepo = join(tmpDir, 'local-only');
-    execSync(`git init "${localRepo}"`, { stdio: 'pipe' });
+    execSync(`git -c init.defaultBranch=main init "${localRepo}"`, { stdio: 'pipe' });
     execSync('git config user.email "t@t.com" && git config user.name "t"', {
       cwd: localRepo, stdio: 'pipe',
     });

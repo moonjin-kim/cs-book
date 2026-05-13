@@ -10,17 +10,98 @@ import { appendFileSync, existsSync, statSync, readFileSync } from 'node:fs';
 import { resolve, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// DEBUG: hook 실행 여부 + 에러 추적용 임시 로그
-const _debugLog = '/tmp/claude-hook-debug.log';
-try {
-  appendFileSync(_debugLog, `[${new Date().toISOString()}] config.mjs loaded, pid=${process.pid}, cwd=${process.cwd()}\n`);
-} catch {}
+// ============================================================================
+// 최소 런타임 검증
+// ============================================================================
+
+/**
+ * 순수 함수: 최소 런타임 정책 결정.
+ * 테스트 가능하도록 사이드이펙트 없이 결정만 반환한다.
+ *
+ * @param {string} mode - 'preToolUse' | 'permissionRequest' | 'sessionStart'
+ * @param {number|undefined} minMajor - config의 minRuntime.node
+ * @param {string} nodeVersion - process.versions.node 형태 ("22.22.2")
+ * @returns {{ ok: true } | { ok: false, action: 'failClose' | 'passThrough' | 'warn', message: string }}
+ */
+export function computeRuntimeDecision(mode, minMajor, nodeVersion) {
+  if (!minMajor) return { ok: true };
+  const currentMajor = parseInt(String(nodeVersion).split('.')[0], 10);
+  if (currentMajor >= minMajor) return { ok: true };
+
+  const message = `[CC hook] Node ${minMajor}+ 필요 (현재: ${nodeVersion}). ` +
+    `'brew install node@${minMajor}' 또는 nvm/volta 등으로 업그레이드 후 CC를 재시작하세요.`;
+
+  if (mode === 'sessionStart') return { ok: false, action: 'warn', message };
+  if (mode === 'permissionRequest') return { ok: false, action: 'passThrough', message };
+  return { ok: false, action: 'failClose', message }; // preToolUse 기본
+}
+
+/**
+ * 사이드이펙트 wrapper: 결정에 따라 stdout/stderr/exit 처리.
+ * 호출하는 훅이 어떤 종류인지를 mode로 명시한다:
+ *   - 'preToolUse'      : Edit/Write/Bash 차단 가드. fail-close (exit 2 + stderr).
+ *   - 'permissionRequest': Bash 자동 승인 결정. pass-through (사용자 확인으로 폴백).
+ *   - 'sessionStart'    : 세션 시작 안내. fail-open + 메시지(stdout). 세션은 계속 진행.
+ *
+ * 환경변수:
+ *   - CLAUDE_HOOK_SKIP_RUNTIME_CHECK=1 : 테스트에서 우회.
+ *   - CLAUDE_HOOK_MIN_NODE_TEST=<N>    : 테스트에서 강제로 미달 시뮬레이션.
+ *     보안: 현재 minMajor보다 *높은* 값일 때만 적용(가드를 약화시키는 방향은 불가).
+ *
+ * 사이드이펙트 패턴: process.exit 전에 stdout/stderr가 drain되도록 write callback +
+ * setTimeout 안전망을 둔다. 동기 process.exit 직후의 stdio는 잘릴 수 있어
+ * 사용자가 차단 사유 메시지를 못 보는 사고로 이어진다.
+ */
+export function enforceMinRuntime(mode) {
+  if (process.env.CLAUDE_HOOK_SKIP_RUNTIME_CHECK === '1') return;
+  let minMajor;
+  try {
+    const cfg = JSON.parse(readFileSync(resolve(CC_ROOT, '.claude/config.json'), 'utf-8'));
+    minMajor = cfg?.minRuntime?.node;
+  } catch {
+    return; // config 읽기 실패 시 검증을 건너뛴다 (config 없음 = 미설정으로 간주)
+  }
+  const override = process.env.CLAUDE_HOOK_MIN_NODE_TEST;
+  if (override) {
+    const overrideInt = parseInt(override, 10);
+    if (overrideInt > (minMajor || 0)) minMajor = overrideInt;
+  }
+  const decision = computeRuntimeDecision(mode, minMajor, process.versions.node);
+  if (decision.ok) return;
+
+  if (decision.action === 'warn') {
+    process.stdout.write(decision.message + '\n');
+    return; // fail-open: 흐름 계속, drain은 main 종료 시 보장
+  }
+
+  const exitCode = decision.action === 'passThrough' ? 0 : 2;
+  setTimeout(() => process.exit(exitCode), 500); // 안전망
+
+  if (decision.action === 'passThrough') {
+    process.stderr.write(decision.message + '\n', () => {
+      process.stdout.write(JSON.stringify({ continue: true }) + '\n', () => process.exit(exitCode));
+    });
+    return;
+  }
+  // failClose
+  process.stderr.write(decision.message + '\n', () => process.exit(exitCode));
+}
+
+// 훅 디버그 로그 — CLAUDE_HOOK_DEBUG 환경변수가 설정된 경우에만 동작.
+// 평소에는 디스크 쓰기를 발생시키지 않는다. 로그 경로는 CLAUDE_HOOK_DEBUG_LOG로 오버라이드 가능.
+const _debugEnabled = !!process.env.CLAUDE_HOOK_DEBUG;
+const _debugLog = _debugEnabled ? (process.env.CLAUDE_HOOK_DEBUG_LOG || '/tmp/claude-hook-debug.log') : null;
+function _debug(line) {
+  if (!_debugEnabled) return;
+  try { appendFileSync(_debugLog, line); } catch {}
+}
+_debug(`[${new Date().toISOString()}] config.mjs loaded, pid=${process.pid}, cwd=${process.cwd()}\n`);
 process.on('uncaughtException', (err) => {
-  try { appendFileSync(_debugLog, `[${new Date().toISOString()}] UNCAUGHT pid=${process.pid}: ${err.stack}\n`); } catch {}
+  _debug(`[${new Date().toISOString()}] UNCAUGHT pid=${process.pid}: ${err.stack}\n`);
   process.exit(0);
 });
 process.on('unhandledRejection', (err) => {
-  try { appendFileSync(_debugLog, `[${new Date().toISOString()}] UNHANDLED pid=${process.pid}: ${err?.stack || err}\n`); } catch {}
+  _debug(`[${new Date().toISOString()}] UNHANDLED pid=${process.pid}: ${err?.stack || err}\n`);
   process.exit(0);
 });
 
