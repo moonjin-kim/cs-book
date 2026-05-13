@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import yaml from 'js-yaml';
 import { glob } from 'glob';
+import { normalizeWikiDoc } from './wiki-path.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
@@ -37,7 +38,7 @@ const domains = (index.domains ?? []).map((d) => {
       name: e.name,
       type: e.type,
       summary: typeof e.summary === 'string' ? e.summary.trim() : '',
-      ...(e.wiki_doc && { wikiDoc: e.wiki_doc }),
+      ...(e.wiki_doc && { wikiDoc: normalizeWikiDoc(e.wiki_doc) }),
       ...(e.repo && { repo: e.repo }),
       ...(e.package && { package: e.package }),
       ...(e.status && { status: e.status }),
