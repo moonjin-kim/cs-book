@@ -23,7 +23,7 @@ export function Home() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-3 mb-6">
-        <StatCard label="Domains" value={ontology.domains.length} sub="토스쇼핑 하위" />
+        <StatCard label="Domains" value={ontology.domains.length} />
         <StatCard label="Entities" value={totalEntities}>
           <div className="flex gap-1 mt-0.5">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-[rgba(96,165,250,0.12)] text-node-process">
@@ -35,10 +35,18 @@ export function Home() {
           </div>
         </StatCard>
         <StatCard label="Relations" value={totalRelations} sub={`cross-domain ${ontology.crossDomain.length}`} />
-        <StatCard label="Wiki Docs" value={wikiDocCount} sub={`${ontology.domains.length} domains`} />
+        <StatCard
+          label="Wiki Docs"
+          value={wikiDocCount}
+          sub={wikiDocCount > 0 ? '문서 보기 →' : undefined}
+          onClick={wikiDocCount > 0 ? () => navigate('/wiki/README.md') : undefined}
+        />
       </div>
 
-      {/* Domain Grid */}
+      {/* Domain Grid (or empty state) */}
+      {ontology.domains.length === 0 ? (
+        <EmptyDomainState />
+      ) : (
       <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-3">
         {ontology.domains.map((domain) => {
           const icon = DOMAIN_ICONS[domain.id] ?? { emoji: '\uD83D\uDCE6', color: '#71717a', bg: 'rgba(113,113,122,0.12)' };
@@ -93,6 +101,19 @@ export function Home() {
           );
         })}
       </div>
+      )}
+    </div>
+  );
+}
+
+function EmptyDomainState() {
+  return (
+    <div className="bg-bg-card border border-dashed border-border rounded-[10px] p-10 text-center">
+      <div className="text-[15px] font-semibold mb-2">아직 도메인이 없습니다</div>
+      <p className="text-[13px] text-text-muted leading-relaxed max-w-md mx-auto">
+        <code className="text-accent">ontology/index.yaml</code>에 도메인을 추가하거나,
+        Claude Code에서 <code className="text-accent">/new-domain</code> 스킬로 첫 도메인을 만들어보세요.
+      </p>
     </div>
   );
 }
@@ -102,14 +123,21 @@ function StatCard({
   value,
   sub,
   children,
+  onClick,
 }: {
   label: string;
   value: number;
   sub?: string;
   children?: React.ReactNode;
+  onClick?: () => void;
 }) {
   return (
-    <div className="bg-bg-card border border-border rounded-[10px] p-4">
+    <div
+      onClick={onClick}
+      className={`bg-bg-card border border-border rounded-[10px] p-4 ${
+        onClick ? 'cursor-pointer hover:bg-bg-hover hover:border-border-hover transition-colors' : ''
+      }`}
+    >
       <div className="text-[11px] text-text-dim uppercase tracking-wide">{label}</div>
       <div className="text-[28px] font-bold tracking-tighter mt-1">{value}</div>
       {sub && <div className="text-xs text-text-muted mt-0.5">{sub}</div>}
