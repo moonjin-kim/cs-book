@@ -1,8 +1,13 @@
 export const DOMAIN_COLORS: Record<string, string> = {
-
+  'commerce-catalog': '#a78bfa',
+  'commerce-order': '#22d3ee',
+  'commerce-inventory': '#fbbf24',
 };
 
 export const DOMAIN_ICONS: Record<string, { emoji: string; color: string; bg: string }> = {
+  'commerce-catalog': { emoji: '🛍️', color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.12)' },
+  'commerce-order': { emoji: '🧾', color: '#22d3ee', bg: 'rgba(34, 211, 238, 0.12)' },
+  'commerce-inventory': { emoji: '📦', color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.12)' },
 };
 
 export const TYPE_COLORS: Record<string, string> = {
