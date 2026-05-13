@@ -4,209 +4,219 @@
 🌐 **Live demo**: https://hubtwork.github.io/command-center/
 <!-- deployed-url:end -->
 
-AI 기반 공용 작업 공간입니다.
-
-PO, 디자이너, FE, BE 등 역할에 관계없이 이 디렉토리에서 Claude Code를 실행합니다. 코드를 분석하고, 정책 문서를 만들고, 도메인 지식을 쌓아가는 곳입니다.
-
-**도메인 문서**: TODO - workflow 설정을 마치고 나서 CLAUDE 에 입력을 부탁하세요.
+AI 기반 공용 작업 공간입니다. 팀의 도메인 지식(코드 위치·비즈니스 정책·데이터 흐름)을 ontology와 wiki로 관리하고, GitHub Pages에 자동 배포되는 사이트로 시각화합니다. PO·디자이너·FE·BE 누구든 같은 방식으로 작업합니다.
 
 ---
 
-## 시작하기
+## 🚀 이 템플릿으로 시작하기
 
-> 개발 경험이 없어도 괜찮습니다. 아래를 순서대로 따라하면 됩니다.
+GitHub의 **"Use this template"** 버튼을 누르면 빈 워크스페이스가 만들어집니다. 아래 순서대로 활성화하세요.
+
+### Step 1. 템플릿 복제
+
+1. 이 페이지 우측 상단의 **"Use this template" → "Create a new repository"** 클릭
+2. 우리 팀 계정/조직에 새 레포 생성 (이름·공개 범위 선택)
+
+> Template 복제는 **파일만** 가져갑니다. Settings(Pages, Actions 권한 등)는 복제되지 않으므로 아래 Step 2를 직접 적용해야 합니다.
+
+### Step 2. GitHub 활성화 (필수 3종)
+
+#### ① Pages 활성화
+- Settings → Pages → Source: **GitHub Actions** 선택
+
+#### ② Workflow permissions
+Settings → Actions → General → Workflow permissions:
+- **"Read and write permissions"** 선택
+- **"Allow GitHub Actions to create and approve pull requests"** 체크
+
+> 두 옵션 모두 켜져야 (a) 사이트 자동 배포, (b) README 상단의 **데모 URL 자동 갱신 PR** 흐름이 동작합니다.
 >
-> **전체 흐름**: 사전 준비(웹) → 최소 설치(터미널) → **나머지는 Claude에게 맡기기**
+> **GHE 환경 주의**: "Allow Actions to create/approve PRs"는 admin 정책으로 막혀 있을 수 있습니다. 막혀 있으면 데모 URL 자동 갱신은 동작하지 않으니, README 상단 `<!-- deployed-url:start -->` 마커 사이를 수동으로 채우거나 admin에게 활성화를 요청하세요. 사이트 배포 자체는 정상 동작합니다.
 
-### Part 1. 사전 준비 (웹에서)
+### Step 3. 로컬 환경 세팅
 
-#### Step 1. Claude Pro 구독
+> 개발 경험이 없어도 OK입니다. 순서대로 따라가세요.
 
-Claude Code를 사용하려면 **Claude Pro 이상의 구독**이 필요합니다.
+#### ① Claude Pro 구독
+Claude Code 사용에는 Claude Pro 이상 구독이 필요합니다.
 
-1. [claude.ai](https://claude.ai)에 접속해 계정을 생성
-2. 승인 후 [claude.ai/settings/billing](https://claude.ai/settings/billing)에서 **Pro** 플랜 ($20/월) 이상의 플랜을 결제
-3. [claude.ai/settings/privacy](https://claude.ai/settings/privacy)에서 **"Help improve Claude"를 반드시 OFF**
-   - 켜져 있으면 대화 내용이 AI 학습 데이터로 사용됩니다. 중요한 정보가 그대로 전달될 수 있으니 주의하세요.
+1. [claude.ai](https://claude.ai)에서 계정 생성
+2. [claude.ai/settings/billing](https://claude.ai/settings/billing)에서 **Pro** 플랜 ($20/월) 이상 결제
+3. [claude.ai/settings/privacy](https://claude.ai/settings/privacy)에서 **"Help improve Claude" OFF**
+   - 켜져 있으면 대화 내용이 AI 학습에 사용됩니다. 중요한 사내 정보가 들어가지 않게 하세요.
 
----
+#### ② 필수 도구 설치 (Mac 기준)
 
-### Part 2. 최소 설치 (터미널에서)
-
-Claude Code를 실행하기 위한 최소한만 직접 설치합니다. 이후 환경 세팅은 Claude가 해줍니다.
-
-#### Step 3. 터미널 열기
-
-1. `Cmd + Space` → **터미널** (또는 **Terminal**) 검색 → 실행
-2. 까만 화면에 커서가 깜빡이면 준비 완료
-
-> 앞으로 나오는 코드 블록은 터미널에 **붙여넣고 Enter**를 누르면 됩니다.
-
-#### Step 4. 필수 도구 설치
-
-**Homebrew** — Mac용 패키지 관리자. 프로그램을 명령어 한 줄로 설치할 수 있게 해줍니다.
+**Homebrew** — Mac 패키지 관리자.
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-- Mac 로그인 비밀번호를 물으면 입력합니다 (타이핑해도 화면에 안 보이는 게 정상)
-- 설치 완료 후 `Next steps`에 나오는 명령어 2줄을 복사해서 실행합니다
+설치 후 `Next steps`에 나오는 명령어 2줄을 그대로 실행하세요.
 
-**Git** — 코드를 다운로드하고 버전을 관리하는 도구.
-
-```bash
-git --version
-```
-버전이 출력되면 이미 설치된 것입니다. `command not found`가 나오면:
-```bash
-xcode-select --install
-```
-
-**GitHub CLI** — 터미널에서 GitHub에 로그인하는 도구.
+**Git / GitHub CLI / Node.js**
 
 ```bash
-brew install gh
+git --version          # command not found이면 xcode-select --install
+brew install gh node
 ```
 
-설치 후 GitHub Enterprise 인증:
+**GitHub 인증**:
 ```bash
 GH_HOST=github.com gh auth login
 ```
-선택지가 나오면 순서대로:
-1. `GitHub` 선택
-2. `HTTPS` 선택
-3. `Login with a web browser` 선택 → 브라우저에서 로그인
+선택지: `GitHub` → `HTTPS` → `Login with a web browser`. (GHE 사용 시 `GH_HOST=ghe.your-corp.com`)
 
-**Node.js** — Claude Code 실행에 필요.
-
-```bash
-brew install node
-```
-
-#### Step 5. Claude Code 설치 및 실행
+#### ③ Claude Code 설치 + 첫 실행
 
 ```bash
 npm install -g @anthropic-ai/claude-code
+git clone https://github.com/<your-org>/<your-repo>.git
+cd <your-repo>
 claude
 ```
 
-처음 실행하면 브라우저에서 Claude 계정 인증을 진행합니다. Step 2에서 구독한 계정으로 로그인하세요.
+다음 화면이 나오면 준비 완료:
 
 ```
 ╭──────────────────────────────────────╮
 │ ✻ Welcome to Claude Code!            │
-│                                      │
 │   /help for available commands       │
 ╰──────────────────────────────────────╯
-
->
 ```
 
-이 화면이 나오면 직접 설치할 것은 끝입니다.
+### Step 4. 첫 배포 트리거
+
+GitHub의 main 브랜치에 어떤 변경이라도 push되면 워크플로우가 돌며:
+1. 사이트가 `https://<owner>.github.io/<repo>/` (또는 GHE Pages URL)에 배포
+2. README 상단의 `🌐 Live demo` 마커가 자동으로 실제 URL로 갱신
+
+Claude Code 안에서 다음 한 줄로 첫 변경을 만들 수 있습니다:
+```
+README 첫 줄에 우리 팀 이름을 한 줄 추가하고 PR 올려줘
+```
+
+### Step 5. 예제 도메인 → 우리 팀 도메인
+
+이 템플릿에는 이커머스 영역의 예제 도메인 3개가 들어 있습니다:
+
+| 도메인 | 내용 |
+|--------|------|
+| `commerce-catalog` | 상품 등록·카테고리·검색 노출 |
+| `commerce-order` | 주문·결제·환불·쿠폰 |
+| `commerce-inventory` | 재고 점유·확정·저재고 알림 |
+
+이들은 **학습 자료**입니다. 사이트를 한 번 둘러보면 ontology와 wiki가 어떻게 짝을 이루고 어떤 정보가 어느 계층에 들어가는지 감이 잡힙니다. 다 보셨으면 다음 한 줄로 비우고 시작하세요:
+
+```
+예제 도메인 다 지우고 우리 팀 도메인부터 추가하자
+```
+
+새 도메인 생성은 자연어로:
+```
+회원-인증 도메인을 추가하자
+```
+
+또는 슬래시 명령:
+```
+/new-domain member-auth
+```
 
 ---
 
-### Part 3. Claude에게 맡기기
+## Claude Code로 작업하기
 
-#### Step 7. 초기 세팅
+세팅이 끝나면 일상 작업은 자연어 또는 슬래시 명령으로 진행합니다.
 
-`>` 프롬프트에 입력합니다:
-
+**코드 분석 / 질문**
 ```
-/setup
-```
-
-Claude가 남은 도구 설치와 `projects/` 폴더에 코드 레포지토리 다운로드를 자동으로 처리합니다. 중간에 허용 여부를 물으면 **Y**를 누르세요.
-
-#### Step 8. 사용해보기
-
-세팅이 끝나면 바로 작업할 수 있습니다. 몇 가지 예시:
-
-**코드 분석 & 질문**
-```
-my-website 에서 결제 관련 정책이 어떻게 되어있어?
+my-api 레포의 결제 정책이 어떻게 되어 있어?
 ```
 
 **정책 문서 작성**
 ```
-카테고리 필터 정책 문서 만들어줘
+방금 분석한 내용을 wiki/payment-policy 정책 문서로 정리해줘
 ```
 
-**기획부터 구현까지**
+**기획 → 구현 한 사이클**
 ```
-/dev 상품 목록 정렬 기능 추가
+/dev 상품 목록 정렬 기능을 추가하고 싶어
 ```
 
-#### Step 9. 변경사항 반영하기
-
-Claude가 문서를 만들거나 코드를 수정하면, 다른 팀원도 볼 수 있도록 GitHub에 올려야 합니다.
-
+**변경사항 반영**
 ```
 /commit
 /pull-request
 ```
 
-`/commit`은 변경 내용을 저장하고, `/pull-request`는 GitHub에 PR(Pull Request)을 만듭니다. PR은 "이런 변경을 했는데 반영해도 될까요?"라고 요청하는 것입니다.
-
-PR 링크가 나오면:
-1. 링크를 클릭해서 브라우저에서 열기
-2. **Files changed** 탭에서 변경 내용 확인
-3. **Merge pull request** → **Confirm merge** 클릭
+PR 링크가 출력되면 GitHub에서 직접 머지하세요. (Claude는 PR 생성까지만 합니다.)
 
 ---
 
 ## 자주 묻는 질문
 
 **Claude Code를 종료하려면?**
-`Ctrl + C` 또는 `/exit` 입력
+`Ctrl + C` 또는 `/exit`.
 
-**다음에 다시 시작하려면?**
+**다시 시작하려면?**
 ```bash
-cd project-command-center
+cd <your-repo>
 claude
 ```
 
-**이전 작업을 이어서 하고 싶으면?**
-Claude Code 실행 후 `/resume`을 입력하면 이전 세션 목록이 나옵니다.
+**이전 대화를 이어서 하려면?**
+실행 후 `/resume`을 입력하면 이전 세션 목록이 나옵니다.
 
-**`/setup`을 다시 실행해도 되나요?**
-네. 이미 설치된 것은 건너뛰고, 새로 추가된 것만 처리합니다.
+**`/setup`은 뭔가요?**
+처음 한 번 또는 환경이 깨졌을 때 실행하는 초기화 스킬. 이미 설치된 것은 건너뜁니다.
+
+**사이트가 안 떠요 / 빈 화면이에요**
+- Settings → Pages가 활성화되어 있는지 확인
+- Actions 탭에서 `Deploy site to GitHub Pages` 워크플로우가 success인지 확인
+- 도메인이 0개인 상태(예제 삭제 후 우리 팀 도메인 추가 전)면 Home에 안내 카드만 표시됩니다
 
 ---
 
 ## 디렉토리 구조
 
 ```
-project-command-center/
-├── CLAUDE.md              ← 프로젝트 소개 및 작업 범위
+your-workspace/
+├── CLAUDE.md              ← Claude를 위한 워크스페이스 안내
 ├── README.md              ← 지금 이 파일
-├── .gitignore             ← projects/ 제외
+├── .gitignore             ← projects/, worktrees/ 등 제외
 │
 ├── .claude/
-│   ├── workspace.json     ← 워크스페이스 설정 (팀, GHE, 프로젝트 목록)
+│   ├── config.json        ← 이슈 키 패턴, 빌드 패턴 등
 │   ├── settings.json      ← 팀 공유 권한/훅 설정
 │   ├── rules/             ← 행동 규칙 (자동 로드)
 │   ├── hooks/             ← 안전장치 (보호 브랜치 커밋 차단 등)
 │   ├── agents/            ← 서브에이전트 정의
-│   └── skills/            ← 스킬 정의 (아래 "스킬 목록" 참조)
+│   └── skills/            ← 스킬 정의
 │
-├── ontology/              ← 도메인 탐색 맵 (YAML, 기계용)
-│   ├── tbox.yaml          ← 용어 정의 (타입, 관계, 제약)
-│   ├── index.yaml         ← 탐색 진입점 (도메인 목록)
-│   └── abox/              ← 도메인별 entity + relation
+├── ontology/              ← 코드 위치 + 개념·관계 (YAML)
+│   ├── tbox.yaml          ← 용어 정의 (타입, 관계, axiom)
+│   ├── index.yaml         ← 도메인 목록 (탐색 진입점)
+│   └── abox/              ← 도메인별 인스턴스
 │       ├── infra.yaml     ← 공유 인프라 (mysql, redis 등)
-│       └── {도메인}.yaml   ← 도메인별 인스턴스
+│       ├── cross-domain.yaml  ← 도메인 간 관계
+│       └── {도메인}.yaml   ← 도메인별 entity + relation
 │
-├── wiki/                  ← 비즈니스 지식 (Markdown, 사람용)
-│   ├── README.md          ← 도메인 목록 인덱스
-│   ├── glossary.md        ← 공통 용어 사전
-│   └── {도메인}/           ← 도메인별 위키
+├── wiki/                  ← 비즈니스 정책·의사결정 (Markdown)
+│   ├── README.md          ← 도메인 인덱스
+│   ├── glossary.md        ← 공통 용어
+│   └── {도메인}/
 │       ├── README.md      ← 도메인 개요
-│       ├── architecture.md← 비즈니스 정책 인덱스
+│       ├── architecture.md← 정책 인덱스 + 데이터 흐름
 │       ├── glossary.md    ← 용어 사전
 │       ├── status.md      ← 구현 추적 (AC별 ✅/⬜)
-│       └── {주제}/README.md ← 주제별 상세 정책/설계
+│       └── {주제}/README.md
+│
+├── site/                  ← ontology + wiki를 시각화하는 React/Vite 사이트
+│   ├── scripts/build-data.mjs  ← YAML → JSON 빌드
+│   └── src/                    ← 그래프 + 위키 뷰어
+│
+├── .github/workflows/     ← GitHub Pages 자동 배포
 │
 └── projects/              ← 코드 레포 (.gitignore 대상)
     └── {name}/
@@ -214,20 +224,28 @@ project-command-center/
         └── worktrees/     ← 기능별 작업 브랜치
 ```
 
-## 도메인 추가
+## 3계층 모델
 
-`/new-domain [도메인명]`으로 자동 생성합니다. wiki + ontology가 동시에 생성됩니다. 수동으로 구성하려면 [Wiki 문서 규칙](.claude/rules/wiki-docs.md)을 참고하세요.
+| 계층 | 무엇을 담는가 | 누가 | 답하는 질문 |
+|------|---------------|------|-------------|
+| **ontology** (`ontology/`) | 코드에 있는 개념·관계, 코드 위치 (YAML) | 사람·Claude | "무엇이 있고 어디에 있나" |
+| **wiki** (`wiki/`) | 비즈니스 정책·의사결정·시나리오 (Markdown) | 사람 | "왜 이렇게 만들었나" |
+| **code** (`projects/`) | 실제 구현 | 사람 | "어떻게 동작하나" |
+
+ontology의 `wiki_doc` 필드가 두 계층을 연결합니다. 상세 규칙: `.claude/rules/ontology-rules.md`, `.claude/rules/wiki-docs.md`
 
 ## 스킬 목록
 
 | 스킬 | 설명 |
 |------|------|
 | `/setup` | 초기 세팅 (도구 설치, GHE 인증, 프로젝트 clone) |
-| `/sync-projects` | GHE 레포 clone 및 최신화 |
-| `/new-domain` | 새 도메인 생성 (wiki + ontology) |
-| `/dev` | PRD → 설계 → 구현 → 리뷰 → 커밋/PR 전체 사이클 |
+| `/sync-projects` | 코드 레포 clone 및 최신화 |
+| `/new-domain` | 새 도메인 생성 (wiki + ontology 동시) |
+| `/dev` | PRD → 설계 → 구현 → 리뷰 → 커밋/PR 한 사이클 |
 | `/commit` | 한국어 커밋 메시지로 Git 커밋 |
 | `/pull-request` | 커밋 히스토리 기반 PR 자동 생성 |
 | `/worktree` | projects/ 코드 레포의 Git worktree 자동화 |
 | `/lens` | 코드 속 비즈니스 정책 탐지 → PO/PD 보고서 |
 | `/humanizer` | AI 글쓰기 패턴 감지 및 교정 |
+
+도메인 추가를 수동으로 구성하려면 [Wiki 문서 규칙](.claude/rules/wiki-docs.md)을 참고하세요.
