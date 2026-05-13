@@ -1,7 +1,7 @@
 # Command Center
 
 <!-- deployed-url:start -->
-⏳ 첫 배포 후 자동으로 채워집니다. (`Deploy site to GitHub Pages` 워크플로우가 머지될 때마다 갱신)
+🌐 **Live demo**: https://hubtwork.github.io/command-center/
 <!-- deployed-url:end -->
 
 AI 기반 공용 작업 공간입니다.
