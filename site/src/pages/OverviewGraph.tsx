@@ -81,11 +81,11 @@ export function OverviewGraph() {
       })
       .filter((l): l is DomainLink => l !== null);
 
-    setNodes(domainNodes);
-    setLinks(domainLinks);
     setReady(false);
     hasFitted.current = false;
 
+    // 시뮬레이션을 동기 사전 실행: tick마다 리렌더 대신 한 번에 최종 위치 계산.
+    // 도메인 수가 수십 단위라 동기 실행 비용은 ms 단위.
     const sim = forceSimulation<DomainNode>(domainNodes)
       .force(
         'link',
@@ -97,21 +97,21 @@ export function OverviewGraph() {
       .force('x', forceX(0).strength(0.05))
       .force('y', forceY(0).strength(0.05))
       .force('collide', forceCollide(120))
-      .on('tick', () => {
-        setNodes([...domainNodes]);
-        setLinks([...domainLinks]);
-      })
-      .on('end', () => {
-        setNodes([...domainNodes]);
-        setLinks([...domainLinks]);
-        requestAnimationFrame(() => {
-          if (!hasFitted.current) {
-            fitToViewRef.current?.();
-            hasFitted.current = true;
-          }
-          setReady(true);
-        });
-      });
+      .stop();
+
+    const totalTicks = Math.ceil(Math.log(sim.alphaMin()) / Math.log(1 - sim.alphaDecay()));
+    sim.tick(totalTicks);
+
+    setNodes([...domainNodes]);
+    setLinks([...domainLinks]);
+
+    requestAnimationFrame(() => {
+      if (!hasFitted.current) {
+        fitToViewRef.current?.();
+        hasFitted.current = true;
+      }
+      setReady(true);
+    });
 
     return () => {
       sim.stop();
@@ -139,7 +139,7 @@ export function OverviewGraph() {
   if (!ontology) return <div className="text-text-muted text-sm p-6">Loading...</div>;
 
   return (
-    <div ref={containerRef} className="h-full -m-6 relative overflow-hidden bg-[radial-gradient(circle_at_1px_1px,#1a1a1e_1px,transparent_0)] [background-size:24px_24px]" style={{ touchAction: 'none' }}>
+    <div ref={containerRef} className="h-full -m-6 relative overflow-hidden bg-dot-grid" style={{ touchAction: 'none' }}>
       <svg
         ref={svgRef}
         className="w-full h-full"

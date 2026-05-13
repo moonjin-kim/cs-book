@@ -27,12 +27,17 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: |
           cd site
           npm ci
+
+      - name: Run tests
+        run: |
+          cd site
+          npm test
 
       - name: Build data (ontology + wiki → JSON)
         run: |

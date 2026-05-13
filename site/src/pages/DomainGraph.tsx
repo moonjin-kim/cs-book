@@ -117,7 +117,7 @@ export function DomainGraph() {
 
   return (
     <div className="flex h-full -m-6">
-      <div ref={containerRef} className="flex-1 relative overflow-hidden bg-[radial-gradient(circle_at_1px_1px,#1a1a1e_1px,transparent_0)] [background-size:24px_24px]" style={{ touchAction: 'none' }}>
+      <div ref={containerRef} className="flex-1 relative overflow-hidden bg-dot-grid" style={{ touchAction: 'none' }}>
         <svg
           ref={svgRef}
           className="w-full h-full"
@@ -210,8 +210,8 @@ export function DomainGraph() {
                       onClick={() => setSelectedEntity(node.entity)}
                       className={`h-full bg-bg-card border rounded-[10px] px-4 py-2.5 cursor-pointer select-none transition-all ${
                         isSelected
-                          ? 'border-accent shadow-[0_0_0_1px_var(--color-accent),0_4px_24px_rgba(49,130,246,0.15)]'
-                          : 'border-border hover:border-border-hover hover:shadow-[0_4px_24px_rgba(0,0,0,0.3)]'
+                          ? 'border-accent shadow-[var(--shadow-accent)]'
+                          : 'border-border hover:border-border-hover hover:shadow-[var(--shadow-node)]'
                       }`}
                     >
                       <div className="text-[13px] font-semibold truncate">{node.entity.name}</div>

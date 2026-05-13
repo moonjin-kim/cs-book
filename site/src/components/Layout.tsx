@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
+import { ThemeToggle } from './ThemeToggle';
 
 function Breadcrumb() {
   const { pathname } = useLocation();
@@ -29,8 +30,9 @@ export function Layout() {
     <div className="flex h-screen bg-bg text-text-primary">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="h-[52px] shrink-0 border-b border-border flex items-center px-6">
+        <div className="h-[52px] shrink-0 border-b border-border flex items-center justify-between px-6">
           <Breadcrumb />
+          <ThemeToggle />
         </div>
         <main className="flex-1 overflow-auto p-6">
           <Outlet />
