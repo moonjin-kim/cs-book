@@ -41,6 +41,8 @@ allowed-tools:
 
 Git worktree를 **격리 구조**로 관리하여 Claude Code의 디렉토리 제약을 해결한다.
 
+> **적용 범위:** 이 스킬은 `projects/` 하위 코드 레포 전용이다. command-center 워크스페이스 자체의 워크트리는 격리 구조로 운영하지 않으므로 이 스킬의 `create`/`done`/`setup`이 적용되지 않는다. command-center 자체 워크트리의 생성·정리 절차는 `.claude/rules/git-workflow.md § 워크트리`와 `§ command-center 자체 워크트리 정리 절차`를 따른다.
+
 ## 인자
 
 - 첫 번째 인자: 서브커맨드 (`setup`, `create`, `list`, `switch`, `status`, `done`)

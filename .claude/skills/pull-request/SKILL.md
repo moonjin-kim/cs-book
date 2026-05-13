@@ -28,6 +28,8 @@ allowed-tools:
 
 현재 브랜치의 커밋 히스토리를 분석하여 PR을 자동 생성한다.
 
+> **범위:** 이 스킬은 **PR 생성까지만** 수행한다. 머지(`gh pr merge` 등)는 이 스킬의 책임이 아니며, 사용자가 직접 GitHub UI나 명령으로 수행해야 한다. CLAUDE.md "작업 범위" 참조.
+
 Arguments:
 - ARGS[0] (optional): 베이스 브랜치. 미지정 시 자동 감지:
   1. `git branch --list main master develop`로 존재하는 브랜치 확인

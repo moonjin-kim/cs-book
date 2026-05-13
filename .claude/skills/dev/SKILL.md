@@ -70,6 +70,8 @@ Phase 파일은 `${CLAUDE_SKILL_DIR}/phases/` 하위에 위치한다.
 - `${CLAUDE_SKILL_DIR}/../pull-request/SKILL.md`
 - `${CLAUDE_SKILL_DIR}/../worktree/SKILL.md`
 
+> **git/gh 권한 사용 경계:** 본 스킬은 `allowed-tools`에 `git commit`, `git push`, `git worktree`, `gh` 등을 직접 포함한다. 이는 `behavior.md § 8`의 "스킬 우선" 원칙의 예외가 아니라, **phase 파일이 위 스킬들의 절차를 inline으로 실행**할 때 필요한 권한이다. phase-complete 등에서 `/commit`·`/pull-request` 절차를 Read한 뒤 그 절차를 직접 수행하므로, 절차 내부의 Bash 명령을 모두 허용해야 한다. 새 phase를 추가할 때도 이 SSOT(스킬 절차)에서 벗어난 git 직접 호출은 금지한다.
+
 ## 인자
 
 - `ARGS[0]` (필수): 기능 또는 버그 설명 (e.g., "[JIRA-123] 로그인 기능 추가")
