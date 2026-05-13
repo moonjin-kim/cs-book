@@ -1,7 +1,7 @@
 ---
 name: commit
 description: Git 커밋 시 반드시 이 스킬을 사용. 브랜치명에서 이슈 키를 파싱하여 한국어 커밋 메시지로 Git 커밋. 커밋 전 lint/test pre-check, 민감 파일 감지 포함. git commit을 직접 실행하지 말 것
-argument-hint: [이슈키] [커밋 메시지] [--target <경로>]
+argument-hint: "[이슈키] [커밋 메시지] [--target <경로>]"
 allowed-tools:
   # git - 커밋 핵심
   - "Bash(git rev-parse *)"

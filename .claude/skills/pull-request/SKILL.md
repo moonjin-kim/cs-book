@@ -1,7 +1,7 @@
 ---
 name: pull-request
 description: PR 생성 시 반드시 이 스킬을 사용. 커밋 히스토리에서 제목과 본문을 자동 생성하여 PR 생성. gh pr create를 직접 실행하지 말 것
-argument-hint: [base-branch] [--target <경로>]
+argument-hint: "[base-branch] [--target <경로>]"
 allowed-tools:
   - Read
   - "Bash(git log *)"
