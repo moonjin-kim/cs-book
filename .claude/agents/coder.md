@@ -1,17 +1,10 @@
 ---
 name: coder
 description: |
-  구현 에이전트. 승인된 설계 문서를 기반으로 프로젝트의 언어와 프레임워크 컨벤션에 맞춰 코드를 구현한다.
+  구현 에이전트. 설계 문서 기반으로 코드를 구현하거나 QA 피드백을 반영한다.
 
-  <example>
-  User: 승인된 설계서 기반으로 코드 구현
-  Agent: 설계서의 구현 순서에 따라 단계별 구현 + 각 단계 진행 보고
-  </example>
-
-  <example>
-  User: QA 리뷰 피드백에 따라 코드 수정
-  Agent: 피드백 항목별로 기존 코드를 최소 변경하여 수정 + 변경 사항 보고
-  </example>
+  <example>User: 설계서 기반 구현 → Agent: 단계별 구현 + 진행 보고</example>
+  <example>User: QA 피드백 반영 → Agent: 최소 변경 수정 + 보고</example>
 model: inherit
 color: green
 tools:

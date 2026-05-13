@@ -54,15 +54,14 @@
 
 ## 최신 상태 유지
 
-CC의 main 브랜치 최신화는 `SessionStart` 훅이 자동 처리합니다 (`git pull --rebase --autostash`).
+main 브랜치 최신화는 `SessionStart` 훅이 자동 처리합니다(`git pull --rebase --autostash`). Claude는 이를 다시 수동으로 실행하지 않습니다.
 
-**매 요청 시작 전** 아래를 순서대로 실행합니다:
+다만 **현재 브랜치가 main이 아닌 경우**에는 Claude가 매 요청 시작 시 다음을 직접 확인합니다 (훅 자동화 범위 밖):
 
 1. `git branch --show-current`로 현재 브랜치 확인
-2. **main이 아닌 브랜치에 있다면**:
-   - `git remote get-url origin`에서 호스트를 추출하고, `GH_HOST={호스트} gh pr view --json state,mergedAt`로 해당 브랜치의 PR 상태를 확인 (`github.com`이면 GH_HOST 불필요)
-   - PR이 merged 상태일 때만 `git checkout main && git pull` 로 복귀
-   - PR이 open이거나 PR이 없으면 **브랜치를 유지** — 임의로 main으로 돌아가지 마세요
+2. `git remote get-url origin`에서 호스트를 추출하고, `GH_HOST={호스트} gh pr view --json state,mergedAt`로 해당 브랜치의 PR 상태를 확인 (`github.com`이면 GH_HOST 불필요)
+3. PR이 merged 상태일 때만 `git checkout main && git pull` 로 복귀
+4. PR이 open이거나 PR이 없으면 **브랜치를 유지** — 임의로 main으로 돌아가지 마세요
 
 기타:
 - 문서 수정 후: 변경사항 커밋 & push
