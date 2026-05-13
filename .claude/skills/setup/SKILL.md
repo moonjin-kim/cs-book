@@ -65,7 +65,7 @@ Command Center 워크스페이스 초기 세팅을 단계별로 수행한다. (m
 | git | `which git` | `brew install git` 실행 |
 | gh | `which gh` | `brew install gh` 실행 |
 | jq | `which jq` | `brew install jq` 실행 |
-| node | `which node` | `brew install node` 실행 |
+| node | `which node` (버전이 `.claude/config.json`의 `minRuntime.node` 이상인지도 확인) | `brew install node@22 && brew link node@22 --force --overwrite` 실행 ([`.claude/rules/runtime-setup.md`](../../rules/runtime-setup.md) 참조) |
 | agent-browser | `which agent-browser` | `brew install agent-browser && agent-browser install` 실행 |
 
 순서가 중요하다: brew → git → gh → jq → node → agent-browser. brew가 있어야 나머지를 설치할 수 있다.

@@ -47,7 +47,7 @@ allowed-tools:
 Arguments:
 - 인자 없음: 이슈 키는 브랜치에서 파싱, 메시지는 변경 내용에서 자동 생성
 - ARGS[0]만: 커밋 메시지로 사용. 이슈 키는 브랜치에서 파싱
-- ARGS[0] + ARGS[1]: ARGS[0]은 이슈 키 (`^[A-Z]+-[0-9]+$` 매칭 필수, 불일치 시 에러), ARGS[1]은 커밋 메시지
+- ARGS[0] + ARGS[1]: ARGS[0]은 이슈 키 (`.claude/config.json`의 `issueKey.pattern` 매칭 필수, 불일치 시 에러), ARGS[1]은 커밋 메시지
 - `--target <경로>`: 작업 대상 디렉토리 (optional). CWD 기준 상대 경로.
   - 예: `--target projects/asset-factory-admin/worktrees/AFS-31`
   - 예: `--target worktrees/refactor/skill-project-flag`
