@@ -15,6 +15,7 @@ import { strictEqual, match, ok } from 'node:assert';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { CC_ROOT } from '../hooks/config.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const HOOKS_DIR = resolve(dirname(__filename), '..', 'hooks');
@@ -41,8 +42,8 @@ describe('정상 환경 — enforceMinRuntime이 평상 흐름을 방해하지 �
     const r = runHook('pre-tool-use.mjs', {
       stdin: JSON.stringify({
         tool_name: 'Edit',
-        tool_input: { file_path: '/Users/alenheo/Desktop/command-center/CLAUDE.md' },
-        cwd: '/Users/alenheo/Desktop/command-center',
+        tool_input: { file_path: `${CC_ROOT}/CLAUDE.md` },
+        cwd: CC_ROOT,
       }),
     });
     strictEqual(r.status, 0);
@@ -55,7 +56,7 @@ describe('정상 환경 — enforceMinRuntime이 평상 흐름을 방해하지 �
       stdin: JSON.stringify({
         tool_name: 'Bash',
         tool_input: { command: 'ls' },
-        cwd: '/Users/alenheo/Desktop/command-center',
+        cwd: CC_ROOT,
       }),
     });
     strictEqual(r.status, 0);
@@ -141,8 +142,8 @@ describe('CLAUDE_HOOK_SKIP_RUNTIME_CHECK', () => {
     const r = runHook('pre-tool-use.mjs', {
       stdin: JSON.stringify({
         tool_name: 'Edit',
-        tool_input: { file_path: '/Users/alenheo/Desktop/command-center/CLAUDE.md' },
-        cwd: '/Users/alenheo/Desktop/command-center',
+        tool_input: { file_path: `${CC_ROOT}/CLAUDE.md` },
+        cwd: CC_ROOT,
       }),
       env: {
         CLAUDE_HOOK_MIN_NODE_TEST: FAIL_VERSION,
