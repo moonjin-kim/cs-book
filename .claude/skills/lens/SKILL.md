@@ -5,19 +5,19 @@ description: 코드에서 비즈니스 정책을 탐지하고, 변경 시 영향
 argument-hint: <자연어 쿼리> [--detail] [--skip-update] [--idea "<아이디어>"]
 allowed-tools:
   # filesystem (읽기 전용)
-  - Bash(ls *)
-  - Bash(test *)
-  - Bash(pwd *)
-  - Bash(realpath *)
-  - Bash(basename *)
-  - Bash(dirname *)
-  - Bash(find *)
-  - Bash(wc *)
-  - Bash(mkdir *)
-  - Bash(rm -rf */.lens/*)
-  - Bash(date *)
+  - "Bash(ls *)"
+  - "Bash(test *)"
+  - "Bash(pwd *)"
+  - "Bash(realpath *)"
+  - "Bash(basename *)"
+  - "Bash(dirname *)"
+  - "Bash(find *)"
+  - "Bash(wc *)"
+  - "Bash(mkdir *)"
+  - "Bash(rm -rf */.lens/*)"
+  - "Bash(date *)"
 
-  - Bash(git -C *)
+  - "Bash(git -C *)"
   # read tools
   - Read
   - Glob

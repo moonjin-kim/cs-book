@@ -9,10 +9,10 @@ allowed-tools:
   - Read
   - Glob
   - Grep
-  - Bash(git -C *)
-  - Bash(git log *)
-  - Bash(ls *)
-  - Bash(test *)
+  - "Bash(git -C *)"
+  - "Bash(git log *)"
+  - "Bash(ls *)"
+  - "Bash(test *)"
   - AskUserQuestion
 ---
 
