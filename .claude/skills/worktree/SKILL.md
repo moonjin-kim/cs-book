@@ -235,13 +235,13 @@ Claude: [uncommitted changes, unpushed commits 확인 후 안내]
 
 `--target` 사용 예시:
 ```
-User: /worktree create NPU-470 --target projects/shopping-growth
+User: /worktree create ABC-470 --target projects/shopping-growth
 
 Claude: (WORK_DIR = projects/shopping-growth)
   GIT_ROOT = projects/shopping-growth/main
   워크트리 생성 완료.
-  브랜치: NPU-470
-  경로:   projects/shopping-growth/worktrees/NPU-470/
+  브랜치: ABC-470
+  경로:   projects/shopping-growth/worktrees/ABC-470/
   ...
 
 User: /worktree done --target projects/shopping-growth
