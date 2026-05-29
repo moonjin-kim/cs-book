@@ -50,7 +50,7 @@ ontology/
 ## 네이밍 규칙
 
 - **id** (도메인, entity 모두): 영문 소문자 + 하이픈. 예: `asset-factory`, `growth-system`
-- **name**: 팀에서 부르는 이름. 한글 허용, 대명사(NPU, TUBA 등)는 영어. 예: 고양이키우기, NPU
+- **name**: 팀에서 부르는 이름. 한글 허용, 대명사(ABC 등)는 영어. 예: 모임, ABC
 - **file**: `abox/{도메인id}.yaml`
 
 ## 최신화 의무
@@ -98,7 +98,7 @@ ontology와 wiki를 동시에 갱신할 때 누가 먼저인지:
 
 ### 도메인 = 비즈니스 기능
 - 코드 레포 단위가 아니라 비즈니스 기능 단위
-- 하나의 레포에 여러 도메인이 있을 수 있음 (예: shopping-growth 안에 NPU + 매일방문)
+- 하나의 레포에 여러 도메인이 있을 수 있음 (예: gathering 안에 ABC + 매일방문)
 
 ### 코드 연동 없는 관계
 - 사람이 개입하는 수동 데이터 전달(human-in-the-loop)은 relation이 아닌 notes에 기록
