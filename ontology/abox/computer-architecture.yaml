@@ -1,0 +1,76 @@
+domain:
+  id: computer-architecture
+  name: 컴퓨터 구조
+  summary: |
+    CPU가 명령어를 병렬적으로 처리하고 메모리 접근 지연을 줄이는 방식을
+    파이프라인과 캐시 중심으로 정리한다.
+  wiki_root: wiki/computer-architecture/
+
+entities:
+  - id: instruction-pipelining
+    name: 명령어 파이프라이닝
+    type: process
+    summary: |
+      명령어 처리 단계를 겹쳐 실행해 한 번에 처리하는 명령어 수를 늘리는 기법이다.
+    repo: cs-theory-notes
+    package: computer-architecture/pipeline
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: pipeline-hazard
+    name: 파이프라인 위험
+    type: data
+    summary: 데이터 의존성, 분기, 자원 충돌로 파이프라인이 멈추거나 버려지는 상황이다.
+    repo: cs-theory-notes
+    package: computer-architecture/pipeline-hazard
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: data-hazard
+    name: 데이터 위험
+    type: data
+    summary: 뒤 명령어가 앞 명령어의 결과를 너무 빨리 필요로 할 때 발생하는 위험이다.
+    repo: cs-theory-notes
+    package: computer-architecture/data-hazard
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: control-hazard
+    name: 제어 위험
+    type: data
+    summary: 분기 결과를 알기 전까지 다음 명령어를 확정하지 못해 생기는 위험이다.
+    repo: cs-theory-notes
+    package: computer-architecture/control-hazard
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: structural-hazard
+    name: 구조적 위험
+    type: data
+    summary: 여러 명령어가 같은 하드웨어 자원을 동시에 요구할 때 발생하는 위험이다.
+    repo: cs-theory-notes
+    package: computer-architecture/structural-hazard
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: locality-of-reference
+    name: 참조 지역성
+    type: data
+    summary: 최근 접근한 데이터나 가까운 데이터에 다시 접근할 가능성이 높다는 성질이다.
+    repo: cs-theory-notes
+    package: computer-architecture/locality
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: cpu-cache
+    name: CPU Cache
+    type: data
+    summary: 자주 쓰는 데이터를 CPU 가까이에 저장해 메모리 접근 지연을 줄이는 계층이다.
+    repo: cs-theory-notes
+    package: computer-architecture/cache
+    wiki_doc: wiki/computer-architecture/README.md
+
+relations:
+  - from: instruction-pipelining
+    to: pipeline-hazard
+    type: produces
+  - from: pipeline-hazard
+    to: data-hazard
+    type: owns
+  - from: pipeline-hazard
+    to: control-hazard
+    type: owns
+  - from: pipeline-hazard
+    to: structural-hazard
+    type: owns
+  - from: cpu-cache
+    to: locality-of-reference
+    type: depends_on

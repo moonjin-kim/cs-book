@@ -10,6 +10,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
 const OUT_DIR = path.resolve(__dirname, '../public/data');
 
+fs.rmSync(OUT_DIR, { recursive: true, force: true });
+
 function readYaml(filePath) {
   return yaml.load(fs.readFileSync(filePath, 'utf-8'));
 }
@@ -82,7 +84,14 @@ const ontologyData = { domains, sharedInfra, crossDomain, repoBaseUrl };
 
 // wiki index
 const wikiRoot = path.join(ROOT, 'wiki');
-const mdFiles = await glob('**/*.md', { cwd: wikiRoot });
+const allowedWikiDomains = new Set(domains.map((d) => d.id));
+const rootWikiDocs = new Set(['README.md', 'glossary.md', 'study-roadmap.md', 'interview-checklist.md']);
+const allMdFiles = await glob('**/*.md', { cwd: wikiRoot });
+const mdFiles = allMdFiles.filter((relPath) => {
+  if (rootWikiDocs.has(relPath)) return true;
+  const [domain] = relPath.split('/');
+  return allowedWikiDomains.has(domain);
+});
 
 const wikiDocs = mdFiles.map((relPath) => {
   const content = fs.readFileSync(path.join(wikiRoot, relPath), 'utf-8');

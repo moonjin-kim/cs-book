@@ -1,0 +1,134 @@
+domain:
+  id: algorithms
+  name: 자료구조와 알고리즘
+  summary: |
+    자료구조 선택과 시간·공간 복잡도 판단처럼 코딩 테스트와 CS 면접의
+    기본이 되는 알고리즘 질문을 정리한다.
+  wiki_root: wiki/algorithms/
+
+entities:
+  - id: complexity
+    name: 시간/공간 복잡도
+    type: data
+    summary: 입력 크기가 커질 때 실행 시간과 메모리 사용량이 얼마나 늘어나는지 표현한다.
+    repo: cs-theory-notes
+    package: algorithms/complexity
+    wiki_doc: wiki/algorithms/README.md
+  - id: array-list
+    name: 배열과 리스트
+    type: data
+    summary: 연속 메모리 기반 자료구조로 빠른 임의 접근과 삽입·삭제 비용을 비교한다.
+    repo: cs-theory-notes
+    package: algorithms/array-list
+    wiki_doc: wiki/algorithms/README.md
+  - id: linked-list
+    name: 연결 리스트
+    type: data
+    summary: 노드를 포인터로 연결해 위치를 알면 삽입·삭제가 빠르지만 탐색은 순차적으로 해야 한다.
+    repo: cs-theory-notes
+    package: algorithms/linked-list
+    wiki_doc: wiki/algorithms/README.md
+  - id: stack
+    name: Stack
+    type: data
+    summary: 마지막에 넣은 값을 먼저 꺼내는 LIFO 구조로 함수 호출, undo, 괄호 검사에 쓰인다.
+    repo: cs-theory-notes
+    package: algorithms/stack
+    wiki_doc: wiki/algorithms/README.md
+  - id: hash-table
+    name: 해시 테이블
+    type: data
+    summary: key를 해시 함수로 버킷에 매핑해 평균 O(1) 조회를 제공한다.
+    repo: cs-theory-notes
+    package: algorithms/hash-table
+    wiki_doc: wiki/algorithms/README.md
+  - id: hash-collision
+    name: 해시 충돌
+    type: data
+    summary: 서로 다른 key가 같은 버킷에 들어가는 상황이며 체이닝이나 오픈 주소법으로 처리한다.
+    repo: cs-theory-notes
+    package: algorithms/hash-collision
+    wiki_doc: wiki/algorithms/README.md
+  - id: load-factor
+    name: Load Factor와 Threshold
+    type: data
+    summary: 해시 테이블이 얼마나 찼는지 나타내며 resize 시점과 성능에 영향을 준다.
+    repo: cs-theory-notes
+    package: algorithms/load-factor
+    wiki_doc: wiki/algorithms/README.md
+  - id: tree-graph
+    name: 트리와 그래프
+    type: data
+    summary: 계층 관계와 연결 관계, 경로 탐색을 표현하는 대표적인 비선형 자료구조다.
+    repo: cs-theory-notes
+    package: algorithms/tree-graph
+    wiki_doc: wiki/algorithms/README.md
+  - id: binary-tree
+    name: 이진 트리
+    type: data
+    summary: 각 노드가 최대 두 자식을 가지며 완전, 포화, 편향 형태로 구분할 수 있다.
+    repo: cs-theory-notes
+    package: algorithms/binary-tree
+    wiki_doc: wiki/algorithms/README.md
+  - id: trie
+    name: Trie
+    type: data
+    summary: 문자열을 문자 단위 경로로 저장해 자동완성이나 prefix 검색에 적합하다.
+    repo: cs-theory-notes
+    package: algorithms/trie
+    wiki_doc: wiki/algorithms/README.md
+  - id: sorting-searching
+    name: 정렬과 탐색
+    type: process
+    summary: 데이터를 원하는 순서로 배치하거나 조건에 맞는 값을 빠르게 찾는 기본 기법이다.
+    repo: cs-theory-notes
+    package: algorithms/sort-search
+    wiki_doc: wiki/algorithms/README.md
+  - id: bfs-dfs
+    name: BFS와 DFS
+    type: process
+    summary: 그래프와 트리를 너비 우선 또는 깊이 우선으로 방문하는 대표 탐색 알고리즘이다.
+    repo: cs-theory-notes
+    package: algorithms/bfs-dfs
+    wiki_doc: wiki/algorithms/README.md
+
+relations:
+  - from: sorting-searching
+    to: complexity
+    type: depends_on
+  - from: sorting-searching
+    to: array-list
+    type: consumes
+  - from: linked-list
+    to: complexity
+    type: depends_on
+  - from: stack
+    to: array-list
+    type: depends_on
+  - from: stack
+    to: linked-list
+    type: depends_on
+  - from: bfs-dfs
+    to: tree-graph
+    type: consumes
+  - from: hash-table
+    to: complexity
+    type: depends_on
+  - from: hash-table
+    to: hash-collision
+    type: owns
+  - from: hash-table
+    to: load-factor
+    type: owns
+  - from: tree-graph
+    to: complexity
+    type: depends_on
+  - from: binary-tree
+    to: tree-graph
+    type: depends_on
+  - from: trie
+    to: tree-graph
+    type: depends_on
+  - from: bfs-dfs
+    to: binary-tree
+    type: consumes

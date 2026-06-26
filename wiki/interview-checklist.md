@@ -1,0 +1,121 @@
+# 면접 체크리스트
+
+## 기본 설명
+
+- URL을 입력했을 때 브라우저, DNS, TCP/TLS, HTTP, 서버, DB에서 어떤 일이 일어나는가?
+- 쿠키와 세션의 저장 위치, 보안성, 성능 영향을 비교할 수 있는가?
+- HTTP Keep-Alive와 TCP Keep-Alive의 차이를 설명할 수 있는가?
+- DNS 질의 과정에서 local, root, TLD, authoritative name server의 역할을 설명할 수 있는가?
+- NAT/NAPT가 필요한 이유와 port 변환 테이블을 설명할 수 있는가?
+- HTTP/1.1의 HOL blocking과 HTTP/2 multiplexing을 설명할 수 있는가?
+- CORS simple request, preflight request, credential request의 차이를 설명할 수 있는가?
+- connection timeout, socket timeout, read timeout을 구분할 수 있는가?
+- 프로세스와 스레드의 차이를 메모리 구조와 문맥 교환 비용으로 설명할 수 있는가?
+- 명령어 파이프라이닝과 데이터/제어/구조적 위험을 설명할 수 있는가?
+- 참조 지역성으로 캐시 친화적인 배열 순회를 설명할 수 있는가?
+- HashMap의 평균 O(1)이 항상 보장되지 않는 이유를 설명할 수 있는가?
+- 이진 트리의 포화/완전/편향 형태와 순회 방식을 설명할 수 있는가?
+- Trie가 자동완성과 prefix 검색에 적합한 이유와 메모리 trade-off를 설명할 수 있는가?
+- 연결 리스트의 삽입/삭제가 O(1)이라는 말의 전제 조건을 설명할 수 있는가?
+- Stack을 Java에서 `Stack`보다 `Deque`로 구현하는 이유를 설명할 수 있는가?
+- B+Tree 인덱스가 어떤 쿼리에 유리하고 어떤 쿼리에 불리한가?
+
+## 백엔드 실무
+
+- Spring의 `@Transactional`이 왜 self-invocation에서 동작하지 않을 수 있는가?
+- Java `volatile`, `synchronized`, `Atomic*`의 차이를 설명할 수 있는가?
+- `synchronized`와 `ReentrantLock`의 선택 기준을 설명할 수 있는가?
+- CAS와 ABA 문제, Atomic 클래스의 한계를 설명할 수 있는가?
+- ThreadLocal을 스레드 풀에서 사용할 때 왜 `remove()`가 필요한가?
+- Fork/Join과 일반 ThreadPoolExecutor의 차이를 설명할 수 있는가?
+- CompletableFuture에서 custom executor가 필요한 상황을 설명할 수 있는가?
+- JCF에서 초기 용량, load factor, threshold가 resize 비용에 어떤 영향을 주는가?
+- HashMap과 ConcurrentHashMap의 동시성 전략과 복합 연산 주의점을 설명할 수 있는가?
+- JVM 메모리 구조와 GC Root 기반 reachability를 설명할 수 있는가?
+- G1의 Humongous 객체와 JDK 17 기본 GC 선택 기준을 설명할 수 있는가?
+- String, StringBuilder, StringBuffer의 차이와 String Constant Pool을 설명할 수 있는가?
+- Record를 DTO나 VO에 사용할 때의 장점과 한계를 설명할 수 있는가?
+- equals와 hashCode를 함께 재정의해야 하는 이유를 설명할 수 있는가?
+- Redis 캐시를 적용했을 때 cache stampede와 stale data를 어떻게 줄일 것인가?
+- Redis 분산 락의 `SET NX PX`와 RedLock의 한계를 설명할 수 있는가?
+- Kafka consumer가 중복 처리할 수 있는 이유와 멱등 처리 방법은 무엇인가?
+- `@Transactional`과 시스템 콜은 모두 경계 전환이라는 관점에서 어떤 차이가 있는가?
+- 결제 API를 멱등하게 만들기 위해 어떤 key와 저장소 설계를 사용할 것인가?
+- Spring `@Transactional`의 기본 rollback 규칙과 `@Async` 주의점을 설명할 수 있는가?
+- Spring이 객체를 Bean으로 관리하는 이유를 DI, lifecycle, AOP, test 관점에서 설명할 수 있는가?
+- `@Component`, `@Controller`, `@Service`, `@Repository`의 역할 차이를 설명할 수 있는가?
+- 트랜잭션 전파 속성과 트랜잭션 AOP 동작 흐름을 설명할 수 있는가?
+- private 메서드나 self-invocation에서 `@Transactional`이 동작하지 않는 이유를 설명할 수 있는가?
+- Spring Boot 자동 설정이 후보 조회, 조건 평가, bean 등록으로 이어지는 흐름을 설명할 수 있는가?
+- `@RequestBody`와 `@ModelAttribute`, `@Controller`와 `@RestController`의 차이를 설명할 수 있는가?
+- Filter와 Interceptor의 실행 위치와 적합한 사용 사례를 구분할 수 있는가?
+- `@ExceptionHandler`, `@ControllerAdvice`, `ResponseEntity`를 언제 사용하는지 설명할 수 있는가?
+- Gradle의 `implementation`, `api`, `runtimeOnly`, `annotationProcessor` 차이를 설명할 수 있는가?
+- Micrometer의 Counter, Timer, Gauge와 tag cardinality 주의점을 설명할 수 있는가?
+- JPA, Hibernate, Spring Data JPA의 역할 차이를 설명할 수 있는가?
+- EntityManager와 영속성 컨텍스트의 1차 캐시, 변경 감지, flush를 설명할 수 있는가?
+- JPA N+1 문제와 fetch join, EntityGraph, batch fetch의 차이를 설명할 수 있는가?
+- to-many fetch join과 paging을 함께 쓸 때 메모리 paging이 발생하는 이유를 설명할 수 있는가?
+- 양방향 OneToOne의 주인 아닌 쪽 lazy loading 한계를 설명할 수 있는가?
+- JPA IDENTITY, SEQUENCE, TABLE 전략의 insert timing과 batch insert 영향을 설명할 수 있는가?
+- `ddl-auto` 옵션을 운영에서 어떻게 다뤄야 하는지 설명할 수 있는가?
+- Spring Data JPA `save()`가 `persist`와 `merge`를 선택하는 기준을 설명할 수 있는가?
+- OSIV의 장점과 connection 점유 위험을 설명할 수 있는가?
+- Redis 주요 자료구조를 String, Hash, Set, Sorted Set, Stream 기준으로 선택할 수 있는가?
+- Redis RDB와 AOF의 손실 범위, 복구 속도, rewrite 비용을 비교할 수 있는가?
+- Redis Cluster의 hash slot, hash tag, MOVED/ASK redirect를 설명할 수 있는가?
+- Redis Sentinel과 Cluster의 목적과 multi-key 연산 제약 차이를 설명할 수 있는가?
+- Redis pipelining과 transaction의 차이를 설명할 수 있는가?
+- Redis eviction 정책을 cache 용도에 맞게 선택할 수 있는가?
+- Redis Pub/Sub과 Stream의 메시지 보존, ACK, consumer group 차이를 설명할 수 있는가?
+- Redis가 command 실행을 single thread로 처리하는 이유와 Redis 6 I/O thread의 범위를 설명할 수 있는가?
+- Kafka broker, topic, partition, producer, consumer의 역할을 설명할 수 있는가?
+- Kafka consumer group의 partition assignment와 rebalancing 문제를 설명할 수 있는가?
+- Kafka가 partition 단위 순서만 보장한다는 의미와 key 설계 영향을 설명할 수 있는가?
+- Kafka offset commit 방식과 at-least-once 처리 패턴을 설명할 수 있는가?
+- Kafka producer `acks`, `min.insync.replicas`, idempotence 설정의 trade-off를 설명할 수 있는가?
+- Kafka EOS의 idempotent producer, transaction, `read_committed` 조건과 한계를 설명할 수 있는가?
+- Kafka와 RabbitMQ를 로그와 큐 관점에서 비교할 수 있는가?
+- Kafka partition 수를 처리량, rebalance, file handle, key 순서 관점에서 결정할 수 있는가?
+- Kafka Streams와 Kafka Connect의 역할 차이를 설명할 수 있는가?
+- SOLID, TDA, 응집도/결합도를 변경 비용 관점에서 설명할 수 있는가?
+- Singleton, Strategy, Template Method, Null Object 패턴의 장단점을 설명할 수 있는가?
+- 일급 컬렉션과 방어적 복사가 캡슐화를 어떻게 강화하는지 설명할 수 있는가?
+- 테스트 격리와 비결정적 테스트가 발생하는 원인을 설명할 수 있는가?
+- Spring 테스트에서 `@DirtiesContext`, `@Sql`, `@Transactional` rollback의 trade-off를 설명할 수 있는가?
+- 테스트 더블의 Dummy, Stub, Fake, Spy, Mock 차이를 설명할 수 있는가?
+- 단위 테스트, 통합 테스트, slice test의 목적과 비용 차이를 설명할 수 있는가?
+- TDD red-green-refactor와 code coverage의 한계를 설명할 수 있는가?
+
+## 설계와 운영
+
+- 인증과 인가를 분리해서 설명할 수 있는가?
+- SQL Injection이 발생하는 원인과 `PreparedStatement`가 방어하는 방식을 설명할 수 있는가?
+- JWT의 header/payload/signature 구조와 탈취, 만료, `alg: none` 위험을 설명할 수 있는가?
+- CSRF 공격이 cookie 자동 전송을 어떻게 악용하는지 설명할 수 있는가?
+- 대칭키/비대칭키 암호화와 HTTPS TLS handshake 흐름을 설명할 수 있는가?
+- 분산 시스템에서 retry가 장애를 키우는 경우는 언제인가?
+- Bulkhead와 Circuit Breaker로 외부 서비스 장애 전파를 어떻게 줄일 수 있는가?
+- MVCC와 lock 기반 동시성 제어, gap/next-key lock을 설명할 수 있는가?
+- B+Tree가 DB 인덱스에 유리한 이유와 clustered/covering index를 설명할 수 있는가?
+- EXPLAIN의 `type`, `key`, `rows`, `Extra`를 보고 어떤 판단을 하는가?
+- Sharding과 partitioning, RDB와 NoSQL의 선택 기준을 설명할 수 있는가?
+- CDN을 도입할 때 TTL, invalidation, 장애 fallback을 어떻게 잡을 것인가?
+- 로드밸런싱 알고리즘별 trade-off와 session affinity 문제를 설명할 수 있는가?
+- forward proxy와 reverse proxy의 위치와 목적을 구분할 수 있는가?
+- 수평 확장만으로 해결되지 않는 병목은 무엇인가?
+- 로그, 메트릭, 트레이스는 각각 어떤 질문에 답하기 위한 도구인가?
+- Health check의 liveness/readiness 차이와 load balancer 연동 방식을 설명할 수 있는가?
+- VM과 컨테이너의 차이를 격리 수준, 성능, 운영 관점에서 설명할 수 있는가?
+- RAID 0/1/5/6의 성능과 복구성 trade-off를 설명할 수 있는가?
+- IaC의 선언적/명령형 방식과 state 관리 문제를 설명할 수 있는가?
+- CI, Continuous Delivery, Continuous Deployment의 차이를 설명할 수 있는가?
+- Rolling, Blue/Green, Canary 배포 전략의 선택 기준을 설명할 수 있는가?
+- Graceful shutdown에서 SIGTERM, SIGKILL, timeout 설정이 왜 중요한지 설명할 수 있는가?
+- Log와 metric의 용도 차이와 logging framework를 써야 하는 이유를 설명할 수 있는가?
+- Scale up과 scale out의 비용, 가용성, 운영 복잡도 차이를 설명할 수 있는가?
+- Serverless/FaaS/BaaS의 장점과 cold start, lock-in 제약을 설명할 수 있는가?
+- Event Sourcing과 CQRS의 장단점과 projection/snapshot 필요성을 설명할 수 있는가?
+- Transactional Outbox가 이중 쓰기 문제를 어떻게 줄이는지 설명할 수 있는가?
+- SPOF를 식별하고 이중화, failover, health check로 개선할 수 있는가?
+- Web Server와 WAS, SSR과 CSR, PRG 패턴의 차이를 설명할 수 있는가?

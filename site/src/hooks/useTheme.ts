@@ -2,12 +2,12 @@ import { useEffect, useState, useCallback } from 'react';
 
 export type ThemePref = 'system' | 'light' | 'dark';
 
-const STORAGE_KEY = 'cc-theme';
+const STORAGE_KEY = 'cs-notes-theme';
 
 function readPref(): ThemePref {
-  if (typeof window === 'undefined') return 'system';
+  if (typeof window === 'undefined') return 'light';
   const v = window.localStorage.getItem(STORAGE_KEY);
-  return v === 'light' || v === 'dark' ? v : 'system';
+  return v === 'system' || v === 'light' || v === 'dark' ? v : 'light';
 }
 
 function systemIsDark(): boolean {

@@ -1,18 +1,24 @@
-# Command Center 컨텍스트
+# CS Interview Notes
 
-도메인 지식, 아키텍처, 용어 사전을 정리하는 공간입니다.
+백엔드 개발자가 기본으로 설명할 수 있어야 하는 CS 면접 내용을 카테고리별로 정리한 학습 사이트입니다. 왼쪽 사이드바에서 카테고리를 열고, 각 주제의 핵심 개념과 문서를 확인하세요.
 
-## 도메인
+## 포함 주제
 
-> 아래는 **이커머스 영역의 예제 도메인**입니다. 이 템플릿을 가져간 팀은 학습 후 삭제하고 자기 팀 도메인으로 교체하세요. (자세한 정리 방법은 루트 [README.md](../README.md#step-5-예제-도메인--우리-팀-도메인))
+| 분류 | 주제 |
+| --- | --- |
+| CS 기본 | 네트워크, Database, Operating System, 컴퓨터 구조, 자료구조와 알고리즘 |
+| Backend | Java, Spring, Redis, Kafka |
+| 설계와 운영 | 객체지향, Web/HTTP, Security, 분산시스템, DevOps/Cloud |
 
-| 도메인 | 설명 | 상세 |
-|--------|------|------|
-| `commerce-catalog` | 상품 등록·카테고리·가격·검색 노출 | [README](commerce-catalog/README.md) · [architecture](commerce-catalog/architecture.md) |
-| `commerce-order` | 주문 생성·결제·환불·쿠폰 | [README](commerce-order/README.md) · [architecture](commerce-order/architecture.md) |
-| `commerce-inventory` | 재고 점유·확정·입고·저재고 알림 | [README](commerce-inventory/README.md) · [architecture](commerce-inventory/architecture.md) |
+## 학습 방식
 
-## 공통
+1. [학습 로드맵](study-roadmap.md)에서 순서를 잡습니다.
+2. 각 주제 문서의 "핵심 질문"에 답할 수 있는지 확인합니다.
+3. 카테고리 상세에서 핵심 개념을 훑고, 필요한 경우 관계 그래프로 연결성을 확인합니다.
+4. [면접 체크리스트](interview-checklist.md)로 말로 설명하는 연습을 합니다.
 
-- [공통 용어 사전](glossary.md)
-- [온톨로지 설계 배경](ontology-design.md)
+## 우선순위
+
+- 처음 시작한다면 `자료구조와 알고리즘 → 컴퓨터 구조 → OS → 네트워크 → DB` 순서가 안정적입니다.
+- 백엔드 실무 중심이라면 `Java → Spring → DB → Redis → Kafka → 분산시스템` 순서가 좋습니다.
+- 운영 역량을 보강하려면 `Linux → 컨테이너 → 관측성 → 장애 대응`을 같이 봅니다.

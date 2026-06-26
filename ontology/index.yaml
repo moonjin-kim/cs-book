@@ -1,45 +1,135 @@
-# Ontology Index
-# 도메인 목록과 비즈니스 위계. 이 파일이 탐색의 진입점.
-# Claude는 매 요청 시 이 파일을 먼저 읽고, 관련 도메인 파일로 이동한다.
+# CS Theory Ontology Index
+# CS 이론 학습 도메인 목록. 이 파일이 탐색의 진입점이다.
 
 domains:
-  - id: commerce-catalog
-    path: 이커머스/상품-카탈로그
-    file: abox/commerce-catalog.yaml
-    summary: 상품 등록·분류·가격 관리·검색 노출을 다루는 카탈로그 도메인
+  - id: network
+    path: CS/네트워크
+    file: abox/network.yaml
+    summary: 인터넷 계층, TCP/UDP, DNS, HTTP, TLS, 로드밸런싱을 연결해 이해하는 도메인
     repos:
-      - example-catalog-api
-      - example-catalog-worker
+      - cs-theory-notes
     infra:
-      - mysql
-      - redis
-      - kafka
-      - s3
-      - elasticsearch
-      - cloudfront
+      - internet
+      - linux
 
-  - id: commerce-order
-    path: 이커머스/주문-결제
-    file: abox/commerce-order.yaml
-    summary: 주문 생성·결제·환불·쿠폰 적용을 다루는 도메인
+  - id: database
+    path: CS/Database
+    file: abox/database.yaml
+    summary: 트랜잭션, 인덱스, 정규화, 격리 수준, 쿼리 실행 계획을 다루는 도메인
     repos:
-      - example-order-api
+      - cs-theory-notes
     infra:
-      - mysql
+      - rdbms
       - redis
+
+  - id: java
+    path: Backend/Java
+    file: abox/java.yaml
+    summary: JVM, 메모리 모델, GC, 컬렉션, 동시성, 예외 처리를 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra:
+      - jvm
+
+  - id: spring
+    path: Backend/Spring
+    file: abox/spring.yaml
+    summary: IoC 컨테이너, AOP, MVC, 트랜잭션, Spring Boot 운영 개념을 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra:
+      - jvm
+      - rdbms
+
+  - id: oop
+    path: Software Design/객체지향
+    file: abox/oop.yaml
+    summary: 캡슐화, 추상화, 다형성, SOLID, 디자인 패턴을 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra: []
+
+  - id: operating-system
+    path: CS/Operating System
+    file: abox/operating-system.yaml
+    summary: 프로세스, 스레드, 스케줄링, 시스템 콜, 메모리, 디스크 I/O를 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra:
+      - linux
+
+  - id: computer-architecture
+    path: CS/컴퓨터 구조
+    file: abox/computer-architecture.yaml
+    summary: 명령어 파이프라이닝, 캐시, 참조 지역성, CPU/메모리 성능 원리를 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra: []
+
+  - id: redis
+    path: Backend/Redis
+    file: abox/redis.yaml
+    summary: 인메모리 자료구조, 캐시 전략, 분산 락, 영속화, 클러스터링을 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra:
+      - redis
+
+  - id: kafka
+    path: Backend/Kafka
+    file: abox/kafka.yaml
+    summary: 토픽, 파티션, 컨슈머 그룹, 오프셋, 전달 보장, 스트림 처리를 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra:
       - kafka
 
-  - id: commerce-inventory
-    path: 이커머스/재고-관리
-    file: abox/commerce-inventory.yaml
-    summary: 재고 점유·확정·입출고·저재고 알림을 다루는 도메인
+  - id: algorithms
+    path: CS/자료구조와 알고리즘
+    file: abox/algorithms.yaml
+    summary: 복잡도, 배열, 해시, 트리, 그래프, 정렬, 탐색을 다루는 도메인
     repos:
-      - example-inventory-api
-      - example-inventory-worker
+      - cs-theory-notes
+    infra: []
+
+  - id: web-http
+    path: Web/HTTP
+    file: abox/web-http.yaml
+    summary: HTTP 메시지, REST, 상태 코드, 쿠키, 세션, CORS, 브라우저 요청 흐름을 다루는 도메인
+    repos:
+      - cs-theory-notes
     infra:
-      - mysql
-      - redis
+      - internet
+
+  - id: security
+    path: CS/Security
+    file: abox/security.yaml
+    summary: 인증, 인가, 암호화, 해시, TLS, OWASP 기본 보안 위협을 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra:
+      - internet
+
+  - id: distributed-systems
+    path: System Design/분산시스템
+    file: abox/distributed-systems.yaml
+    summary: 일관성, 가용성, 합의, 복제, 샤딩, 장애 대응을 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra:
       - kafka
+      - redis
+      - rdbms
+
+  - id: devops-cloud
+    path: Operations/DevOps와 Cloud
+    file: abox/devops-cloud.yaml
+    summary: Linux, 컨테이너, CI/CD, 관측성, 확장성, 클라우드 기본 요소를 다루는 도메인
+    repos:
+      - cs-theory-notes
+    infra:
+      - linux
+      - container-runtime
 
 cross_domain: abox/cross-domain.yaml
 shared_infra: abox/infra.yaml

@@ -1,0 +1,161 @@
+domain:
+  id: oop
+  name: 객체지향
+  summary: |
+    캡슐화, 다형성, SOLID, 디자인 패턴처럼 변경에 강한 코드를 설명할 때
+    필요한 객체지향 핵심 개념을 정리한다.
+  wiki_root: wiki/oop/
+
+entities:
+  - id: encapsulation
+    name: 캡슐화
+    type: data
+    summary: 객체의 상태와 구현 세부사항을 숨겨 변경 영향이 밖으로 퍼지지 않게 한다.
+    repo: cs-theory-notes
+    package: oop/encapsulation
+    wiki_doc: wiki/oop/README.md
+  - id: abstraction
+    name: 추상화
+    type: process
+    summary: 핵심 역할과 계약만 드러내고 불필요한 구현 세부사항은 감추는 사고 방식이다.
+    repo: cs-theory-notes
+    package: oop/abstraction
+    wiki_doc: wiki/oop/README.md
+  - id: polymorphism
+    name: 다형성
+    type: process
+    summary: 같은 메시지를 받은 객체들이 각자의 구현으로 다르게 동작하게 하는 특성이다.
+    repo: cs-theory-notes
+    package: oop/polymorphism
+    wiki_doc: wiki/oop/README.md
+  - id: dependency-inversion
+    name: 의존성 역전 원칙
+    type: process
+    summary: 상위 정책이 구체 구현이 아니라 인터페이스 같은 추상화에 의존하게 하는 원칙이다.
+    repo: cs-theory-notes
+    package: oop/dip
+    wiki_doc: wiki/oop/README.md
+  - id: design-patterns
+    name: 디자인 패턴
+    type: data
+    summary: 반복되는 설계 문제에 붙인 재사용 가능한 해결 방식과 그 trade-off다.
+    repo: cs-theory-notes
+    package: oop/patterns
+    wiki_doc: wiki/oop/README.md
+  - id: solid
+    name: SOLID
+    type: data
+    summary: 변경 이유와 의존성을 관리하기 위한 다섯 가지 객체지향 설계 원칙이다.
+    repo: cs-theory-notes
+    package: oop/solid
+    wiki_doc: wiki/oop/README.md
+  - id: cohesion-coupling
+    name: 응집도와 결합도
+    type: data
+    summary: 모듈 내부 책임은 모으고 모듈 간 의존은 줄여 변경 비용을 낮추는 기준이다.
+    repo: cs-theory-notes
+    package: oop/cohesion-coupling
+    wiki_doc: wiki/oop/README.md
+  - id: dependency-injection
+    name: 의존성 주입
+    type: process
+    summary: 필요한 객체를 내부에서 직접 만들지 않고 외부에서 받아 결합도를 낮춘다.
+    repo: cs-theory-notes
+    package: oop/dependency-injection
+    wiki_doc: wiki/oop/README.md
+  - id: singleton-pattern
+    name: Singleton Pattern
+    type: data
+    summary: 인스턴스를 하나만 유지하지만 전역 상태, 테스트 어려움, 동시성 문제를 만들 수 있다.
+    repo: cs-theory-notes
+    package: oop/singleton
+    wiki_doc: wiki/oop/README.md
+  - id: strategy-pattern
+    name: Strategy Pattern
+    type: process
+    summary: 바뀌는 행위를 인터페이스로 분리해 런타임에 구현 전략을 교체한다.
+    repo: cs-theory-notes
+    package: oop/strategy
+    wiki_doc: wiki/oop/README.md
+  - id: template-method-pattern
+    name: Template Method Pattern
+    type: process
+    summary: 전체 실행 순서는 상위 클래스가 정하고 세부 단계만 하위 클래스가 구현한다.
+    repo: cs-theory-notes
+    package: oop/template-method
+    wiki_doc: wiki/oop/README.md
+  - id: null-object-pattern
+    name: Null Object Pattern
+    type: data
+    summary: null 대신 기본 동작 객체를 넣어 반복적인 null 검사를 줄인다.
+    repo: cs-theory-notes
+    package: oop/null-object
+    wiki_doc: wiki/oop/README.md
+  - id: first-class-collection
+    name: 일급 컬렉션
+    type: data
+    summary: 컬렉션을 전용 객체로 감싸 검증과 관련 비즈니스 로직을 한곳에 모은다.
+    repo: cs-theory-notes
+    package: oop/first-class-collection
+    wiki_doc: wiki/oop/README.md
+  - id: defensive-copy
+    name: 방어적 복사
+    type: process
+    summary: 가변 객체를 그대로 공유하지 않고 복사해 외부 변경으로부터 내부 상태를 보호한다.
+    repo: cs-theory-notes
+    package: oop/defensive-copy
+    wiki_doc: wiki/oop/README.md
+  - id: functional-programming
+    name: 함수형 프로그래밍
+    type: process
+    summary: 순수 함수와 함수 합성으로 부수효과를 줄이고 예측 가능한 코드를 만드는 패러다임이다.
+    repo: cs-theory-notes
+    package: oop/functional-programming
+    wiki_doc: wiki/oop/README.md
+
+relations:
+  - from: abstraction
+    to: encapsulation
+    type: depends_on
+  - from: polymorphism
+    to: abstraction
+    type: depends_on
+  - from: dependency-inversion
+    to: polymorphism
+    type: depends_on
+  - from: design-patterns
+    to: dependency-inversion
+    type: depends_on
+  - from: solid
+    to: dependency-inversion
+    type: depends_on
+  - from: cohesion-coupling
+    to: encapsulation
+    type: depends_on
+  - from: dependency-injection
+    to: dependency-inversion
+    type: depends_on
+  - from: singleton-pattern
+    to: design-patterns
+    type: references
+  - from: strategy-pattern
+    to: polymorphism
+    type: depends_on
+  - from: strategy-pattern
+    to: design-patterns
+    type: references
+  - from: template-method-pattern
+    to: design-patterns
+    type: references
+  - from: null-object-pattern
+    to: polymorphism
+    type: depends_on
+  - from: first-class-collection
+    to: encapsulation
+    type: depends_on
+  - from: defensive-copy
+    to: encapsulation
+    type: depends_on
+  - from: functional-programming
+    to: abstraction
+    type: references

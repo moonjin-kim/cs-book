@@ -1,0 +1,134 @@
+domain:
+  id: web-http
+  name: Web과 HTTP
+  summary: |
+    브라우저 요청부터 서버 응답까지의 흐름을 HTTP 메시지, 상태 관리,
+    프록시, 렌더링 방식 기준으로 정리한다.
+  wiki_root: wiki/web-http/
+
+entities:
+  - id: http-message
+    name: HTTP 메시지
+    type: data
+    summary: 메서드, 경로, 헤더, 본문, 상태 코드로 구성되는 웹 요청·응답의 기본 단위다.
+    repo: cs-theory-notes
+    package: web/http-message
+    wiki_doc: wiki/web-http/README.md
+  - id: uri-url-urn
+    name: URI, URL, URN
+    type: data
+    summary: 자원 식별자 URI, 위치를 나타내는 URL, 이름을 나타내는 URN의 차이다.
+    repo: cs-theory-notes
+    package: web/uri-url-urn
+    wiki_doc: wiki/web-http/README.md
+  - id: http-versions
+    name: HTTP/1.1과 HTTP/2
+    type: process
+    summary: HTTP/1.1의 연결 재사용과 HTTP/2의 멀티플렉싱·바이너리 프레임 차이를 비교한다.
+    repo: cs-theory-notes
+    package: web/http-versions
+    wiki_doc: wiki/web-http/README.md
+  - id: rest-api
+    name: REST API
+    type: process
+    summary: 자원을 URI로 표현하고 HTTP 메서드로 행위를 나타내는 API 설계 방식이다.
+    repo: cs-theory-notes
+    package: web/rest
+    wiki_doc: wiki/web-http/README.md
+  - id: http-idempotency
+    name: HTTP 멱등성
+    type: data
+    summary: 같은 요청을 여러 번 보내도 서버 상태가 같게 남는 성질로 재시도 가능성을 판단한다.
+    repo: cs-theory-notes
+    package: web/idempotency
+    wiki_doc: wiki/web-http/README.md
+  - id: cookie-session
+    name: Cookie와 Session
+    type: process
+    summary: 상태가 없는 HTTP에서 사용자를 식별하고 로그인 상태를 유지하는 대표 방식이다.
+    repo: cs-theory-notes
+    package: web/cookie-session
+    wiki_doc: wiki/web-http/README.md
+  - id: cors
+    name: CORS
+    type: process
+    summary: 브라우저가 다른 출처 요청을 제한하고 서버의 허용 정책을 확인하는 보안 모델이다.
+    repo: cs-theory-notes
+    package: web/cors
+    wiki_doc: wiki/web-http/README.md
+  - id: proxy
+    name: Forward/Reverse Proxy
+    type: process
+    summary: 클라이언트 앞의 Forward Proxy와 서버 앞의 Reverse Proxy 역할 차이다.
+    repo: cs-theory-notes
+    package: web/proxy
+    wiki_doc: wiki/web-http/README.md
+  - id: browser-request-flow
+    name: 브라우저 요청 흐름
+    type: process
+    summary: URL 입력 후 DNS, TCP/TLS, HTTP 요청, 응답 렌더링까지 이어지는 전체 흐름이다.
+    repo: cs-theory-notes
+    package: web/browser-flow
+    wiki_doc: wiki/web-http/README.md
+  - id: web-server-was
+    name: Web Server와 WAS
+    type: process
+    summary: 웹 서버는 정적 리소스와 프록시, WAS는 애플리케이션 로직 실행을 주로 담당한다.
+    repo: cs-theory-notes
+    package: web/web-server-was
+    wiki_doc: wiki/web-http/README.md
+  - id: ssr-csr
+    name: SSR과 CSR
+    type: process
+    summary: 서버가 HTML을 만들어 주는 방식과 브라우저 JS가 화면을 만드는 방식을 비교한다.
+    repo: cs-theory-notes
+    package: web/ssr-csr
+    wiki_doc: wiki/web-http/README.md
+  - id: prg
+    name: PRG Pattern
+    type: process
+    summary: POST 처리 후 Redirect와 GET을 사용해 새로고침 중복 제출을 막는 패턴이다.
+    repo: cs-theory-notes
+    package: web/prg
+    wiki_doc: wiki/web-http/README.md
+
+relations:
+  - from: uri-url-urn
+    to: http-message
+    type: depends_on
+  - from: http-versions
+    to: http-message
+    type: depends_on
+  - from: rest-api
+    to: http-message
+    type: consumes
+  - from: rest-api
+    to: uri-url-urn
+    type: consumes
+  - from: rest-api
+    to: http-idempotency
+    type: depends_on
+  - from: cookie-session
+    to: http-message
+    type: depends_on
+  - from: cors
+    to: http-message
+    type: consumes
+  - from: proxy
+    to: http-message
+    type: consumes
+  - from: browser-request-flow
+    to: http-message
+    type: consumes
+  - from: web-server-was
+    to: browser-request-flow
+    type: depends_on
+  - from: ssr-csr
+    to: browser-request-flow
+    type: depends_on
+  - from: prg
+    to: http-idempotency
+    type: depends_on
+  - from: browser-request-flow
+    to: internet
+    type: deployed_in

@@ -1,0 +1,124 @@
+domain:
+  id: redis
+  name: Redis
+  summary: |
+    Redis를 캐시, 분산 락, 메시지 처리, 고가용성 저장소로 사용할 때 필요한
+    자료구조와 운영 주의점을 정리한다.
+  wiki_root: wiki/redis/
+
+entities:
+  - id: data-structures
+    name: Redis 자료구조
+    type: data
+    summary: String부터 Stream까지 각 자료구조가 어떤 연산에 강한지 기준을 잡는다.
+    repo: cs-theory-notes
+    package: redis/data-structures
+    wiki_doc: wiki/redis/README.md
+  - id: cache-strategy
+    name: 캐시 전략
+    type: process
+    summary: Cache Aside, Write Through, TTL, 무효화 전략으로 DB 부하와 불일치를 조절한다.
+    repo: cs-theory-notes
+    package: redis/cache
+    wiki_doc: wiki/redis/README.md
+  - id: distributed-lock
+    name: 분산 락
+    type: process
+    summary: SET NX PX와 만료 시간을 이용해 여러 서버의 동일 자원 접근을 제어한다.
+    repo: cs-theory-notes
+    package: redis/lock
+    wiki_doc: wiki/redis/README.md
+  - id: redlock
+    name: RedLock
+    type: process
+    summary: 여러 Redis 노드의 과반수 락 획득으로 단일 노드 장애 위험을 줄이려는 알고리즘이다.
+    repo: cs-theory-notes
+    package: redis/redlock
+    wiki_doc: wiki/redis/README.md
+  - id: persistence
+    name: RDB와 AOF
+    type: process
+    summary: RDB는 시점 스냅샷, AOF는 쓰기 로그를 저장해 복구성과 성능을 선택한다.
+    repo: cs-theory-notes
+    package: redis/persistence
+    wiki_doc: wiki/redis/README.md
+  - id: eviction
+    name: Key Eviction
+    type: process
+    summary: maxmemory 초과 시 어떤 키를 먼저 제거할지 정하는 메모리 회수 정책이다.
+    repo: cs-theory-notes
+    package: redis/eviction
+    wiki_doc: wiki/redis/README.md
+  - id: pipelining
+    name: Pipelining
+    type: process
+    summary: 여러 명령을 한 번에 보내 네트워크 왕복 시간을 줄이는 처리량 최적화 기법이다.
+    repo: cs-theory-notes
+    package: redis/pipelining
+    wiki_doc: wiki/redis/README.md
+  - id: transaction
+    name: Redis Transaction
+    type: process
+    summary: MULTI/EXEC로 명령 묶음을 순차 실행하지만 RDBMS처럼 전체 롤백되지는 않는다.
+    repo: cs-theory-notes
+    package: redis/transaction
+    wiki_doc: wiki/redis/README.md
+  - id: pubsub-stream
+    name: Pub/Sub과 Stream
+    type: process
+    summary: Pub/Sub은 실시간 전달, Stream은 저장·재처리·Consumer Group을 제공한다.
+    repo: cs-theory-notes
+    package: redis/pubsub-stream
+    wiki_doc: wiki/redis/README.md
+  - id: single-thread
+    name: Redis Single Thread
+    type: process
+    summary: 명령 실행은 단일 스레드로 원자성을 유지하고, Redis 6부터 네트워크 I/O는 멀티스레드화됐다.
+    repo: cs-theory-notes
+    package: redis/single-thread
+    wiki_doc: wiki/redis/README.md
+  - id: replication-cluster
+    name: 복제와 클러스터
+    type: process
+    summary: Sentinel은 장애 조치, Cluster는 해시 슬롯 기반 샤딩과 고가용성을 제공한다.
+    repo: cs-theory-notes
+    package: redis/cluster
+    wiki_doc: wiki/redis/README.md
+
+relations:
+  - from: cache-strategy
+    to: data-structures
+    type: consumes
+  - from: distributed-lock
+    to: data-structures
+    type: consumes
+  - from: redlock
+    to: distributed-lock
+    type: depends_on
+  - from: redlock
+    to: replication-cluster
+    type: depends_on
+  - from: persistence
+    to: data-structures
+    type: consumes
+  - from: eviction
+    to: cache-strategy
+    type: depends_on
+  - from: pipelining
+    to: data-structures
+    type: consumes
+  - from: transaction
+    to: data-structures
+    type: consumes
+  - from: pubsub-stream
+    to: data-structures
+    type: depends_on
+  - from: single-thread
+    to: data-structures
+    type: depends_on
+  - from: replication-cluster
+    to: persistence
+    type: depends_on
+  - from: cache-strategy
+    to: redis
+    type: deployed_in

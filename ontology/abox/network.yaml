@@ -1,0 +1,155 @@
+domain:
+  id: network
+  name: 네트워크
+  summary: |
+    클라이언트 요청이 서버까지 도달하는 과정을 계층, IP, TCP/UDP, DNS,
+    TLS, 로드밸런싱 기준으로 정리한다.
+  wiki_root: wiki/network/
+
+entities:
+  - id: osi-tcp-ip
+    name: OSI와 TCP/IP 계층
+    type: data
+    summary: 네트워크 기능을 계층별 책임으로 나눠 장애 위치와 프로토콜 역할을 설명한다.
+    repo: cs-theory-notes
+    package: network/layers
+    wiki_doc: wiki/network/README.md
+  - id: ip-routing
+    name: IP와 라우팅
+    type: process
+    summary: 목적지 IP를 기준으로 패킷이 다음 네트워크 장비로 전달되는 과정이다.
+    repo: cs-theory-notes
+    package: network/ip-routing
+    wiki_doc: wiki/network/README.md
+  - id: packet-switching
+    name: 회선 교환과 패킷 교환
+    type: data
+    summary: 전용 회선을 점유하는 방식과 데이터를 패킷으로 쪼개 공유망에 보내는 방식의 차이다.
+    repo: cs-theory-notes
+    package: network/switching
+    wiki_doc: wiki/network/README.md
+  - id: ip-addressing
+    name: IP 주소 체계
+    type: data
+    summary: IP와 서브넷 마스크, CIDR로 네트워크 범위와 호스트 범위를 표현한다.
+    repo: cs-theory-notes
+    package: network/ip-addressing
+    wiki_doc: wiki/network/README.md
+  - id: dhcp
+    name: DHCP
+    type: process
+    summary: 새 장비가 네트워크에 붙을 때 IP 주소와 게이트웨이 같은 설정을 자동으로 받는 절차다.
+    repo: cs-theory-notes
+    package: network/dhcp
+    wiki_doc: wiki/network/README.md
+  - id: nat
+    name: NAT/NAPT
+    type: process
+    summary: 사설 IP와 공인 IP, 포트를 변환해 내부 장비가 외부와 통신하게 한다.
+    repo: cs-theory-notes
+    package: network/nat
+    wiki_doc: wiki/network/README.md
+  - id: tcp
+    name: TCP
+    type: process
+    summary: 연결 설정, 순서 보장, 재전송, 흐름·혼잡 제어를 제공하는 신뢰성 있는 전송 프로토콜이다.
+    repo: cs-theory-notes
+    package: network/tcp
+    wiki_doc: wiki/network/README.md
+  - id: keep-alive
+    name: Keep-Alive
+    type: process
+    summary: 연결을 재사용하거나 유휴 연결 상태를 확인해 연결 생성 비용을 줄인다.
+    repo: cs-theory-notes
+    package: network/keep-alive
+    wiki_doc: wiki/network/README.md
+  - id: udp
+    name: UDP
+    type: process
+    summary: 연결 설정 없이 데이터를 보내 지연은 낮지만 신뢰성은 애플리케이션이 직접 보완해야 한다.
+    repo: cs-theory-notes
+    package: network/udp
+    wiki_doc: wiki/network/README.md
+  - id: dns
+    name: DNS
+    type: process
+    summary: 사람이 읽는 도메인 이름을 서버 IP 주소로 변환하는 분산 시스템이다.
+    repo: cs-theory-notes
+    package: network/dns
+    wiki_doc: wiki/network/README.md
+  - id: tls
+    name: TLS
+    type: process
+    summary: 인증서 검증과 키 교환 후 암호화 통신으로 전송 구간을 보호한다.
+    repo: cs-theory-notes
+    package: network/tls
+    wiki_doc: wiki/network/README.md
+  - id: load-balancing
+    name: 로드밸런싱
+    type: process
+    summary: 요청을 여러 서버에 나눠 보내 처리량과 가용성을 높이는 방식이다.
+    repo: cs-theory-notes
+    package: network/load-balancing
+    wiki_doc: wiki/network/README.md
+  - id: cdn
+    name: CDN
+    type: process
+    summary: 사용자 가까운 엣지 서버에서 콘텐츠를 제공해 지연 시간과 원본 서버 부하를 줄인다.
+    repo: cs-theory-notes
+    package: network/cdn
+    wiki_doc: wiki/network/README.md
+  - id: network-timeout
+    name: Network Timeout
+    type: process
+    summary: 연결·읽기 대기 시간을 제한해 장애 전파와 리소스 고갈을 막는다.
+    repo: cs-theory-notes
+    package: network/timeout
+    wiki_doc: wiki/network/README.md
+
+relations:
+  - from: ip-routing
+    to: osi-tcp-ip
+    type: depends_on
+  - from: packet-switching
+    to: ip-routing
+    type: depends_on
+  - from: ip-addressing
+    to: ip-routing
+    type: depends_on
+  - from: dhcp
+    to: ip-addressing
+    type: produces
+  - from: nat
+    to: ip-addressing
+    type: consumes
+  - from: tcp
+    to: ip-routing
+    type: depends_on
+  - from: keep-alive
+    to: tcp
+    type: depends_on
+  - from: udp
+    to: ip-routing
+    type: depends_on
+  - from: dns
+    to: udp
+    type: depends_on
+    note: 일반 DNS 질의는 UDP 53번을 우선 사용하고, 응답 크기나 영역 전송 상황에서는 TCP를 쓴다.
+  - from: tls
+    to: tcp
+    type: depends_on
+  - from: load-balancing
+    to: tcp
+    type: depends_on
+  - from: cdn
+    to: dns
+    type: depends_on
+  - from: cdn
+    to: ip-routing
+    type: depends_on
+  - from: network-timeout
+    to: tcp
+    type: depends_on
+  - from: ip-routing
+    to: internet
+    type: deployed_in

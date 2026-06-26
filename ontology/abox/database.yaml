@@ -1,0 +1,195 @@
+domain:
+  id: database
+  name: Database
+  summary: |
+    트랜잭션, 인덱스, 락, 실행 계획처럼 데이터 정합성과 조회 성능을
+    설명할 때 필요한 DB 핵심 질문을 정리한다.
+  wiki_root: wiki/database/
+
+entities:
+  - id: relational-model
+    name: 관계형 모델
+    type: data
+    summary: 데이터를 테이블, 행, 컬럼, 키, 관계로 표현하는 RDB의 기본 모델이다.
+    repo: cs-theory-notes
+    package: database/model
+    wiki_doc: wiki/database/README.md
+  - id: normalization
+    name: 정규화
+    type: process
+    summary: 데이터 중복과 삽입·수정·삭제 이상을 줄이기 위해 테이블을 분해하는 과정이다.
+    repo: cs-theory-notes
+    package: database/normalization
+    wiki_doc: wiki/database/README.md
+  - id: acid
+    name: ACID
+    type: data
+    summary: 트랜잭션이 안전하려면 원자성, 일관성, 격리성, 지속성을 만족해야 한다는 원칙이다.
+    repo: cs-theory-notes
+    package: database/acid
+    wiki_doc: wiki/database/README.md
+  - id: transaction
+    name: 트랜잭션과 ACID
+    type: process
+    summary: 여러 DB 작업을 하나의 성공 또는 실패 단위로 묶는 논리적 작업이다.
+    repo: cs-theory-notes
+    package: database/transaction
+    wiki_doc: wiki/database/README.md
+  - id: isolation-level
+    name: 격리 수준
+    type: data
+    summary: 동시에 실행되는 트랜잭션이 서로의 변경을 어느 정도 볼 수 있는지 정하는 수준이다.
+    repo: cs-theory-notes
+    package: database/isolation
+    wiki_doc: wiki/database/README.md
+  - id: index-query-plan
+    name: 인덱스와 실행 계획
+    type: process
+    summary: 인덱스 선택과 실행 계획을 읽어 쿼리가 느린 이유와 개선 방법을 찾는다.
+    repo: cs-theory-notes
+    package: database/index-plan
+    wiki_doc: wiki/database/README.md
+  - id: btree-bplustree
+    name: B-Tree와 B+Tree
+    type: data
+    summary: DB 인덱스에 자주 쓰이는 트리 구조로, B+Tree는 범위 조회에 유리하다.
+    repo: cs-theory-notes
+    package: database/btree-bplustree
+    wiki_doc: wiki/database/README.md
+  - id: clustered-index
+    name: Clustered/Secondary Index
+    type: data
+    summary: 데이터 자체의 정렬 방식과 보조 인덱스의 조회 비용 차이를 설명한다.
+    repo: cs-theory-notes
+    package: database/clustered-index
+    wiki_doc: wiki/database/README.md
+  - id: covering-index
+    name: Covering Index
+    type: data
+    summary: 필요한 컬럼이 모두 인덱스에 있어 테이블을 추가 조회하지 않는 최적화다.
+    repo: cs-theory-notes
+    package: database/covering-index
+    wiki_doc: wiki/database/README.md
+  - id: explain
+    name: EXPLAIN
+    type: process
+    summary: DB가 어떤 인덱스와 접근 방식을 선택했는지 확인하는 실행 계획 분석 도구다.
+    repo: cs-theory-notes
+    package: database/explain
+    wiki_doc: wiki/database/README.md
+  - id: cardinality-selectivity
+    name: Cardinality와 Selectivity
+    type: data
+    summary: 값의 다양성과 필터링 비율을 기준으로 인덱스 효율을 판단한다.
+    repo: cs-theory-notes
+    package: database/cardinality-selectivity
+    wiki_doc: wiki/database/README.md
+  - id: lock-mvcc
+    name: Lock과 MVCC
+    type: process
+    summary: 잠금과 다중 버전 스냅샷으로 읽기·쓰기 충돌을 제어하는 방식이다.
+    repo: cs-theory-notes
+    package: database/concurrency
+    wiki_doc: wiki/database/README.md
+  - id: optimistic-pessimistic-lock
+    name: 낙관적 락과 비관적 락
+    type: process
+    summary: 충돌을 나중에 검증할지, 먼저 잠글지에 따라 동시성 제어 방식을 선택한다.
+    repo: cs-theory-notes
+    package: database/optimistic-pessimistic-lock
+    wiki_doc: wiki/database/README.md
+  - id: shared-exclusive-lock
+    name: 공유 락과 배타 락
+    type: process
+    summary: 읽기는 함께 허용하고 쓰기는 단독으로 허용해 병행 접근을 제어한다.
+    repo: cs-theory-notes
+    package: database/shared-exclusive-lock
+    wiki_doc: wiki/database/README.md
+  - id: gap-nextkey-lock
+    name: Gap Lock과 Next-Key Lock
+    type: process
+    summary: 레코드 사이의 빈 공간까지 잠가 범위 조건에서 phantom read를 막는다.
+    repo: cs-theory-notes
+    package: database/gap-nextkey-lock
+    wiki_doc: wiki/database/README.md
+  - id: replication
+    name: DB Replication
+    type: process
+    summary: Primary의 변경 로그를 Replica로 전달해 읽기 분산과 장애 대응을 가능하게 한다.
+    repo: cs-theory-notes
+    package: database/replication
+    wiki_doc: wiki/database/README.md
+  - id: nosql-types
+    name: NoSQL 유형
+    type: data
+    summary: Key-Value, Document, Column, Graph 등 RDB 밖의 저장 모델과 사용 사례를 비교한다.
+    repo: cs-theory-notes
+    package: database/nosql-types
+    wiki_doc: wiki/database/README.md
+  - id: paging-query
+    name: Paging Query
+    type: process
+    summary: Offset paging의 후반 페이지 비용과 Cursor 방식의 장단점을 비교한다.
+    repo: cs-theory-notes
+    package: database/paging
+    wiki_doc: wiki/database/README.md
+  - id: connection-pool
+    name: Connection Pool
+    type: process
+    summary: DB 연결을 미리 만들어 재사용해 연결 비용과 커넥션 고갈 위험을 줄인다.
+    repo: cs-theory-notes
+    package: database/connection-pool
+    wiki_doc: wiki/database/README.md
+
+relations:
+  - from: normalization
+    to: relational-model
+    type: consumes
+  - from: transaction
+    to: isolation-level
+    type: depends_on
+  - from: transaction
+    to: acid
+    type: depends_on
+  - from: lock-mvcc
+    to: isolation-level
+    type: depends_on
+  - from: optimistic-pessimistic-lock
+    to: lock-mvcc
+    type: depends_on
+  - from: shared-exclusive-lock
+    to: lock-mvcc
+    type: depends_on
+  - from: gap-nextkey-lock
+    to: lock-mvcc
+    type: depends_on
+  - from: index-query-plan
+    to: relational-model
+    type: consumes
+  - from: index-query-plan
+    to: btree-bplustree
+    type: depends_on
+  - from: index-query-plan
+    to: clustered-index
+    type: depends_on
+  - from: covering-index
+    to: clustered-index
+    type: depends_on
+  - from: explain
+    to: index-query-plan
+    type: depends_on
+  - from: cardinality-selectivity
+    to: index-query-plan
+    type: depends_on
+  - from: paging-query
+    to: index-query-plan
+    type: depends_on
+  - from: replication
+    to: transaction
+    type: depends_on
+  - from: transaction
+    to: rdbms
+    type: deployed_in
+  - from: index-query-plan
+    to: rdbms
+    type: deployed_in

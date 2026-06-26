@@ -1,35 +1,30 @@
-# Command Center
+# CS Interview Notes
 
 <!-- deployed-url:start -->
-🌐 **Live demo**: https://hubtwork.github.io/command-center/
+Live demo: https://hubtwork.github.io/command-center/
 <!-- deployed-url:end -->
 
-AI 기반 공용 작업 공간입니다. 팀의 도메인 지식(코드 위치·비즈니스 정책·데이터 흐름)을 ontology와 wiki로 관리하고, GitHub Pages에 자동 배포되는 사이트로 시각화합니다. PO·디자이너·FE·BE 누구든 같은 방식으로 작업합니다.
+CS 면접 내용을 Backend Core, Web & Network, CS Foundation, Architecture & Operations 카테고리로 정리한 정적 웹사이트입니다. Vite로 빌드하고 GitHub Pages에 자동 배포합니다.
 
----
+## 배포 방법
 
-## 🚀 이 템플릿으로 시작하기
+GitHub Pages는 `.github/workflows/deploy-pages.yml`로 구성되어 있습니다.
 
-GitHub의 **"Use this template"** 버튼을 누르면 빈 워크스페이스가 만들어집니다. 아래 순서대로 활성화하세요.
+1. GitHub 저장소 Settings → Pages → Source를 **GitHub Actions**로 선택
+2. Settings → Actions → General → Workflow permissions에서 **Read and write permissions** 선택
+3. `main` 브랜치에 푸시하면 `site`가 빌드되어 Pages에 배포됨
 
-### Step 1. 템플릿 복제
+## 로컬 실행
 
-1. 이 페이지 우측 상단의 **"Use this template" → "Create a new repository"** 클릭
-2. 우리 팀 계정/조직에 새 레포 생성 (이름·공개 범위 선택)
+```bash
+cd site
+npm ci
+npm run dev
+```
 
-> Template 복제는 **파일만** 가져갑니다. Settings(Pages, Actions 권한 등)는 복제되지 않으므로 아래 Step 2를 직접 적용해야 합니다.
+## 콘텐츠 수정
 
-### Step 2. GitHub 활성화 (필수 3종)
-
-#### ① Pages 활성화
-- Settings → Pages → Source: **GitHub Actions** 선택
-
-#### ② Workflow permissions
-Settings → Actions → General → Workflow permissions:
-- **"Read and write permissions"** 선택
-- **"Allow GitHub Actions to create and approve pull requests"** 체크
-
-> 두 옵션 모두 켜져야 (a) 사이트 자동 배포, (b) README 상단의 **데모 URL 자동 갱신 PR** 흐름이 동작합니다.
->
-> **GHE 환경 주의**: "Allow Actions to create/approve PRs"는 admin 정책으로 막혀 있을 수 있습니다. 막혀 있으면 데모 URL 자동 갱신은 동작하지 않으니, README 상단 `<!-- deployed-url:start -->` 마커 사이를 수동으로 채우거나 admin에게 활성화를 요청하세요. 사이트 배포 자체는 정상 동작합니다.
-🌐 **Live demo**: https://hubtwork.github.io/command-center/
+- 도메인 목록: `ontology/index.yaml`
+- 도메인별 개념과 관계: `ontology/abox/*.yaml`
+- 문서: `wiki/**/*.md`
+- 빌드 시 `site/scripts/build-data.mjs`가 ontology와 wiki를 `site/public/data`로 변환합니다.

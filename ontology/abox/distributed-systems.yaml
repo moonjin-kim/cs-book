@@ -1,0 +1,138 @@
+domain:
+  id: distributed-systems
+  name: 분산시스템
+  summary: |
+    여러 서버가 함께 동작할 때 생기는 일관성, 장애, 재시도, 이벤트 연동,
+    고가용성 설계 trade-off를 정리한다.
+  wiki_root: wiki/distributed-systems/
+
+entities:
+  - id: cap-pacelc
+    name: CAP와 PACELC
+    type: data
+    summary: 네트워크 분할 상황에서 일관성과 가용성 중 무엇을 선택할지 설명하는 모델이다.
+    repo: cs-theory-notes
+    package: distributed/cap-pacelc
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: consistency
+    name: 일관성 모델
+    type: data
+    summary: 여러 노드에서 읽은 데이터가 얼마나 최신이며 서로 같은지 나타내는 수준이다.
+    repo: cs-theory-notes
+    package: distributed/consistency
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: replication
+    name: 복제
+    type: process
+    summary: 데이터를 여러 노드에 복사해 읽기 성능과 장애 복구 능력을 높인다.
+    repo: cs-theory-notes
+    package: distributed/replication
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: partitioning
+    name: 파티셔닝과 샤딩
+    type: process
+    summary: 데이터를 여러 노드로 나누어 저장해 저장 용량과 처리량을 확장한다.
+    repo: cs-theory-notes
+    package: distributed/partitioning
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: consensus
+    name: 합의
+    type: process
+    summary: 일부 노드가 실패해도 여러 노드가 같은 값이나 순서에 동의하게 하는 프로토콜이다.
+    repo: cs-theory-notes
+    package: distributed/consensus
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: idempotency
+    name: 멱등성과 재시도
+    type: process
+    summary: 재시도와 중복 요청이 발생해도 결과가 한 번 처리된 것처럼 유지되게 한다.
+    repo: cs-theory-notes
+    package: distributed/idempotency
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: bulkhead
+    name: Bulkhead
+    type: process
+    summary: 기능별 자원을 분리해 한 영역의 장애가 전체 시스템으로 번지는 것을 막는다.
+    repo: cs-theory-notes
+    package: distributed/bulkhead
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: circuit-breaker
+    name: Circuit Breaker
+    type: process
+    summary: 실패가 계속되는 외부 호출을 잠시 차단해 빠르게 실패시키고 장애 확산을 줄인다.
+    repo: cs-theory-notes
+    package: distributed/circuit-breaker
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: event-sourcing
+    name: Event Sourcing
+    type: process
+    summary: 최종 상태 대신 모든 변경 이벤트를 저장하고 재생해 현재 상태를 복원한다.
+    repo: cs-theory-notes
+    package: distributed/event-sourcing
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: cqrs
+    name: CQRS
+    type: process
+    summary: 상태 변경 모델과 조회 모델을 분리해 쓰기 규칙과 읽기 성능을 따로 최적화한다.
+    repo: cs-theory-notes
+    package: distributed/cqrs
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: async-integration
+    name: 시스템 간 비동기 연동
+    type: process
+    summary: 메시징, DB 폴링, CDC로 시스템을 느슨하게 연결하고 순서·유실 문제를 관리한다.
+    repo: cs-theory-notes
+    package: distributed/async-integration
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: transactional-outbox
+    name: Transactional Outbox
+    type: process
+    summary: DB 변경과 발행할 이벤트를 같은 트랜잭션에 저장해 이중 쓰기 실패를 줄인다.
+    repo: cs-theory-notes
+    package: distributed/transactional-outbox
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: spof-ha
+    name: SPOF와 HA
+    type: failure-mode
+    summary: 하나의 장애가 전체 장애로 이어지는 지점을 찾아 이중화와 장애 조치로 제거한다.
+    repo: cs-theory-notes
+    package: distributed/spof-ha
+    wiki_doc: wiki/distributed-systems/README.md
+
+relations:
+  - from: replication
+    to: consistency
+    type: depends_on
+  - from: partitioning
+    to: cap-pacelc
+    type: depends_on
+  - from: consensus
+    to: consistency
+    type: produces
+  - from: idempotency
+    to: replication
+    type: depends_on
+  - from: circuit-breaker
+    to: idempotency
+    type: depends_on
+  - from: bulkhead
+    to: circuit-breaker
+    type: depends_on
+  - from: event-sourcing
+    to: consistency
+    type: references
+  - from: cqrs
+    to: event-sourcing
+    type: references
+  - from: async-integration
+    to: idempotency
+    type: depends_on
+  - from: transactional-outbox
+    to: async-integration
+    type: depends_on
+  - from: spof-ha
+    to: replication
+    type: depends_on
+  - from: replication
+    to: rdbms
+    type: deployed_in

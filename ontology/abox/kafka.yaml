@@ -1,0 +1,140 @@
+domain:
+  id: kafka
+  name: Kafka
+  summary: |
+    Kafka의 토픽·파티션 로그와 Consumer Group을 기준으로 메시지 순서,
+    재처리, 전달 보장, 확장 설계를 정리한다.
+  wiki_root: wiki/kafka/
+
+entities:
+  - id: topic-partition
+    name: Topic과 Partition
+    type: data
+    summary: 토픽은 논리 분류, 파티션은 순서 보장과 병렬 처리의 실제 단위다.
+    repo: cs-theory-notes
+    package: kafka/topic-partition
+    wiki_doc: wiki/kafka/README.md
+  - id: producer
+    name: Producer
+    type: process
+    summary: 메시지를 토픽으로 보내며 key, batch, acks 설정으로 파티션과 안정성을 조절한다.
+    repo: cs-theory-notes
+    package: kafka/producer
+    wiki_doc: wiki/kafka/README.md
+  - id: consumer-group
+    name: Consumer Group
+    type: process
+    summary: 같은 그룹의 Consumer들이 파티션을 나눠 읽어 병렬 처리한다.
+    repo: cs-theory-notes
+    package: kafka/consumer-group
+    wiki_doc: wiki/kafka/README.md
+  - id: offset
+    name: Offset
+    type: data
+    summary: 파티션 안에서 Consumer가 어디까지 처리했는지 나타내는 위치 값이다.
+    repo: cs-theory-notes
+    package: kafka/offset
+    wiki_doc: wiki/kafka/README.md
+  - id: delivery-semantics
+    name: 전달 보장
+    type: process
+    summary: 손실, 중복, 정확히 한 번 처리 사이의 차이와 필요한 설정을 설명한다.
+    repo: cs-theory-notes
+    package: kafka/delivery
+    wiki_doc: wiki/kafka/README.md
+  - id: broker-cluster
+    name: Broker와 Cluster
+    type: process
+    summary: Broker는 파티션 로그를 저장하고 클러스터는 복제와 리더 선출로 장애에 대응한다.
+    repo: cs-theory-notes
+    package: kafka/broker-cluster
+    wiki_doc: wiki/kafka/README.md
+  - id: message-ordering
+    name: 메시지 순서 보장
+    type: process
+    summary: Kafka는 파티션 내부 순서만 보장하므로 같은 순서가 필요한 이벤트는 같은 key로 보내야 한다.
+    repo: cs-theory-notes
+    package: kafka/ordering
+    wiki_doc: wiki/kafka/README.md
+  - id: producer-acks
+    name: Producer acks
+    type: data
+    summary: acks와 min.insync.replicas로 쓰기 성공 기준과 메시지 손실 위험을 조절한다.
+    repo: cs-theory-notes
+    package: kafka/acks
+    wiki_doc: wiki/kafka/README.md
+  - id: rebalancing
+    name: Rebalancing
+    type: failure-mode
+    summary: Consumer 합류·이탈이나 poll 지연 시 파티션 재할당이 일어나 소비가 잠시 멈출 수 있다.
+    repo: cs-theory-notes
+    package: kafka/rebalancing
+    wiki_doc: wiki/kafka/README.md
+  - id: partition-planning
+    name: Partition 수 설계
+    type: process
+    summary: 목표 처리량, Consumer 병렬성, 리밸런싱 비용을 기준으로 파티션 수를 결정한다.
+    repo: cs-theory-notes
+    package: kafka/partition-planning
+    wiki_doc: wiki/kafka/README.md
+  - id: streams-connect
+    name: Kafka Streams와 Connect
+    type: process
+    summary: Streams는 토픽 간 실시간 처리, Connect는 외부 시스템과 Kafka 사이 데이터 이동을 맡는다.
+    repo: cs-theory-notes
+    package: kafka/streams-connect
+    wiki_doc: wiki/kafka/README.md
+  - id: kafka-vs-rabbitmq
+    name: Kafka와 RabbitMQ
+    type: data
+    summary: Kafka는 재처리 가능한 로그, RabbitMQ는 라우팅과 작업 큐에 강한 브로커다.
+    repo: cs-theory-notes
+    package: kafka/kafka-vs-rabbitmq
+    wiki_doc: wiki/kafka/README.md
+
+relations:
+  - from: broker-cluster
+    to: topic-partition
+    type: hosts
+  - from: producer
+    to: topic-partition
+    type: produces
+  - from: consumer-group
+    to: topic-partition
+    type: consumes
+  - from: consumer-group
+    to: offset
+    type: produces
+  - from: delivery-semantics
+    to: offset
+    type: depends_on
+  - from: message-ordering
+    to: topic-partition
+    type: depends_on
+  - from: message-ordering
+    to: producer
+    type: depends_on
+  - from: producer-acks
+    to: producer
+    type: depends_on
+  - from: producer-acks
+    to: broker-cluster
+    type: depends_on
+  - from: rebalancing
+    to: consumer-group
+    type: failure_mode_of
+  - from: partition-planning
+    to: topic-partition
+    type: depends_on
+  - from: streams-connect
+    to: consumer-group
+    type: consumes
+  - from: kafka-vs-rabbitmq
+    to: topic-partition
+    type: references
+  - from: producer
+    to: kafka
+    type: deployed_in
+  - from: consumer-group
+    to: kafka
+    type: deployed_in

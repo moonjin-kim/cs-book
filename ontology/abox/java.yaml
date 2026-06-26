@@ -1,0 +1,211 @@
+domain:
+  id: java
+  name: Java
+  summary: |
+    JVM 메모리, 문자열, 예외, 동시성처럼 Java 백엔드 면접에서 반복되는
+    언어·런타임 질문을 답변 단위로 정리한다.
+  wiki_root: wiki/java/
+
+entities:
+  - id: jvm-runtime
+    name: JVM 런타임
+    type: process
+    summary: Java 코드가 클래스 로딩, 바이트코드 검증, JIT 컴파일을 거쳐 실행되는 흐름이다.
+    repo: cs-theory-notes
+    package: java/jvm
+    wiki_doc: wiki/java/README.md
+  - id: memory-model
+    name: Java Memory Model
+    type: data
+    summary: 여러 스레드가 공유 값을 읽고 쓸 때 가시성과 실행 순서를 어떻게 보장하는지 설명한다.
+    repo: cs-theory-notes
+    package: java/memory-model
+    wiki_doc: wiki/java/README.md
+  - id: garbage-collection
+    name: Garbage Collection
+    type: process
+    summary: 더 이상 참조되지 않는 객체를 찾아 회수해 힙 메모리를 자동으로 관리하는 기능이다.
+    repo: cs-theory-notes
+    package: java/gc
+    wiki_doc: wiki/java/README.md
+  - id: gc-algorithms
+    name: GC 알고리즘
+    type: process
+    summary: 처리량, 지연시간, pause time 기준으로 Serial, Parallel, G1, ZGC 같은 GC를 비교한다.
+    repo: cs-theory-notes
+    package: java/gc-algorithms
+    wiki_doc: wiki/java/README.md
+  - id: collections
+    name: Collections Framework
+    type: data
+    summary: List, Set, Map 구현체를 시간 복잡도, 순서 보장, 중복 허용, 동시성 기준으로 비교한다.
+    repo: cs-theory-notes
+    package: java/collections
+    wiki_doc: wiki/java/README.md
+  - id: concurrent-hash-map
+    name: ConcurrentHashMap
+    type: data
+    summary: 여러 스레드가 동시에 접근해도 안전하도록 CAS와 세밀한 동기화로 Map 연산을 처리한다.
+    repo: cs-theory-notes
+    package: java/concurrent-hash-map
+    wiki_doc: wiki/java/README.md
+  - id: thread-concurrency
+    name: Thread와 동시성
+    type: process
+    summary: Thread, Executor, Future, CompletableFuture로 작업을 병렬 실행하고 결과를 조합한다.
+    repo: cs-theory-notes
+    package: java/concurrency
+    wiki_doc: wiki/java/README.md
+  - id: locks
+    name: synchronized와 ReentrantLock
+    type: process
+    summary: 공유 자원 접근을 한 번에 하나의 스레드로 제한하는 두 가지 동기화 방식이다.
+    repo: cs-theory-notes
+    package: java/locks
+    wiki_doc: wiki/java/README.md
+  - id: volatile
+    name: volatile
+    type: data
+    summary: 공유 변수의 최신 값을 보게 해주지만 증가 연산 같은 복합 연산의 원자성은 보장하지 않는다.
+    repo: cs-theory-notes
+    package: java/volatile
+    wiki_doc: wiki/java/README.md
+  - id: cas-atomic
+    name: CAS와 Atomic
+    type: process
+    summary: 값을 비교한 뒤 바뀌지 않았을 때만 교체해 락 없이 원자적 갱신을 수행한다.
+    repo: cs-theory-notes
+    package: java/cas-atomic
+    wiki_doc: wiki/java/README.md
+  - id: thread-safety
+    name: Thread-safe
+    type: data
+    summary: 여러 스레드가 동시에 사용해도 데이터가 깨지지 않고 기대한 결과가 유지되는 성질이다.
+    repo: cs-theory-notes
+    package: java/thread-safety
+    wiki_doc: wiki/java/README.md
+  - id: producer-consumer
+    name: 생산자-소비자 패턴
+    type: process
+    summary: 작업 생성자와 처리자를 큐로 분리해 처리 속도 차이를 흡수하는 패턴이다.
+    repo: cs-theory-notes
+    package: java/producer-consumer
+    wiki_doc: wiki/java/README.md
+  - id: fork-join
+    name: Fork/Join
+    type: process
+    summary: 큰 작업을 작은 작업으로 나누고 work stealing으로 병렬 처리하는 실행 모델이다.
+    repo: cs-theory-notes
+    package: java/fork-join
+    wiki_doc: wiki/java/README.md
+  - id: completable-future
+    name: CompletableFuture
+    type: process
+    summary: 비동기 작업의 결과를 이어 붙이고 예외까지 처리할 수 있는 Future 확장 API다.
+    repo: cs-theory-notes
+    package: java/completable-future
+    wiki_doc: wiki/java/README.md
+  - id: thread-pool
+    name: ThreadPoolExecutor
+    type: process
+    summary: 스레드 수, 작업 큐, 거부 정책으로 요청 처리량과 자원 사용량을 조절한다.
+    repo: cs-theory-notes
+    package: java/thread-pool
+    wiki_doc: wiki/java/README.md
+  - id: threadlocal
+    name: ThreadLocal
+    type: data
+    summary: 스레드마다 독립 값을 저장하지만 스레드 풀에서는 값 제거 누락이 메모리 누수로 이어질 수 있다.
+    repo: cs-theory-notes
+    package: java/threadlocal
+    wiki_doc: wiki/java/README.md
+  - id: exception-handling
+    name: 예외 처리
+    type: process
+    summary: 복구 가능성과 호출자 책임을 기준으로 checked와 unchecked 예외를 구분해 설계한다.
+    repo: cs-theory-notes
+    package: java/exception
+    wiki_doc: wiki/java/README.md
+  - id: record
+    name: Record
+    type: data
+    summary: 생성자, 접근자, equals/hashCode를 자동 제공하는 불변 데이터 전달 타입이다.
+    repo: cs-theory-notes
+    package: java/record
+    wiki_doc: wiki/java/README.md
+  - id: string-api
+    name: String API
+    type: data
+    summary: String 불변성, 문자열 풀, StringBuilder/StringBuffer 선택 기준을 비교한다.
+    repo: cs-theory-notes
+    package: java/string-api
+    wiki_doc: wiki/java/README.md
+  - id: generics-variance
+    name: Generic Variance
+    type: data
+    summary: 제네릭 타입의 불공변성과 extends/super 와일드카드 사용 기준을 설명한다.
+    repo: cs-theory-notes
+    package: java/generics-variance
+    wiki_doc: wiki/java/README.md
+
+relations:
+  - from: jvm-runtime
+    to: jvm
+    type: deployed_in
+  - from: garbage-collection
+    to: jvm-runtime
+    type: depends_on
+  - from: gc-algorithms
+    to: garbage-collection
+    type: depends_on
+  - from: thread-concurrency
+    to: memory-model
+    type: depends_on
+  - from: locks
+    to: thread-concurrency
+    type: depends_on
+  - from: volatile
+    to: memory-model
+    type: depends_on
+  - from: cas-atomic
+    to: memory-model
+    type: depends_on
+  - from: thread-safety
+    to: locks
+    type: depends_on
+  - from: thread-safety
+    to: cas-atomic
+    type: depends_on
+  - from: producer-consumer
+    to: thread-pool
+    type: depends_on
+  - from: fork-join
+    to: thread-pool
+    type: depends_on
+  - from: completable-future
+    to: fork-join
+    type: depends_on
+  - from: threadlocal
+    to: thread-concurrency
+    type: depends_on
+  - from: collections
+    to: memory-model
+    type: depends_on
+  - from: concurrent-hash-map
+    to: collections
+    type: depends_on
+  - from: concurrent-hash-map
+    to: thread-safety
+    type: depends_on
+  - from: exception-handling
+    to: jvm-runtime
+    type: depends_on
+  - from: record
+    to: jvm-runtime
+    type: depends_on
+  - from: string-api
+    to: jvm-runtime
+    type: depends_on
+  - from: generics-variance
+    to: collections
+    type: depends_on

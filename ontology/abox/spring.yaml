@@ -1,0 +1,281 @@
+domain:
+  id: spring
+  name: Spring
+  summary: |
+    Bean, MVC, 트랜잭션, JPA, Boot 자동 설정처럼 Spring 면접에서 자주 묻는
+    동작 원리와 실무 주의점을 정리한다.
+  wiki_root: wiki/spring/
+
+entities:
+  - id: dependency-injection
+    name: IoC와 DI
+    type: process
+    summary: 객체 생성과 의존성 연결을 컨테이너가 맡아 코드 결합도를 낮추는 방식이다.
+    repo: cs-theory-notes
+    package: spring/ioc-di
+    wiki_doc: wiki/spring/README.md
+  - id: bean-lifecycle
+    name: Bean 생명주기
+    type: process
+    summary: 빈 정의 등록부터 생성, 의존성 주입, 초기화, 소멸 콜백까지의 흐름이다.
+    repo: cs-theory-notes
+    package: spring/bean-lifecycle
+    wiki_doc: wiki/spring/README.md
+  - id: bean-management
+    name: Bean 관리 이유
+    type: process
+    summary: DI, 생명주기, AOP, 테스트 대체, 설정 일관성을 위해 객체를 컨테이너가 관리한다.
+    repo: cs-theory-notes
+    package: spring/bean-management
+    wiki_doc: wiki/spring/README.md
+  - id: component-stereotypes
+    name: Component Stereotypes
+    type: data
+    summary: Component 계열 애너테이션으로 빈 등록과 계층 역할을 코드에 드러낸다.
+    repo: cs-theory-notes
+    package: spring/component-stereotypes
+    wiki_doc: wiki/spring/README.md
+  - id: aop
+    name: AOP
+    type: process
+    summary: 프록시로 트랜잭션, 로깅, 보안 같은 공통 관심사를 비즈니스 코드 밖으로 분리한다.
+    repo: cs-theory-notes
+    package: spring/aop
+    wiki_doc: wiki/spring/README.md
+  - id: aop-self-invocation
+    name: AOP Self Invocation
+    type: failure-mode
+    summary: 같은 클래스 내부 호출은 프록시를 거치지 않아 Transactional이나 Async가 적용되지 않는다.
+    repo: cs-theory-notes
+    package: spring/aop-self-invocation
+    wiki_doc: wiki/spring/README.md
+  - id: spring-mvc
+    name: Spring MVC
+    type: process
+    summary: DispatcherServlet이 요청을 받아 핸들러 조회, 메서드 호출, 응답 변환을 조율한다.
+    repo: cs-theory-notes
+    package: spring/mvc
+    wiki_doc: wiki/spring/README.md
+  - id: request-binding
+    name: Request Binding
+    type: process
+    summary: RequestBody와 ModelAttribute가 요청 데이터를 객체로 바인딩하는 방식과 차이다.
+    repo: cs-theory-notes
+    package: spring/request-binding
+    wiki_doc: wiki/spring/README.md
+  - id: controller-advice
+    name: ControllerAdvice
+    type: process
+    summary: 컨트롤러 전역의 예외 처리, 바인딩, 공통 모델 설정을 한 곳에 모은다.
+    repo: cs-theory-notes
+    package: spring/controller-advice
+    wiki_doc: wiki/spring/README.md
+  - id: filter-interceptor
+    name: Filter와 Interceptor
+    type: process
+    summary: 서블릿 앞단의 Filter와 컨트롤러 호출 전후의 Interceptor 적용 지점을 구분한다.
+    repo: cs-theory-notes
+    package: spring/filter-interceptor
+    wiki_doc: wiki/spring/README.md
+  - id: response-handling
+    name: Response Handling
+    type: process
+    summary: 반환값을 뷰 이름으로 볼지, HTTP 본문으로 직렬화할지 결정하는 흐름이다.
+    repo: cs-theory-notes
+    package: spring/response-handling
+    wiki_doc: wiki/spring/README.md
+  - id: transaction-management
+    name: 트랜잭션 관리
+    type: process
+    summary: AOP 프록시와 TransactionManager가 메서드 호출 전후로 트랜잭션을 시작·종료한다.
+    repo: cs-theory-notes
+    package: spring/transaction
+    wiki_doc: wiki/spring/README.md
+  - id: transaction-propagation
+    name: 트랜잭션 전파
+    type: process
+    summary: 이미 열린 트랜잭션이 있을 때 참여, 새로 시작, 중첩, 예외 여부를 정하는 규칙이다.
+    repo: cs-theory-notes
+    package: spring/transaction-propagation
+    wiki_doc: wiki/spring/README.md
+  - id: transaction-aop-flow
+    name: 트랜잭션 AOP 흐름
+    type: process
+    summary: 프록시, 트랜잭션 매니저, 동기화 매니저가 커넥션과 트랜잭션 범위를 연결한다.
+    repo: cs-theory-notes
+    package: spring/transaction-aop-flow
+    wiki_doc: wiki/spring/README.md
+  - id: async-processing
+    name: "@Async"
+    type: process
+    summary: 메서드를 별도 스레드에서 실행하므로 예외 처리, 내부 호출, 트랜잭션 경계를 주의해야 한다.
+    repo: cs-theory-notes
+    package: spring/async
+    wiki_doc: wiki/spring/README.md
+  - id: spring-boot
+    name: Spring Boot
+    type: process
+    summary: starter, 자동 설정, 내장 서버로 Spring 애플리케이션 초기 설정과 실행을 단순화한다.
+    repo: cs-theory-notes
+    package: spring/boot
+    wiki_doc: wiki/spring/README.md
+  - id: boot-autoconfiguration
+    name: Spring Boot 자동 설정
+    type: process
+    summary: 클래스패스와 설정값, 조건 애너테이션을 보고 필요한 빈을 자동 등록한다.
+    repo: cs-theory-notes
+    package: spring/boot-autoconfig
+    wiki_doc: wiki/spring/README.md
+  - id: tomcat-servlet
+    name: Tomcat과 Servlet
+    type: process
+    summary: 서블릿 컨테이너가 요청·응답 객체, 서블릿 매핑, 생명주기, 필터 체인을 관리한다.
+    repo: cs-theory-notes
+    package: spring/tomcat-servlet
+    wiki_doc: wiki/spring/README.md
+  - id: value-configuration
+    name: Value와 ConfigurationProperties
+    type: data
+    summary: 단일 설정값 주입에는 Value, 묶음 설정 바인딩에는 ConfigurationProperties를 사용한다.
+    repo: cs-theory-notes
+    package: spring/value-configuration
+    wiki_doc: wiki/spring/README.md
+  - id: jpa-stack
+    name: JPA, Hibernate, Spring Data JPA
+    type: data
+    summary: JPA는 명세, Hibernate는 구현체, Spring Data JPA는 Repository 추상화다.
+    repo: cs-theory-notes
+    package: spring/jpa-stack
+    wiki_doc: wiki/spring/README.md
+  - id: persistence-context
+    name: EntityManager와 영속성 컨텍스트
+    type: process
+    summary: EntityManager가 엔티티 상태와 영속성 컨텍스트를 관리하고 flush로 DB와 동기화한다.
+    repo: cs-theory-notes
+    package: spring/persistence-context
+    wiki_doc: wiki/spring/README.md
+  - id: jpa-fetching
+    name: JPA Fetching
+    type: failure-mode
+    summary: N+1, fetch join 페이징, OneToOne 지연 로딩 제약과 보완 방법을 다룬다.
+    repo: cs-theory-notes
+    package: spring/jpa-fetching
+    wiki_doc: wiki/spring/README.md
+  - id: jpa-id-generation
+    name: JPA ID 생성 전략
+    type: data
+    summary: IDENTITY, SEQUENCE, TABLE 전략이 식별자 할당 시점과 배치 insert에 미치는 영향을 비교한다.
+    repo: cs-theory-notes
+    package: spring/jpa-id-generation
+    wiki_doc: wiki/spring/README.md
+  - id: jpa-schema-management
+    name: ddl-auto
+    type: process
+    summary: ddl-auto 옵션별 스키마 변경 동작과 운영 환경에서의 위험을 구분한다.
+    repo: cs-theory-notes
+    package: spring/jpa-ddl-auto
+    wiki_doc: wiki/spring/README.md
+  - id: jpa-entity-new
+    name: Spring Data JPA isNew
+    type: process
+    summary: save가 신규 엔티티 여부에 따라 persist와 merge를 선택하므로 직접 ID 할당 시 주의가 필요하다.
+    repo: cs-theory-notes
+    package: spring/jpa-is-new
+    wiki_doc: wiki/spring/README.md
+  - id: osiv
+    name: OSIV
+    type: process
+    summary: 요청 끝까지 영속성 컨텍스트를 열어두어 지연 로딩은 가능하지만 커넥션 점유가 길어진다.
+    repo: cs-theory-notes
+    package: spring/osiv
+    wiki_doc: wiki/spring/README.md
+  - id: spring-test-isolation
+    name: Spring 테스트 격리
+    type: process
+    summary: DB와 애플리케이션 컨텍스트 공유 상태가 테스트 간 결과에 영향을 주지 않게 격리한다.
+    repo: cs-theory-notes
+    package: spring/test-isolation
+    wiki_doc: wiki/spring/README.md
+
+relations:
+  - from: bean-lifecycle
+    to: dependency-injection
+    type: depends_on
+  - from: bean-management
+    to: dependency-injection
+    type: depends_on
+  - from: component-stereotypes
+    to: bean-management
+    type: depends_on
+  - from: aop
+    to: bean-lifecycle
+    type: depends_on
+  - from: aop-self-invocation
+    to: aop
+    type: failure_mode_of
+  - from: spring-mvc
+    to: dependency-injection
+    type: depends_on
+  - from: request-binding
+    to: spring-mvc
+    type: depends_on
+  - from: controller-advice
+    to: spring-mvc
+    type: depends_on
+  - from: filter-interceptor
+    to: spring-mvc
+    type: depends_on
+  - from: response-handling
+    to: spring-mvc
+    type: depends_on
+  - from: transaction-management
+    to: aop
+    type: depends_on
+  - from: transaction-propagation
+    to: transaction-management
+    type: depends_on
+  - from: transaction-aop-flow
+    to: transaction-management
+    type: depends_on
+  - from: async-processing
+    to: aop
+    type: depends_on
+  - from: spring-boot
+    to: dependency-injection
+    type: depends_on
+  - from: boot-autoconfiguration
+    to: spring-boot
+    type: depends_on
+  - from: tomcat-servlet
+    to: spring-mvc
+    type: deployed_in
+  - from: value-configuration
+    to: boot-autoconfiguration
+    type: depends_on
+  - from: jpa-stack
+    to: boot-autoconfiguration
+    type: depends_on
+  - from: persistence-context
+    to: jpa-stack
+    type: depends_on
+  - from: jpa-fetching
+    to: persistence-context
+    type: depends_on
+  - from: jpa-id-generation
+    to: persistence-context
+    type: depends_on
+  - from: jpa-schema-management
+    to: jpa-stack
+    type: depends_on
+  - from: jpa-entity-new
+    to: persistence-context
+    type: depends_on
+  - from: osiv
+    to: persistence-context
+    type: depends_on
+  - from: spring-test-isolation
+    to: osiv
+    type: references
+  - from: spring-mvc
+    to: jvm
+    type: deployed_in

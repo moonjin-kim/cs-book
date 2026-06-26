@@ -1,34 +1,88 @@
-# 도메인 간 관계 (Cross-Domain Relations)
-# 둘 이상의 도메인에 걸친 relation만 이 파일에 정의한다.
-# 단일 도메인 내에서 완결되는 relation은 각 도메인 abox 파일에 둔다.
-#
-# from/to 형식: "{도메인id}/{entity-id}"
-# 예: from: commerce-order/order, to: commerce-inventory/stock
-#
-# 도메인 abox가 추가되면 이 파일도 함께 갱신한다.
-# tbox.yaml의 relation_types와 domain_range axiom을 준수한다.
+# Cross-domain relations
+# 둘 이상의 CS 학습 도메인에 걸친 관계만 정의한다.
 
 relations:
-  # 주문 → 카탈로그: 상품 정보·가격 재검증
-  - from: commerce-order/order-placement
-    to: commerce-catalog/product
+  - from: web-http/http-message
+    to: network/tcp
+    type: depends_on
+    note: HTTP/1.1과 HTTP/2는 TCP 연결 위에서 요청과 응답을 교환한다.
+
+  - from: web-http/http-versions
+    to: network/keep-alive
+    type: depends_on
+    note: HTTP/1.1의 persistent connection은 TCP 연결 재사용과 timeout 설정에 의존한다.
+
+  - from: web-http/browser-request-flow
+    to: network/dns
+    type: depends_on
+    note: 브라우저는 HTTP 요청 전에 도메인 이름을 IP 주소로 해석한다.
+
+  - from: web-http/proxy
+    to: network/load-balancing
     type: references
-    note: |
-      주문 생성 시 라인 아이템마다 catalog의 product를 조회해 가격·노출 상태를
-      재검증한다. 장바구니 시점과 결제 시점 가격이 다르면 사용자 확인을 요구.
+    note: 리버스 프록시는 로드밸런싱, SSL 종료, 캐싱을 함께 수행하는 경우가 많다.
 
-  # 주문 → 재고: 동기 RPC로 재고 점유
-  - from: commerce-order/order-placement
-    to: commerce-inventory/stock-reservation
-    type: triggers
-    note: |
-      주문 생성 시점에 inventory의 stock-reservation을 동기 RPC로 호출하여
-      재고를 점유한다. 점유 실패 시 주문 생성이 즉시 중단된다.
+  - from: web-http/cookie-session
+    to: security/authentication
+    type: references
+    note: 쿠키와 세션은 로그인 상태를 유지하는 인증 흐름의 핵심 전달 수단이다.
 
-  # 재고 → 주문: 결제 이벤트 비동기 구독으로 확정/복원
-  - from: commerce-inventory/stock-fulfillment
-    to: commerce-order/order-event
-    type: consumes
-    note: |
-      Kafka의 commerce.order.paid / commerce.order.refunded 토픽을 구독하여
-      paid 시 재고 확정, refunded 시 재고 복원을 비동기로 처리한다.
+  - from: spring/transaction-management
+    to: database/transaction
+    type: depends_on
+    note: Spring의 선언적 트랜잭션은 RDBMS 트랜잭션과 격리 수준을 추상화한다.
+
+  - from: spring/dependency-injection
+    to: oop/dependency-inversion
+    type: references
+    note: DI는 고수준 정책이 구체 구현에 직접 의존하지 않게 만드는 실천 방식이다.
+
+  - from: java/thread-concurrency
+    to: operating-system/thread
+    type: depends_on
+    note: Java Thread와 executor는 OS 스레드 스케줄링과 동기화 비용의 영향을 받는다.
+
+  - from: redis/cache-strategy
+    to: database/index-query-plan
+    type: references
+    note: 느린 쿼리와 읽기 부하를 기준으로 캐시 적용 여부를 판단한다.
+
+  - from: kafka/consumer-group
+    to: distributed-systems/partitioning
+    type: depends_on
+    note: 컨슈머 그룹의 병렬성은 토픽 파티션 수와 파티션 배치 전략에 의해 제한된다.
+
+  - from: distributed-systems/consistency
+    to: database/isolation-level
+    type: references
+    note: 단일 DB 격리 수준과 분산 시스템 일관성은 같은 문제를 다른 범위에서 다룬다.
+
+  - from: devops-cloud/container
+    to: operating-system/process
+    type: depends_on
+    note: 컨테이너는 별도 커널이 아니라 격리된 프로세스 집합으로 실행된다.
+
+  - from: algorithms/hash-table
+    to: redis/data-structures
+    type: references
+    note: Redis의 key lookup과 일부 자료구조 성능은 해시 기반 접근을 이해해야 설명된다.
+
+  - from: java/collections
+    to: algorithms/load-factor
+    type: depends_on
+    note: ArrayList 초기 용량과 HashMap load factor/threshold는 resize 비용과 메모리 사용량을 결정한다.
+
+  - from: security/https
+    to: network/tls
+    type: depends_on
+    note: HTTPS는 HTTP에 TLS 계층을 적용해 인증서 검증과 암호화된 전송을 제공한다.
+
+  - from: security/csrf
+    to: web-http/cookie-session
+    type: depends_on
+    note: CSRF는 브라우저가 cross-site 요청에도 쿠키를 자동 첨부하는 특성을 악용한다.
+
+  - from: security/csrf
+    to: web-http/cors
+    type: depends_on
+    note: SOP와 CORS는 cross-origin 요청을 제어해 CSRF 방어 설계와 함께 고려된다.
