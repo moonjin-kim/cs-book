@@ -21,19 +21,9 @@
       "domain": ""
     },
     {
-      "path": "web-http/README.md",
-      "title": "Web과 HTTP",
-      "domain": "web-http"
-    },
-    {
       "path": "spring/README.md",
       "title": "Spring",
       "domain": "spring"
-    },
-    {
-      "path": "security/README.md",
-      "title": "Security",
-      "domain": "security"
     },
     {
       "path": "redis/README.md",
@@ -41,9 +31,9 @@
       "domain": "redis"
     },
     {
-      "path": "oop/README.md",
-      "title": "객체지향",
-      "domain": "oop"
+      "path": "security/README.md",
+      "title": "Security",
+      "domain": "security"
     },
     {
       "path": "operating-system/README.md",
@@ -51,9 +41,19 @@
       "domain": "operating-system"
     },
     {
-      "path": "kafka/README.md",
-      "title": "Kafka",
-      "domain": "kafka"
+      "path": "oop/README.md",
+      "title": "객체지향",
+      "domain": "oop"
+    },
+    {
+      "path": "web-http/README.md",
+      "title": "Web과 HTTP",
+      "domain": "web-http"
+    },
+    {
+      "path": "distributed-systems/README.md",
+      "title": "분산시스템",
+      "domain": "distributed-systems"
     },
     {
       "path": "java/README.md",
@@ -66,14 +66,9 @@
       "domain": "network"
     },
     {
-      "path": "distributed-systems/README.md",
-      "title": "분산시스템",
-      "domain": "distributed-systems"
-    },
-    {
-      "path": "database/README.md",
-      "title": "Database",
-      "domain": "database"
+      "path": "kafka/README.md",
+      "title": "Kafka",
+      "domain": "kafka"
     },
     {
       "path": "devops-cloud/README.md",
@@ -81,14 +76,19 @@
       "domain": "devops-cloud"
     },
     {
-      "path": "computer-architecture/README.md",
-      "title": "컴퓨터 구조",
-      "domain": "computer-architecture"
+      "path": "database/README.md",
+      "title": "Database",
+      "domain": "database"
     },
     {
       "path": "algorithms/README.md",
       "title": "자료구조와 알고리즘",
       "domain": "algorithms"
+    },
+    {
+      "path": "computer-architecture/README.md",
+      "title": "컴퓨터 구조",
+      "domain": "computer-architecture"
     }
   ]
 }
