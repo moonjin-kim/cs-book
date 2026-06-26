@@ -1,0 +1,94 @@
+{
+  "docs": [
+    {
+      "path": "study-roadmap.md",
+      "title": "학습 로드맵",
+      "domain": ""
+    },
+    {
+      "path": "interview-checklist.md",
+      "title": "면접 체크리스트",
+      "domain": ""
+    },
+    {
+      "path": "glossary.md",
+      "title": "용어 사전",
+      "domain": ""
+    },
+    {
+      "path": "README.md",
+      "title": "CS Interview Notes",
+      "domain": ""
+    },
+    {
+      "path": "web-http/README.md",
+      "title": "Web과 HTTP",
+      "domain": "web-http"
+    },
+    {
+      "path": "spring/README.md",
+      "title": "Spring",
+      "domain": "spring"
+    },
+    {
+      "path": "security/README.md",
+      "title": "Security",
+      "domain": "security"
+    },
+    {
+      "path": "redis/README.md",
+      "title": "Redis",
+      "domain": "redis"
+    },
+    {
+      "path": "oop/README.md",
+      "title": "객체지향",
+      "domain": "oop"
+    },
+    {
+      "path": "operating-system/README.md",
+      "title": "Operating System",
+      "domain": "operating-system"
+    },
+    {
+      "path": "kafka/README.md",
+      "title": "Kafka",
+      "domain": "kafka"
+    },
+    {
+      "path": "java/README.md",
+      "title": "Java",
+      "domain": "java"
+    },
+    {
+      "path": "network/README.md",
+      "title": "네트워크",
+      "domain": "network"
+    },
+    {
+      "path": "distributed-systems/README.md",
+      "title": "분산시스템",
+      "domain": "distributed-systems"
+    },
+    {
+      "path": "database/README.md",
+      "title": "Database",
+      "domain": "database"
+    },
+    {
+      "path": "devops-cloud/README.md",
+      "title": "DevOps와 Cloud",
+      "domain": "devops-cloud"
+    },
+    {
+      "path": "computer-architecture/README.md",
+      "title": "컴퓨터 구조",
+      "domain": "computer-architecture"
+    },
+    {
+      "path": "algorithms/README.md",
+      "title": "자료구조와 알고리즘",
+      "domain": "algorithms"
+    }
+  ]
+}
