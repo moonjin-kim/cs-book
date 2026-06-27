@@ -21,9 +21,14 @@
       "domain": ""
     },
     {
-      "path": "spring/README.md",
-      "title": "Spring",
-      "domain": "spring"
+      "path": "web-http/README.md",
+      "title": "Web과 HTTP",
+      "domain": "web-http"
+    },
+    {
+      "path": "security/README.md",
+      "title": "Security",
+      "domain": "security"
     },
     {
       "path": "redis/README.md",
@@ -31,9 +36,9 @@
       "domain": "redis"
     },
     {
-      "path": "security/README.md",
-      "title": "Security",
-      "domain": "security"
+      "path": "spring/README.md",
+      "title": "Spring",
+      "domain": "spring"
     },
     {
       "path": "operating-system/README.md",
@@ -46,21 +51,6 @@
       "domain": "oop"
     },
     {
-      "path": "web-http/README.md",
-      "title": "Web과 HTTP",
-      "domain": "web-http"
-    },
-    {
-      "path": "distributed-systems/README.md",
-      "title": "분산시스템",
-      "domain": "distributed-systems"
-    },
-    {
-      "path": "java/README.md",
-      "title": "Java",
-      "domain": "java"
-    },
-    {
       "path": "network/README.md",
       "title": "네트워크",
       "domain": "network"
@@ -69,6 +59,16 @@
       "path": "kafka/README.md",
       "title": "Kafka",
       "domain": "kafka"
+    },
+    {
+      "path": "java/README.md",
+      "title": "Java",
+      "domain": "java"
+    },
+    {
+      "path": "distributed-systems/README.md",
+      "title": "분산시스템",
+      "domain": "distributed-systems"
     },
     {
       "path": "devops-cloud/README.md",
@@ -81,14 +81,14 @@
       "domain": "database"
     },
     {
-      "path": "algorithms/README.md",
-      "title": "자료구조와 알고리즘",
-      "domain": "algorithms"
-    },
-    {
       "path": "computer-architecture/README.md",
       "title": "컴퓨터 구조",
       "domain": "computer-architecture"
+    },
+    {
+      "path": "algorithms/README.md",
+      "title": "자료구조와 알고리즘",
+      "domain": "algorithms"
     }
   ]
 }

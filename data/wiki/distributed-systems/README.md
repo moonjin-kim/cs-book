@@ -1,70 +1,175 @@
 # 분산시스템
 
-분산시스템은 여러 노드가 네트워크로 협력할 때 실패가 부분적으로 발생한다는 사실을 전제로 설계합니다.
+분산시스템 면접은 **여러 서버가 네트워크로 협력할 때 생기는 실패, 지연, 일관성, 중복, 순서 문제를 어떻게 다루는지**가 핵심입니다.
 
-## 핵심 개념
+## 빠른 요약
 
-| 개념 | 알아야 할 질문 |
+| 주제 | 핵심 답변 |
 | --- | --- |
-| CAP/PACELC | 네트워크 분할과 정상 상황에서 무엇을 희생할 것인가? |
-| 일관성 모델 | strong consistency와 eventual consistency는 사용자 경험을 어떻게 바꾸는가? |
-| 복제 | leader/follower, quorum, replica lag는 어떤 trade-off를 만드는가? |
-| 파티셔닝/샤딩 | 데이터 분산 기준은 hot shard와 cross-shard transaction에 어떤 영향을 주는가? |
-| 합의 | Raft/Paxos는 왜 필요하고 어떤 비용을 치르는가? |
-| 멱등성/재시도 | timeout 이후 성공 여부를 모를 때 어떻게 안전하게 재시도하는가? |
-| Bulkhead | 외부 서비스 장애가 전체 자원을 잠식하지 않게 하려면 어떻게 격리하는가? |
-| Circuit Breaker | 장애가 지속되는 외부 호출을 언제 빠르게 실패시킬 것인가? |
+| CAP | 네트워크 분할 상황에서 일관성과 가용성 사이 선택을 설명합니다. |
+| 일관성 | 여러 노드에서 읽은 데이터가 얼마나 최신이고 같은지의 수준입니다. |
+| 복제 | 데이터를 여러 노드에 복사해 가용성과 읽기 성능을 높입니다. |
+| 샤딩 | 데이터를 여러 노드에 나눠 저장해 수평 확장합니다. |
+| 멱등성 | 같은 요청이 여러 번 처리되어도 결과가 안정적이어야 합니다. |
+| Circuit Breaker | 장애 호출을 차단해 빠르게 실패시키고 장애 전파를 줄입니다. |
+| Outbox | DB 변경과 이벤트 발행을 같은 트랜잭션에 저장해 이중 쓰기를 줄입니다. |
 
-## Strong Consistency와 Eventual Consistency
+## CAP
 
-강한 일관성은 쓰기 연산이 완료된 직후 어느 노드에서 읽어도 최신 값을 보장합니다. 복제가 끝나기 전 읽기를 막거나 leader에서만 읽게 만들 수 있어 정합성은 높지만 가용성과 지연 시간이 희생됩니다.
+| 속성 | 의미 |
+| --- | --- |
+| Consistency | 어떤 노드에 물어도 같은 최신 데이터를 봅니다. |
+| Availability | 모든 요청에 유효한 응답을 합니다. |
+| Partition Tolerance | 네트워크 분할 상황에서도 시스템이 동작합니다. |
 
-최종적 일관성은 변경이 비동기로 전파되어 일시적으로 노드 간 데이터가 다를 수 있지만, 시간이 지나면 결국 같은 상태가 되는 모델입니다. 가용성은 높지만 오래된 데이터를 읽을 수 있습니다.
+현실의 분산 시스템은 네트워크 분할을 피하기 어렵기 때문에 보통 CP 또는 AP 선택을 고민합니다.
 
-결제, 재고 차감처럼 최신성이 중요한 기능은 강한 일관성에 가깝게 설계하고, 추천 피드, 조회수처럼 약간 늦어도 되는 기능은 최종적 일관성을 선택할 수 있습니다.
+| 선택 | 설명 |
+| --- | --- |
+| CP | 일관성을 지키기 위해 일부 요청을 거부할 수 있음 |
+| AP | 응답은 유지하되 일시적 불일치를 허용 |
 
-## CAP 정리
+## 일관성 모델
 
-CAP는 Consistency, Availability, Partition Tolerance의 약자입니다. 분산 시스템에서 네트워크 분할이 발생하면 모든 요청에 응답할지(AP), 일부 요청을 거부하더라도 일관성을 지킬지(CP)를 선택해야 합니다. 현실의 분산 시스템은 네트워크 분할을 완전히 배제하기 어렵기 때문에 CA만 만족하는 시스템은 실질적인 분산 시스템 선택지로 보기 어렵습니다.
+| 모델 | 설명 |
+| --- | --- |
+| Strong Consistency | 항상 최신 값을 읽음 |
+| Eventual Consistency | 시간이 지나면 결국 같아짐 |
+| Read Your Writes | 내가 쓴 값은 이후 내가 읽을 수 있음 |
 
-CP 시스템은 partition 상황에서 일관성을 지키기 위해 일부 요청을 실패시키거나 대기시킵니다. AP 시스템은 요청 처리를 계속하지만 일시적 불일치를 허용하고, partition이 회복되면 동기화로 최종적 일관성을 맞춥니다.
+## 복제와 샤딩
+
+| 구분 | 목적 | 주의 |
+| --- | --- | --- |
+| Replication | 가용성, 읽기 확장 | replica lag, failover |
+| Sharding | 저장 용량, 쓰기 처리량 확장 | shard key, cross-shard query |
+
+Replication 주의:
+
+- 쓰기 직후 replica를 읽으면 최신 값이 아닐 수 있습니다.
+- failover 중 쓰기 손실이나 중복 처리를 고려해야 합니다.
+
+Sharding 주의:
+
+- shard key가 한쪽으로 몰리면 hot shard가 됩니다.
+- resharding은 비용이 큽니다.
+
+## 합의
+
+합의는 여러 노드가 같은 값이나 순서에 동의하는 문제입니다.
+
+예:
+
+- Raft
+- Paxos
+- ZooKeeper
+- etcd
+
+사용:
+
+- leader election
+- configuration 관리
+- 강한 분산 락
+
+## 멱등성과 재시도
+
+분산 환경에서는 timeout이 발생해도 실제 처리 여부를 모를 수 있습니다.
+
+따라서 retry 가능한 API는 멱등하게 설계해야 합니다.
+
+방법:
+
+- idempotency key
+- unique constraint
+- 요청 처리 이력 저장
+- 상태 전이 검증
+
+## 장애 격리 패턴
+
+### Bulkhead
+
+기능별로 thread pool, connection pool 같은 자원을 분리합니다.
+
+효과:
+
+- 한 외부 서비스 장애가 전체 장애로 번지는 것을 줄입니다.
+
+### Circuit Breaker
+
+오류가 계속되면 일정 시간 호출을 차단합니다.
+
+상태:
+
+| 상태 | 의미 |
+| --- | --- |
+| Closed | 정상 호출 |
+| Open | 호출 차단 |
+| Half-Open | 일부 요청으로 회복 확인 |
 
 ## Event Sourcing과 CQRS
 
-Event Sourcing은 현재 상태만 저장하지 않고 상태 변경 이벤트 이력을 append-only로 저장합니다. 이벤트를 순서대로 replay하면 특정 시점의 상태를 재현할 수 있어 감사, 디버깅, 과거 상태 복원에 유리합니다. 단점은 읽기 때 모든 이벤트를 재생하면 느려질 수 있고, 이를 완화하기 위해 snapshot과 projection을 둬야 한다는 점입니다.
+| 패턴 | 설명 | 주의 |
+| --- | --- | --- |
+| Event Sourcing | 최종 상태 대신 상태 변경 이벤트를 저장 | replay 비용, 이벤트 스키마 관리 |
+| CQRS | 명령 모델과 조회 모델 분리 | 동기화, 복잡도 증가 |
 
-CQRS는 command 모델과 query 모델을 분리하는 패턴입니다. 쓰기 모델은 도메인 규칙과 트랜잭션에 집중하고, 읽기 모델은 화면이나 조회 성능에 맞게 별도로 구성합니다. 읽기와 쓰기의 요구가 크게 다르거나 조회 모델이 복잡할 때 유용하지만, 모델 동기화와 최종적 일관성, 구현 복잡도가 늘어납니다.
+Event Sourcing 장점:
 
-## 외부 서비스 장애 대응
+- 과거 상태 재현
+- 감사 로그
+- 비즈니스 이벤트 이력 보존
 
-동기 방식으로 외부 API를 호출하면 외부 장애가 내부 thread, connection, queue를 점유해 전체 장애로 번질 수 있습니다.
+CQRS 장점:
 
-기본 대응:
+- 쓰기 모델은 정합성 중심
+- 조회 모델은 성능 중심
+- 서로 다른 저장소 사용 가능
 
-- connection timeout, read timeout, connection pool timeout 설정
-- retry에는 max attempt, exponential backoff, jitter 적용
-- 멱등하지 않은 요청은 idempotency key 없이 무작정 재시도하지 않음
+## 비동기 연동
 
-Bulkhead는 기능 또는 외부 서비스별로 자원을 격리하는 패턴입니다. A, B, C 외부 API가 하나의 HTTP connection pool을 공유할 때 A 장애로 pool이 고갈되면 B, C 호출도 대기할 수 있습니다. 서비스별 connection pool과 thread pool을 분리하면 장애 전파를 줄일 수 있습니다.
+| 방식 | 장점 | 주의 |
+| --- | --- | --- |
+| Messaging | 높은 처리량, 느슨한 결합 | 유실, 중복, 순서 |
+| DB Polling | 트랜잭션과 함께 관리 쉬움 | polling 비용 |
+| CDC | 애플리케이션 로직 단순 | 왜 변경됐는지 알기 어려움 |
 
-Circuit breaker는 오류율이나 timeout이 기준을 넘으면 일정 시간 호출을 차단합니다. 빠른 실패로 응답 시간 증가와 처리량 감소를 줄이고, half-open 상태에서 회복 여부를 점검합니다.
+## Transactional Outbox
 
-## 비동기 연동과 Transactional Outbox
+문제:
 
-시스템 간 비동기 연동은 호출 시스템이 응답을 기다리지 않아 결합도와 응답 시간을 줄일 수 있습니다. 대표 방식은 메시징 시스템, DB polling, CDC입니다.
+```text
+DB 저장 성공 + 메시지 발행 실패
+DB 저장 실패 + 메시지 발행 성공
+```
 
-메시징 시스템은 Kafka나 RabbitMQ에 이벤트를 발행하고 다른 시스템이 소비합니다. 처리량과 확장성이 좋지만 메시지 유실, 중복, 순서, DB 변경과 메시지 발행의 원자성 문제가 생깁니다. DB polling은 메시지 테이블을 DB에 저장하고 다른 프로세스가 주기적으로 읽습니다. DB transaction에 포함할 수 있어 단순하지만 polling 지연, 삭제 정책, schema 변경 부담이 있습니다. CDC는 DB binlog 같은 변경 로그를 읽어 전파하므로 애플리케이션 변경이 적지만 "왜 바뀌었는가"라는 도메인 의도가 부족할 수 있습니다.
+해결:
 
-Transactional Outbox는 DB 변경과 outbox record 저장을 같은 transaction에 넣어 이중 쓰기 문제를 줄입니다. 이후 별도 relay가 outbox를 읽어 Kafka 같은 broker로 발행하고, 성공하면 발행 완료로 표시합니다. Consumer는 중복 발행 가능성을 전제로 idempotent하게 설계해야 합니다.
+1. 비즈니스 데이터와 outbox event를 같은 DB 트랜잭션에 저장합니다.
+2. 별도 publisher가 outbox를 읽어 메시지를 발행합니다.
+3. 성공한 event는 발행 완료 처리합니다.
+
+주의:
+
+- publisher는 재시도 가능해야 합니다.
+- consumer는 중복 수신에 대비해야 합니다.
 
 ## SPOF와 HA
 
-SPOF(Single Point of Failure)는 해당 구성 요소가 실패하면 전체 시스템이 중단되는 지점입니다. API 서버가 1대뿐이면 서버 장애가 곧 서비스 장애가 됩니다. DB master가 1대라도 failover가 자동화되어 있지 않으면 master 장애가 SPOF가 됩니다.
+SPOF는 하나가 죽으면 전체 시스템이 멈추는 지점입니다.
 
-개선은 이중화, load balancer, health check, failover, replication으로 접근합니다. 다중 서버로 바꾸면 세션 불일치, 분산 락 필요성, 로그/메트릭 통합, 배포 전략, load balancing 알고리즘까지 함께 점검해야 합니다.
+대응:
 
-## 실무 판단
+- 서버 이중화
+- Load Balancer
+- DB failover
+- replica
+- health check
+- multi-AZ 구성
 
-- 재시도는 장애 복구 수단이지만 폭주를 만들 수 있으므로 timeout, backoff, circuit breaker가 필요합니다.
-- 분산 트랜잭션보다 outbox, saga, 멱등 consumer로 단순화할 수 있는지 먼저 봅니다.
-- consistency 요구는 기능별로 다릅니다. 결제와 추천 피드는 같은 기준을 적용하면 안 됩니다.
+서버 이중화 시 확인:
+
+- 세션 공유
+- 분산 락 필요 여부
+- 로그/메트릭 통합
+- 배포 전략
+- 데이터 정합성
