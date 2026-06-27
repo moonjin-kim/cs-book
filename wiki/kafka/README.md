@@ -1,91 +1,218 @@
 # Kafka
 
-Kafka는 이벤트를 파티션 로그에 저장하고 consumer가 offset을 기준으로 읽게 만드는 분산 스트리밍 플랫폼입니다.
+Kafka 면접은 **메시지를 큐가 아니라 파티션 로그로 저장하고, Consumer가 offset으로 처리 위치를 관리한다는 점**을 설명하는 것이 핵심입니다.
 
-## 핵심 개념
+## 빠른 요약
 
-| 개념 | 알아야 할 질문 |
+| 주제 | 핵심 답변 |
 | --- | --- |
-| Topic/Partition | 순서 보장 범위와 병렬성은 무엇으로 결정되는가? |
-| Producer | key, batch, ack, retry, idempotence는 어떤 trade-off를 만드는가? |
-| Consumer Group | group rebalance와 partition assignment는 처리량에 어떤 영향을 주는가? |
-| Offset | commit 시점이 중복 처리와 유실 가능성을 어떻게 바꾸는가? |
-| 전달 보장 | at-most-once, at-least-once, exactly-once의 조건과 비용은 무엇인가? |
-
-## 실무 판단
-
-- Kafka는 기본적으로 "중복될 수 있음"을 전제로 consumer 멱등성을 설계합니다.
-- 파티션 키는 순서 보장과 hot partition 위험을 동시에 결정합니다.
-- lag는 지연의 결과 지표이며 원인은 처리 시간, rebalance, downstream 병목일 수 있습니다.
+| Topic | 메시지의 논리적 분류입니다. |
+| Partition | 저장, 순서 보장, 병렬 처리의 실제 단위입니다. |
+| Broker | 파티션 로그를 저장하고 Producer/Consumer 요청을 처리합니다. |
+| Producer | key, batch, acks, retry 설정으로 메시지를 기록합니다. |
+| Consumer Group | 파티션을 그룹 내 Consumer에게 나눠 병렬 처리합니다. |
+| Offset | Consumer가 어디까지 처리했는지 나타냅니다. |
+| Rebalancing | Consumer 변화 시 파티션 할당을 다시 계산합니다. |
 
 ## 기본 구성 요소
 
-Kafka는 broker, topic, partition, producer, consumer로 구성됩니다. Broker는 Kafka cluster를 이루는 서버 노드이며 partition log를 디스크에 저장하고 producer/consumer 요청을 처리합니다. Topic은 메시지의 논리적 카테고리이고, 실제 저장과 병렬 처리 단위는 partition입니다.
+| 구성 요소 | 역할 |
+| --- | --- |
+| Broker | Kafka 서버 노드, 파티션 로그 저장 |
+| Topic | 메시지의 논리적 카테고리 |
+| Partition | append-only log, 순서 보장 단위 |
+| Producer | 메시지 발행 |
+| Consumer | 메시지 소비 |
+| Consumer Group | 여러 Consumer의 병렬 처리 단위 |
 
-Partition은 append-only log입니다. Partition 내부에서는 record 순서가 보장되지만 partition 간 전역 순서는 보장되지 않습니다. 각 partition은 replication factor에 따라 여러 broker에 복제되고, 하나의 leader와 여러 follower를 가집니다. Producer는 topic에 record를 쓰며 key가 있으면 보통 key hash로 partition을 결정합니다. Consumer는 topic을 읽고 처리하며 offset으로 읽은 위치를 관리합니다.
+순서 보장:
 
-초기 Kafka는 ZooKeeper로 cluster metadata를 관리했지만, 최근 Kafka는 KRaft 모드로 ZooKeeper 의존성을 제거하는 방향입니다.
+- 파티션 내부 순서만 보장됩니다.
+- 토픽 전체 순서는 보장되지 않습니다.
+- 같은 엔티티의 순서가 중요하면 같은 key를 사용해 같은 파티션으로 보내야 합니다.
 
-## Consumer Group과 Rebalancing
+## Consumer Group
 
-같은 `group.id`를 가진 consumer들은 하나의 consumer group을 이룹니다. 하나의 partition은 같은 group 안에서 동시에 하나의 consumer에게만 할당됩니다. 따라서 병렬 처리 상한은 partition 수입니다. Consumer가 partition 수보다 많으면 일부 consumer는 할당받을 partition이 없어 쉬게 됩니다.
+같은 `group.id`를 가진 Consumer들은 하나의 그룹입니다.
 
-서로 다른 consumer group은 같은 topic을 독립적으로 읽습니다. 예를 들어 주문 처리 group과 분석 group은 같은 주문 topic을 각자의 offset으로 소비할 수 있습니다.
+| 조건 | 결과 |
+| --- | --- |
+| 파티션 4개, Consumer 2개 | 각 Consumer가 2개 파티션 처리 |
+| 파티션 4개, Consumer 4개 | 1:1 처리 |
+| 파티션 4개, Consumer 5개 | 1개 Consumer는 idle |
 
-Partition assignment 전략은 Range, RoundRobin, Sticky, CooperativeSticky 등이 있습니다. Sticky는 기존 할당을 최대한 유지해 상태 재구성 비용을 줄이고, CooperativeSticky는 영향받지 않는 partition은 계속 소비하게 해 stop-the-world rebalancing 충격을 줄입니다.
+핵심:
 
-Rebalancing은 consumer 합류/이탈, heartbeat 실패, `max.poll.interval.ms` 초과, partition 수 변경 시 발생합니다. 전통적인 rebalancing은 모든 consumer가 할당을 반납하고 다시 받는 동안 소비가 멈춥니다. 운영에서는 `max.poll.records`를 줄여 처리 시간을 짧게 유지하고, 처리 시간이 길면 `max.poll.interval.ms`를 조정하며, `group.instance.id`로 static membership을 적용해 불필요한 rebalancing을 줄입니다.
+- 병렬 처리 상한은 파티션 수입니다.
+- 서로 다른 Consumer Group은 같은 Topic을 독립적으로 읽습니다.
 
-## 순서 보장
+## Rebalancing
 
-Kafka는 partition 단위로만 순서를 보장합니다. 같은 주문의 `created -> paid -> shipped` 순서가 중요하다면 주문 ID를 message key로 사용해 같은 주문 이벤트가 같은 partition으로 들어가게 해야 합니다. Topic 전체 전역 순서가 필요하면 partition을 1개로 둬야 하지만 처리량 확장이 제한됩니다.
+Rebalancing은 파티션 할당을 다시 계산하는 과정입니다.
 
-Producer 설정도 순서에 영향을 줍니다. `max.in.flight.requests.per.connection`이 1보다 크고 retry가 발생하면 batch 순서가 뒤집힐 수 있습니다. `enable.idempotence=true`를 사용하면 producer id와 sequence number로 중복과 순서를 제어하므로 일반적으로 권장됩니다. Consumer 내부에서 thread pool로 비동기 처리하면 partition 순서가 깨질 수 있으므로, 순서가 중요하면 partition 또는 key 단위 직렬 처리를 유지합니다.
+발생 조건:
+
+- Consumer 합류
+- Consumer 이탈
+- heartbeat 실패
+- `max.poll.interval.ms` 초과
+- 파티션 수 변경
+
+문제:
+
+- 전통적인 rebalance는 소비 중단을 만들 수 있습니다.
+- stateful consumer는 상태 재구성 비용이 큽니다.
+
+완화:
+
+- `max.poll.records` 줄이기
+- `max.poll.interval.ms` 조정
+- `CooperativeStickyAssignor` 사용
+- `group.instance.id`로 static membership 적용
 
 ## Offset과 Commit
 
-Offset은 partition 안 record의 순차 위치입니다. Consumer offset은 `__consumer_offsets` 내부 topic에 저장됩니다. Offset commit은 "여기까지 처리했다"는 진행 상태 저장이며, consumer 재시작 시 마지막 commit 다음 offset부터 읽습니다.
+Offset은 파티션 안에서 record 위치입니다.
 
-Auto commit은 편하지만 처리 전에 commit될 수 있어 유실 위험이 있습니다. 실무에서는 `enable.auto.commit=false`로 두고 처리 후 수동 commit하는 경우가 많습니다. `commitSync()`는 안전하지만 blocking 비용이 있고, `commitAsync()`는 빠르지만 실패 재시도와 순서 관리가 필요합니다.
+| 커밋 방식 | 특징 | 주의 |
+| --- | --- | --- |
+| auto commit | 편함 | 처리 전 commit되어 유실 가능 |
+| `commitSync()` | 안전 | blocking 비용 |
+| `commitAsync()` | 빠름 | 실패 처리와 순서 관리 필요 |
 
-일반적인 at-least-once 패턴은 poll, process, commit 순서입니다. 처리 후 commit 전에 장애가 나면 같은 메시지를 다시 처리할 수 있으므로 consumer 로직은 멱등해야 합니다.
+일반적인 at-least-once 흐름:
 
-## Producer acks와 복제
+```text
+poll -> process -> commit
+```
 
-`acks`는 producer가 전송 성공으로 간주하기 위해 broker로부터 얼마나 확인받을지를 정합니다.
+장애 시:
+
+- process 후 commit 전 죽으면 재처리됩니다.
+- 따라서 Consumer 처리는 멱등해야 합니다.
+
+## Producer 설정
+
+### acks
 
 | 설정 | 의미 | trade-off |
 | --- | --- | --- |
-| `acks=0` | 응답을 기다리지 않음 | 가장 빠르지만 손실을 알 수 없음 |
-| `acks=1` | leader 기록 후 성공 | follower 복제 전 leader 장애 시 손실 가능 |
-| `acks=all` | ISR 기준 복제 확인 후 성공 | 가장 안전하지만 지연 증가 |
+| `acks=0` | 응답을 기다리지 않음 | 빠르지만 손실 확인 불가 |
+| `acks=1` | leader 기록 후 성공 | leader 장애 시 손실 가능 |
+| `acks=all` | ISR 복제 확인 후 성공 | 안전하지만 지연 증가 |
 
-Kafka 3.0부터 producer 기본값은 안정성 중심으로 바뀌어 `acks=all`, idempotence enabled 쪽에 가깝습니다. 데이터 손실을 줄이려면 `replication.factor=3`, `min.insync.replicas=2`, `acks=all`, `enable.idempotence=true` 조합을 고려합니다. ISR 수가 `min.insync.replicas`보다 작으면 write가 거부되어 가용성은 낮아질 수 있지만 손실 위험은 줄어듭니다.
+안정성 조합:
+
+```text
+replication.factor=3
+min.insync.replicas=2
+acks=all
+enable.idempotence=true
+```
+
+### Idempotent Producer
+
+멱등 Producer는 PID와 sequence number로 중복 record를 broker가 제거하게 합니다.
+
+효과:
+
+- retry로 인한 중복 감소
+- 파티션 내부 순서 안정화
+
+## 메시지 순서
+
+Kafka는 파티션 단위 순서만 보장합니다.
+
+예:
+
+```java
+producer.send(new ProducerRecord<>("orders", orderId, event));
+```
+
+같은 `orderId`는 같은 파티션으로 가므로 주문 상태 이벤트 순서를 지킬 수 있습니다.
+
+주의:
+
+- 파티션 수를 늘리면 key-to-partition mapping이 바뀔 수 있습니다.
+- Consumer 내부에서 thread pool로 병렬 처리하면 순서가 깨질 수 있습니다.
+
+## 전달 보장
+
+| 보장 | 의미 | 조건 |
+| --- | --- | --- |
+| At-most-once | 최대 한 번 처리, 유실 가능 | 처리 전 commit |
+| At-least-once | 최소 한 번 처리, 중복 가능 | 처리 후 commit |
+| Exactly-once | Kafka 내부 read/write를 정확히 한 번처럼 처리 | idempotence + transaction |
+
+주의:
+
+- Kafka EOS는 Kafka 내부 처리에 대한 보장입니다.
+- 외부 DB/API까지 exactly-once가 되려면 outbox, idempotency key, unique constraint가 필요합니다.
 
 ## Exactly Once Semantics
 
-Kafka EOS는 idempotent producer와 transaction을 조합합니다. Idempotent producer는 PID와 partition별 sequence number로 broker가 중복 record를 제거하게 합니다. Transactional producer는 여러 partition write와 consumed offset commit을 하나의 transaction으로 묶어 read-process-write 패턴을 안전하게 만듭니다.
+구성 요소:
 
-Consumer는 `isolation.level=read_committed`로 설정해야 abort된 transaction record를 건너뜁니다. 단, Kafka의 exactly-once는 Kafka 내부 read/write에 대한 보장입니다. 외부 DB나 API 호출까지 정확히 한 번으로 만들려면 outbox, idempotency key, unique constraint 같은 애플리케이션 설계가 필요합니다.
+| 요소 | 역할 |
+| --- | --- |
+| Idempotent Producer | 중복 write 제거 |
+| Transactional Producer | 여러 파티션 write와 offset commit을 하나로 묶음 |
+| `read_committed` | commit된 transaction만 읽음 |
 
-## Partition 수 설계
+흐름:
 
-Partition 수는 처리량, 병렬성, 운영 비용을 함께 봐야 합니다. Consumer group의 병렬 처리 상한은 partition 수이고, broker 수의 배수로 두면 부하 분산에 유리합니다. 하지만 partition이 많으면 replication traffic, file handle, page cache, controller metadata, rebalance 비용이 증가합니다.
+```text
+beginTransaction
+ -> consume
+ -> process
+ -> produce
+ -> sendOffsetsToTransaction
+ -> commitTransaction
+```
 
-운영 중 partition 수는 늘릴 수 있지만 줄일 수 없습니다. 또한 partition을 늘리면 key hash mapping이 바뀌어 같은 key의 새 이벤트가 다른 partition으로 갈 수 있으므로 순서 보장 요구가 있는 topic은 특히 조심해야 합니다.
+## 파티션 수 설계
+
+고려 요소:
+
+- 목표 처리량
+- Consumer 병렬성
+- Broker 수와 부하 분산
+- replication traffic
+- file handle, page cache
+- rebalancing 비용
+- key 순서 보장 요구
+
+주의:
+
+- 파티션 수는 늘릴 수 있지만 줄일 수 없습니다.
+- 운영 중 파티션 추가는 key 순서 보장에 영향을 줄 수 있습니다.
 
 ## Kafka Streams와 Kafka Connect
 
-Kafka Streams는 topic의 데이터를 실시간으로 filter, map, aggregate, join하는 Java library입니다. 별도 cluster 없이 애플리케이션에 embedded되고, state store와 `processing.guarantee=exactly_once_v2`를 지원합니다.
+| 구분 | Kafka Streams | Kafka Connect |
+| --- | --- | --- |
+| 역할 | Kafka topic 간 실시간 처리 | 외부 시스템과 Kafka 연결 |
+| 형태 | Java library | Worker framework |
+| 사용 | filter, map, join, aggregate | DB source, S3 sink, Elasticsearch sink |
+| 상태 관리 | state store 지원 | connector offset 관리 |
 
-Kafka Connect는 외부 시스템과 Kafka 사이 데이터 이동을 담당합니다. Source connector는 DB, file, API에서 Kafka로 데이터를 넣고, Sink connector는 Kafka topic을 Elasticsearch, S3, DB 등에 씁니다. Connect는 worker cluster, task 분산, offset 관리, SMT를 제공합니다.
+정리:
 
-정리하면 Connect는 Kafka 경계의 입출력, Streams는 Kafka 내부 topic 간 처리에 적합합니다.
+- Kafka 내부 데이터 가공은 Streams
+- 외부 시스템 입출력은 Connect
 
-## Kafka와 RabbitMQ
+## Kafka vs RabbitMQ
 
-Kafka는 partitioned append-only log입니다. 메시지는 소비해도 사라지지 않고 보존 기간 동안 남아 replay가 쉽습니다. 대규모 이벤트 스트리밍, 로그 수집, 이벤트 소싱, 실시간 분석에 적합합니다.
+| 구분 | Kafka | RabbitMQ |
+| --- | --- | --- |
+| 모델 | 분산 append-only log | queue + exchange |
+| 메시지 보존 | 소비 후에도 보존 기간 동안 유지 | ACK 후 queue에서 제거 |
+| 재처리 | offset reset으로 쉬움 | 기본적으로 어려움 |
+| 처리량 | 매우 높음 | 높지만 Kafka보다 낮은 편 |
+| 라우팅 | 단순 | exchange 기반 복잡한 routing |
+| 적합 | 이벤트 스트리밍, 로그, 분석 | 작업 큐, RPC, 복잡한 routing |
 
-RabbitMQ는 queue와 exchange 기반 message broker입니다. Consumer ACK 후 메시지가 queue에서 제거되는 작업 큐 모델에 자연스럽고, AMQP exchange를 통한 복잡한 routing, priority, TTL, DLQ 같은 기능이 강합니다.
+핵심 차이:
 
-핵심 차이는 메시지를 로그로 볼 것인지 큐로 볼 것인지입니다. 여러 consumer가 같은 이벤트 이력을 각자 재처리해야 하면 Kafka, 복잡한 routing과 전통적인 작업 분배가 중요하면 RabbitMQ가 자연스럽습니다.
+- Kafka는 메시지를 로그로 봅니다.
+- RabbitMQ는 메시지를 큐로 봅니다.
