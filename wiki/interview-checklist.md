@@ -31,6 +31,28 @@
 - connection timeout, socket timeout, read timeout을 구분할 수 있는가?
 - retry에 timeout, exponential backoff, jitter, idempotency key가 필요한 이유를 설명할 수 있는가?
 - 프로세스와 스레드의 차이를 메모리 구조와 문맥 교환 비용으로 설명할 수 있는가?
+- `fork()`, `exec()`, `wait()` 흐름과 zombie process가 생기는 이유를 설명할 수 있는가?
+- user mode와 kernel mode, system call이 필요한 이유와 mode switch 비용을 설명할 수 있는가?
+- signal에서 `SIGTERM`, `SIGKILL`, `SIGCHLD`, `SIGSEGV`의 의미와 graceful shutdown 관계를 설명할 수 있는가?
+- CPU scheduling에서 throughput, latency, fairness, starvation trade-off를 설명할 수 있는가?
+- context switch가 register 저장/복원 외에 cache, TLB, scheduler 비용을 만드는 이유를 설명할 수 있는가?
+- priority inversion과 priority inheritance가 필요한 상황을 설명할 수 있는가?
+- mutex, semaphore, read/write lock, condition variable의 용도 차이를 설명할 수 있는가?
+- condition variable을 사용할 때 조건을 loop로 재확인해야 하는 이유를 설명할 수 있는가?
+- futex가 uncontended path를 user space에서 처리하고 대기 시 kernel wait/wake를 사용하는 이유를 설명할 수 있는가?
+- 가상 메모리, page table, TLB, page fault의 관계를 설명할 수 있는가?
+- minor page fault와 major page fault, demand paging, copy-on-write fault를 구분할 수 있는가?
+- `fork()` 이후 copy-on-write가 메모리 복사 비용을 늦추는 방식을 설명할 수 있는가?
+- heap, stack, mmap, shared memory의 용도와 장애 패턴을 설명할 수 있는가?
+- page cache, dirty page, writeback, `fsync()`가 파일 쓰기 영속성에 주는 영향을 설명할 수 있는가?
+- swap과 thrashing이 latency와 I/O wait을 키우는 과정을 설명할 수 있는가?
+- OOM을 RSS, heap, native memory, thread stack, page cache, cgroup limit 관점에서 분석할 수 있는가?
+- file descriptor leak과 `EMFILE`, `close-on-exec`가 필요한 상황을 설명할 수 있는가?
+- VFS의 inode, dentry, file object, superblock 역할을 설명할 수 있는가?
+- blocking I/O, non-blocking I/O, async I/O, I/O multiplexing을 구분할 수 있는가?
+- select, poll, epoll의 확장성 차이와 epoll edge-triggered 사용 시 drain loop 필요성을 설명할 수 있는가?
+- container가 VM과 다르게 host kernel을 공유하고 namespace/cgroup으로 격리한다는 점을 설명할 수 있는가?
+- cgroup CPU throttling, memory limit, PID 1 signal/zombie reaping 문제를 설명할 수 있는가?
 - 명령어 파이프라이닝과 데이터/제어/구조적 위험을 설명할 수 있는가?
 - 참조 지역성으로 캐시 친화적인 배열 순회를 설명할 수 있는가?
 - HashMap의 평균 O(1)이 항상 보장되지 않는 이유를 설명할 수 있는가?

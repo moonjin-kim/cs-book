@@ -14,6 +14,20 @@ entities:
     repo: cs-theory-notes
     package: os/process
     wiki_doc: wiki/operating-system/README.md
+  - id: fork-exec
+    name: fork와 exec
+    type: process
+    summary: fork는 child process를 만들고 exec는 현재 process image를 새 program으로 교체한다.
+    repo: cs-theory-notes
+    package: os/fork-exec
+    wiki_doc: wiki/operating-system/README.md
+  - id: signal
+    name: Signal
+    type: process
+    summary: 프로세스나 스레드에 비동기 이벤트를 전달해 종료, 인터럽트, child 상태 변경 등을 처리한다.
+    repo: cs-theory-notes
+    package: os/signal
+    wiki_doc: wiki/operating-system/README.md
   - id: thread
     name: Thread
     type: process
@@ -42,12 +56,26 @@ entities:
     repo: cs-theory-notes
     package: os/system-call
     wiki_doc: wiki/operating-system/README.md
+  - id: user-kernel-mode
+    name: User Mode와 Kernel Mode
+    type: data
+    summary: 사용자 프로그램과 커널 실행 권한을 분리해 하드웨어와 커널 자원을 보호한다.
+    repo: cs-theory-notes
+    package: os/user-kernel-mode
+    wiki_doc: wiki/operating-system/README.md
   - id: synchronization
     name: 동기화
     type: process
     summary: 여러 스레드가 공유 자원에 접근할 때 경쟁 상태를 막기 위한 제어 방식이다.
     repo: cs-theory-notes
     package: os/synchronization
+    wiki_doc: wiki/operating-system/README.md
+  - id: futex
+    name: Futex
+    type: process
+    summary: 경쟁이 없을 때는 사용자 공간 atomic 연산으로 처리하고 대기 시에만 커널 wait/wake를 사용하는 동기화 기반이다.
+    repo: cs-theory-notes
+    package: os/futex
     wiki_doc: wiki/operating-system/README.md
   - id: deadlock
     name: Deadlock
@@ -70,6 +98,27 @@ entities:
     repo: cs-theory-notes
     package: os/memory
     wiki_doc: wiki/operating-system/README.md
+  - id: page-table-tlb
+    name: Page Table과 TLB
+    type: data
+    summary: 페이지 테이블은 가상 페이지를 물리 프레임에 매핑하고 TLB는 주소 변환 결과를 캐시한다.
+    repo: cs-theory-notes
+    package: os/page-table-tlb
+    wiki_doc: wiki/operating-system/README.md
+  - id: page-fault
+    name: Page Fault
+    type: process
+    summary: 접근한 페이지가 매핑되지 않았거나 메모리에 없거나 권한이 맞지 않을 때 커널이 처리하는 예외다.
+    repo: cs-theory-notes
+    package: os/page-fault
+    wiki_doc: wiki/operating-system/README.md
+  - id: copy-on-write
+    name: Copy-on-Write
+    type: process
+    summary: fork 후 공유 페이지를 읽기 전용으로 두고 write 시점에 private copy를 만들어 복사 비용을 늦춘다.
+    repo: cs-theory-notes
+    package: os/copy-on-write
+    wiki_doc: wiki/operating-system/README.md
   - id: continuous-memory-allocation
     name: 연속 메모리 할당
     type: process
@@ -84,12 +133,47 @@ entities:
     repo: cs-theory-notes
     package: os/page-replacement
     wiki_doc: wiki/operating-system/README.md
+  - id: page-cache
+    name: Page Cache
+    type: process
+    summary: 파일 데이터를 메모리에 캐시해 디스크 I/O를 줄이고 dirty page writeback과 fsync로 영속화를 조절한다.
+    repo: cs-theory-notes
+    package: os/page-cache
+    wiki_doc: wiki/operating-system/README.md
+  - id: oom
+    name: OOM과 Memory Pressure
+    type: process
+    summary: 물리 메모리와 cgroup limit이 부족할 때 swap, reclaim, OOM killer가 애플리케이션에 영향을 준다.
+    repo: cs-theory-notes
+    package: os/oom
+    wiki_doc: wiki/operating-system/README.md
   - id: file-io
     name: File과 I/O
     type: process
     summary: 파일 디스크립터, 버퍼, 블로킹 여부, 페이지 캐시로 입출력을 처리한다.
     repo: cs-theory-notes
     package: os/io
+    wiki_doc: wiki/operating-system/README.md
+  - id: file-descriptor
+    name: File Descriptor
+    type: data
+    summary: 프로세스가 open file, socket, pipe, device를 참조하는 정수 핸들이다.
+    repo: cs-theory-notes
+    package: os/file-descriptor
+    wiki_doc: wiki/operating-system/README.md
+  - id: vfs
+    name: VFS
+    type: process
+    summary: 다양한 파일시스템 구현을 inode, dentry, file, superblock 같은 공통 인터페이스로 추상화한다.
+    repo: cs-theory-notes
+    package: os/vfs
+    wiki_doc: wiki/operating-system/README.md
+  - id: event-multiplexing
+    name: I/O Multiplexing
+    type: process
+    summary: select, poll, epoll로 여러 file descriptor의 readiness를 감시해 많은 연결을 처리한다.
+    repo: cs-theory-notes
+    package: os/io-multiplexing
     wiki_doc: wiki/operating-system/README.md
   - id: disk-access
     name: Disk Access Time
@@ -98,8 +182,21 @@ entities:
     repo: cs-theory-notes
     package: os/disk-access
     wiki_doc: wiki/operating-system/README.md
+  - id: cgroup-namespace
+    name: cgroup과 Namespace
+    type: process
+    summary: 컨테이너에서 자원 제한과 PID, mount, network 같은 이름 공간 격리를 제공한다.
+    repo: cs-theory-notes
+    package: os/cgroup-namespace
+    wiki_doc: wiki/operating-system/README.md
 
 relations:
+  - from: fork-exec
+    to: process
+    type: depends_on
+  - from: signal
+    to: process
+    type: depends_on
   - from: thread
     to: process
     type: depends_on
@@ -115,9 +212,15 @@ relations:
   - from: system-call
     to: process
     type: depends_on
+  - from: system-call
+    to: user-kernel-mode
+    type: depends_on
   - from: synchronization
     to: thread
     type: consumes
+  - from: futex
+    to: synchronization
+    type: depends_on
   - from: synchronization
     to: deadlock
     type: produces
@@ -127,17 +230,47 @@ relations:
   - from: process
     to: virtual-memory
     type: depends_on
+  - from: page-table-tlb
+    to: virtual-memory
+    type: depends_on
+  - from: page-fault
+    to: virtual-memory
+    type: depends_on
+  - from: copy-on-write
+    to: fork-exec
+    type: depends_on
+  - from: copy-on-write
+    to: page-fault
+    type: depends_on
   - from: continuous-memory-allocation
     to: virtual-memory
     type: depends_on
   - from: page-replacement
     to: virtual-memory
     type: depends_on
+  - from: page-cache
+    to: file-io
+    type: depends_on
+  - from: oom
+    to: virtual-memory
+    type: depends_on
   - from: file-io
     to: process
     type: depends_on
+  - from: file-descriptor
+    to: file-io
+    type: depends_on
+  - from: vfs
+    to: file-io
+    type: depends_on
+  - from: event-multiplexing
+    to: file-descriptor
+    type: consumes
   - from: disk-access
     to: file-io
+    type: depends_on
+  - from: cgroup-namespace
+    to: process
     type: depends_on
   - from: process
     to: linux
