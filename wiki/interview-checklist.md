@@ -19,6 +19,7 @@
 - 연결 리스트의 삽입/삭제가 O(1)이라는 말의 전제 조건을 설명할 수 있는가?
 - Stack을 Java에서 `Stack`보다 `Deque`로 구현하는 이유를 설명할 수 있는가?
 - B+Tree 인덱스가 어떤 쿼리에 유리하고 어떤 쿼리에 불리한가?
+- RDB의 primary key, foreign key, unique constraint가 애플리케이션 race condition을 어떻게 줄이는가?
 
 ## 백엔드 실무
 
@@ -130,9 +131,19 @@
 - 분산 시스템에서 retry가 장애를 키우는 경우는 언제인가?
 - Bulkhead와 Circuit Breaker로 외부 서비스 장애 전파를 어떻게 줄일 수 있는가?
 - MVCC와 lock 기반 동시성 제어, gap/next-key lock을 설명할 수 있는가?
+- READ COMMITTED와 REPEATABLE READ의 snapshot 기준 차이, DB별 동작 차이를 설명할 수 있는가?
+- Lost Update와 Write Skew를 막기 위한 atomic update, version, row lock, constraint 전략을 설명할 수 있는가?
+- 오래 열린 트랜잭션이 vacuum/undo, lock, connection pool에 주는 영향을 설명할 수 있는가?
+- DB deadlock과 lock wait을 구분하고 lock 획득 순서, 인덱스, 트랜잭션 축소로 줄일 수 있는가?
 - B+Tree가 DB 인덱스에 유리한 이유와 clustered/covering index를 설명할 수 있는가?
-- EXPLAIN의 `type`, `key`, `rows`, `Extra`를 보고 어떤 판단을 하는가?
+- 복합 인덱스 column 순서를 equality, range, order by, covering 기준으로 설계할 수 있는가?
+- EXPLAIN의 `type`, `key`, `rows`, `Extra` 또는 PostgreSQL plan node를 보고 어떤 판단을 하는가?
+- EXPLAIN ANALYZE가 실제 쿼리를 실행한다는 점과 예상 row/실제 row 차이를 해석할 수 있는가?
+- Offset paging과 Cursor/Keyset paging의 성능, 일관성, UX trade-off를 설명할 수 있는가?
 - Sharding과 partitioning, RDB와 NoSQL의 선택 기준을 설명할 수 있는가?
+- Replication lag가 read-after-write 일관성을 깨는 경우와 대응 전략을 설명할 수 있는가?
+- Connection pool size를 application thread pool, DB 처리량, query latency와 함께 조정할 수 있는가?
+- Backup, restore drill, RPO/RTO, schema migration의 운영 의미를 설명할 수 있는가?
 - CDN을 도입할 때 TTL, invalidation, 장애 fallback을 어떻게 잡을 것인가?
 - 로드밸런싱 알고리즘별 trade-off와 session affinity 문제를 설명할 수 있는가?
 - forward proxy와 reverse proxy의 위치와 목적을 구분할 수 있는가?

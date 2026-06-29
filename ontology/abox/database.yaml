@@ -21,6 +21,13 @@ entities:
     repo: cs-theory-notes
     package: database/normalization
     wiki_doc: wiki/database/README.md
+  - id: database-key-design
+    name: Key 설계
+    type: data
+    summary: primary key, foreign key, surrogate key, natural key를 기준으로 식별성과 제약 조건을 설계한다.
+    repo: cs-theory-notes
+    package: database/key-design
+    wiki_doc: wiki/database/README.md
   - id: acid
     name: ACID
     type: data
@@ -41,6 +48,13 @@ entities:
     summary: 동시에 실행되는 트랜잭션이 서로의 변경을 어느 정도 볼 수 있는지 정하는 수준이다.
     repo: cs-theory-notes
     package: database/isolation
+    wiki_doc: wiki/database/README.md
+  - id: lost-update-write-skew
+    name: Lost Update와 Write Skew
+    type: failure-mode
+    summary: 동시 트랜잭션이 같은 값이나 서로 다른 row를 갱신하면서 비즈니스 불변식을 깨는 현상이다.
+    repo: cs-theory-notes
+    package: database/lost-update-write-skew
     wiki_doc: wiki/database/README.md
   - id: index-query-plan
     name: 인덱스와 실행 계획
@@ -77,6 +91,13 @@ entities:
     repo: cs-theory-notes
     package: database/explain
     wiki_doc: wiki/database/README.md
+  - id: explain-analyze
+    name: EXPLAIN ANALYZE
+    type: process
+    summary: 실제 쿼리를 실행해 예상 실행 계획과 실제 row/time 차이를 비교하는 분석 도구다.
+    repo: cs-theory-notes
+    package: database/explain-analyze
+    wiki_doc: wiki/database/README.md
   - id: cardinality-selectivity
     name: Cardinality와 Selectivity
     type: data
@@ -112,6 +133,13 @@ entities:
     repo: cs-theory-notes
     package: database/gap-nextkey-lock
     wiki_doc: wiki/database/README.md
+  - id: database-deadlock
+    name: DB Deadlock
+    type: failure-mode
+    summary: 서로 다른 트랜잭션이 상대가 가진 lock을 기다리며 순환 대기하는 장애 상황이다.
+    repo: cs-theory-notes
+    package: database/deadlock
+    wiki_doc: wiki/database/README.md
   - id: replication
     name: DB Replication
     type: process
@@ -125,6 +153,13 @@ entities:
     summary: Key-Value, Document, Column, Graph 등 RDB 밖의 저장 모델과 사용 사례를 비교한다.
     repo: cs-theory-notes
     package: database/nosql-types
+    wiki_doc: wiki/database/README.md
+  - id: partitioning-sharding
+    name: Partitioning과 Sharding
+    type: process
+    summary: 하나의 DB 내부 분할과 여러 DB 인스턴스 분산 저장을 확장성과 운영 비용 기준으로 비교한다.
+    repo: cs-theory-notes
+    package: database/partitioning-sharding
     wiki_doc: wiki/database/README.md
   - id: paging-query
     name: Paging Query
@@ -140,17 +175,30 @@ entities:
     repo: cs-theory-notes
     package: database/connection-pool
     wiki_doc: wiki/database/README.md
+  - id: backup-restore-migration
+    name: Backup, Restore, Migration
+    type: process
+    summary: RPO/RTO, PITR, restore drill, schema migration으로 운영 데이터 복구성과 변경 안정성을 관리한다.
+    repo: cs-theory-notes
+    package: database/backup-restore-migration
+    wiki_doc: wiki/database/README.md
 
 relations:
   - from: normalization
     to: relational-model
     type: consumes
+  - from: database-key-design
+    to: relational-model
+    type: depends_on
   - from: transaction
     to: isolation-level
     type: depends_on
   - from: transaction
     to: acid
     type: depends_on
+  - from: lost-update-write-skew
+    to: isolation-level
+    type: failure_mode_of
   - from: lock-mvcc
     to: isolation-level
     type: depends_on
@@ -163,6 +211,9 @@ relations:
   - from: gap-nextkey-lock
     to: lock-mvcc
     type: depends_on
+  - from: database-deadlock
+    to: lock-mvcc
+    type: failure_mode_of
   - from: index-query-plan
     to: relational-model
     type: consumes
@@ -178,6 +229,9 @@ relations:
   - from: explain
     to: index-query-plan
     type: depends_on
+  - from: explain-analyze
+    to: explain
+    type: depends_on
   - from: cardinality-selectivity
     to: index-query-plan
     type: depends_on
@@ -185,6 +239,12 @@ relations:
     to: index-query-plan
     type: depends_on
   - from: replication
+    to: transaction
+    type: depends_on
+  - from: partitioning-sharding
+    to: replication
+    type: depends_on
+  - from: backup-restore-migration
     to: transaction
     type: depends_on
   - from: transaction
