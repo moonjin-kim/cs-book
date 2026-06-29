@@ -112,13 +112,22 @@
 - Redis Stream의 pending entry, retry/claim, trimming, idempotency 필요성을 설명할 수 있는가?
 - Redis가 command 실행을 single thread로 처리하는 이유와 Redis 6 I/O thread의 범위를 설명할 수 있는가?
 - Kafka broker, topic, partition, producer, consumer의 역할을 설명할 수 있는가?
+- Kafka를 queue가 아니라 partitioned replicated log로 설명할 수 있는가?
+- Kafka retention과 log compaction이 소비 여부와 독립적으로 동작한다는 점을 설명할 수 있는가?
 - Kafka consumer group의 partition assignment와 rebalancing 문제를 설명할 수 있는가?
+- `max.poll.interval.ms`, `max.poll.records`, heartbeat, static membership이 rebalancing에 미치는 영향을 설명할 수 있는가?
+- ConsumerRebalanceListener에서 partition revoke/assign 시 offset과 state를 어떻게 다뤄야 하는지 설명할 수 있는가?
 - Kafka가 partition 단위 순서만 보장한다는 의미와 key 설계 영향을 설명할 수 있는가?
 - Kafka offset commit 방식과 at-least-once 처리 패턴을 설명할 수 있는가?
+- poison pill, DLQ, retry topic, idempotent consumer를 설계할 수 있는가?
 - Kafka producer `acks`, `min.insync.replicas`, idempotence 설정의 trade-off를 설명할 수 있는가?
+- `delivery.timeout.ms`, `linger.ms`, `batch.size`, compression이 latency와 throughput에 미치는 영향을 설명할 수 있는가?
 - Kafka EOS의 idempotent producer, transaction, `read_committed` 조건과 한계를 설명할 수 있는가?
+- Kafka EOS가 외부 DB/API까지 exactly-once를 보장하지 않는 이유와 transactional outbox 대안을 설명할 수 있는가?
 - Kafka와 RabbitMQ를 로그와 큐 관점에서 비교할 수 있는가?
 - Kafka partition 수를 처리량, rebalance, file handle, key 순서 관점에서 결정할 수 있는가?
+- Consumer lag를 producer 증가, consumer 처리 지연, downstream 장애, hot partition 관점에서 해석할 수 있는가?
+- Kafka event schema evolution과 backward/forward compatibility 필요성을 설명할 수 있는가?
 - Kafka Streams와 Kafka Connect의 역할 차이를 설명할 수 있는가?
 - SOLID, TDA, 응집도/결합도를 변경 비용 관점에서 설명할 수 있는가?
 - Singleton, Strategy, Template Method, Null Object 패턴의 장단점을 설명할 수 있는가?

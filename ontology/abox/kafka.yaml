@@ -14,6 +14,13 @@ entities:
     repo: cs-theory-notes
     package: kafka/topic-partition
     wiki_doc: wiki/kafka/README.md
+  - id: retention-compaction
+    name: Retention과 Compaction
+    type: process
+    summary: 소비 여부와 별개로 로그 보관 기간·크기와 key별 최신값 보존 정책을 관리한다.
+    repo: cs-theory-notes
+    package: kafka/retention-compaction
+    wiki_doc: wiki/kafka/README.md
   - id: producer
     name: Producer
     type: process
@@ -63,6 +70,13 @@ entities:
     repo: cs-theory-notes
     package: kafka/acks
     wiki_doc: wiki/kafka/README.md
+  - id: idempotent-producer
+    name: Idempotent Producer
+    type: process
+    summary: producer id, epoch, sequence number로 retry 중복 write를 broker가 제거하게 한다.
+    repo: cs-theory-notes
+    package: kafka/idempotent-producer
+    wiki_doc: wiki/kafka/README.md
   - id: rebalancing
     name: Rebalancing
     type: failure-mode
@@ -70,12 +84,40 @@ entities:
     repo: cs-theory-notes
     package: kafka/rebalancing
     wiki_doc: wiki/kafka/README.md
+  - id: poison-pill-dlq
+    name: Poison Pill과 DLQ
+    type: failure-mode
+    summary: 특정 레코드가 반복 실패해 파티션 처리를 막는 상황과 dead letter topic 대응을 다룬다.
+    repo: cs-theory-notes
+    package: kafka/poison-pill-dlq
+    wiki_doc: wiki/kafka/README.md
   - id: partition-planning
     name: Partition 수 설계
     type: process
     summary: 목표 처리량, Consumer 병렬성, 리밸런싱 비용을 기준으로 파티션 수를 결정한다.
     repo: cs-theory-notes
     package: kafka/partition-planning
+    wiki_doc: wiki/kafka/README.md
+  - id: consumer-lag
+    name: Consumer Lag
+    type: data
+    summary: consumer가 log end offset을 따라가지 못하는 정도로 처리 지연과 병목을 관측한다.
+    repo: cs-theory-notes
+    package: kafka/consumer-lag
+    wiki_doc: wiki/kafka/README.md
+  - id: transactional-outbox
+    name: Transactional Outbox
+    type: process
+    summary: DB 변경과 이벤트 발행 요청을 같은 DB 트랜잭션에 기록해 이중 쓰기 문제를 줄인다.
+    repo: cs-theory-notes
+    package: kafka/transactional-outbox
+    wiki_doc: wiki/kafka/README.md
+  - id: schema-evolution
+    name: Schema Evolution
+    type: data
+    summary: producer와 consumer 독립 배포를 위해 이벤트 스키마 호환성과 버전 관리를 설계한다.
+    repo: cs-theory-notes
+    package: kafka/schema-evolution
     wiki_doc: wiki/kafka/README.md
   - id: streams-connect
     name: Kafka Streams와 Connect
@@ -96,6 +138,9 @@ relations:
   - from: broker-cluster
     to: topic-partition
     type: hosts
+  - from: retention-compaction
+    to: topic-partition
+    type: depends_on
   - from: producer
     to: topic-partition
     type: produces
@@ -120,11 +165,26 @@ relations:
   - from: producer-acks
     to: broker-cluster
     type: depends_on
+  - from: idempotent-producer
+    to: producer-acks
+    type: depends_on
   - from: rebalancing
+    to: consumer-group
+    type: failure_mode_of
+  - from: poison-pill-dlq
     to: consumer-group
     type: failure_mode_of
   - from: partition-planning
     to: topic-partition
+    type: depends_on
+  - from: consumer-lag
+    to: consumer-group
+    type: depends_on
+  - from: transactional-outbox
+    to: delivery-semantics
+    type: depends_on
+  - from: schema-evolution
+    to: producer
     type: depends_on
   - from: streams-connect
     to: consumer-group
