@@ -163,10 +163,31 @@
 ## 설계와 운영
 
 - 인증과 인가를 분리해서 설명할 수 있는가?
+- 인증 성공과 인가 허용이 다른 이유, principal/role/permission/resource 조건을 구분할 수 있는가?
+- IDOR와 horizontal privilege escalation을 object-level authorization으로 막는 방법을 설명할 수 있는가?
+- Deny by default, least privilege, server-side access control 원칙을 API 설계에 적용할 수 있는가?
+- Session fixation을 막기 위해 로그인 성공 시 session id rotation이 필요한 이유를 설명할 수 있는가?
+- Session, JWT, opaque token의 폐기, claim 최신성, 저장 위치 trade-off를 설명할 수 있는가?
+- JWT의 `iss`, `aud`, `exp`, `nbf`, `kid`, 서명 알고리즘 검증이 필요한 이유를 설명할 수 있는가?
+- JWT payload가 암호화가 아니라 Base64URL encoding이라는 점과 민감 정보 저장 위험을 설명할 수 있는가?
+- Refresh token rotation과 reuse detection이 token 탈취 대응에 왜 필요한지 설명할 수 있는가?
+- Cookie의 `Secure`, `HttpOnly`, `SameSite`, `Domain`, `Path` 속성이 보안과 전송 범위에 주는 영향을 설명할 수 있는가?
 - SQL Injection이 발생하는 원인과 `PreparedStatement`가 방어하는 방식을 설명할 수 있는가?
+- Command Injection, NoSQL Injection, Template Injection의 공통 원리와 구조/데이터 분리 원칙을 설명할 수 있는가?
+- XSS의 Stored, Reflected, DOM 유형과 context-aware output encoding 필요성을 설명할 수 있는가?
+- CSP가 XSS 방어의 대체가 아니라 피해 완화책인 이유를 설명할 수 있는가?
 - JWT의 header/payload/signature 구조와 탈취, 만료, `alg: none` 위험을 설명할 수 있는가?
 - CSRF 공격이 cookie 자동 전송을 어떻게 악용하는지 설명할 수 있는가?
+- CSRF token, SameSite, Origin/Referer 검증의 역할과 CORS가 CSRF 방어를 대체하지 않는 이유를 설명할 수 있는가?
+- SSRF가 cloud metadata endpoint와 내부망 접근으로 이어지는 이유와 allowlist/egress 제한 대응을 설명할 수 있는가?
 - 대칭키/비대칭키 암호화와 HTTPS TLS handshake 흐름을 설명할 수 있는가?
+- 암호화, 해시, MAC, 전자서명의 목적 차이를 설명할 수 있는가?
+- 비밀번호 저장에 salt, 느린 hash, Argon2id/bcrypt/scrypt/PBKDF2가 필요한 이유를 설명할 수 있는가?
+- Salt와 pepper의 차이, pepper를 별도 secret store에 둬야 하는 이유를 설명할 수 있는가?
+- Secret을 코드·이미지에 넣지 않고 secret manager, 접근 제어, rotation으로 관리해야 하는 이유를 설명할 수 있는가?
+- Dependency CVE, lockfile, SBOM, CI token 최소 권한 같은 supply chain 보안 기준을 설명할 수 있는가?
+- 보안 로그에 남겨야 할 인증/인가/관리자 이벤트와 남기면 안 되는 token/password/secret을 구분할 수 있는가?
+- Login, password reset, OTP, 결제, 쿠폰 API에 rate limit과 abuse detection이 필요한 이유를 설명할 수 있는가?
 - 분산 시스템에서 retry가 장애를 키우는 경우는 언제인가?
 - Bulkhead와 Circuit Breaker로 외부 서비스 장애 전파를 어떻게 줄일 수 있는가?
 - MVCC와 lock 기반 동시성 제어, gap/next-key lock을 설명할 수 있는가?

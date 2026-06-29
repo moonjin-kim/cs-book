@@ -14,6 +14,13 @@ entities:
     repo: cs-theory-notes
     package: security/authentication
     wiki_doc: wiki/security/README.md
+  - id: mfa
+    name: MFA와 재인증
+    type: process
+    summary: 비밀번호 외 추가 요소와 민감 작업 전 재인증으로 계정 탈취와 권한 남용 위험을 낮춘다.
+    repo: cs-theory-notes
+    package: security/mfa
+    wiki_doc: wiki/security/README.md
   - id: jwt
     name: JWT
     type: data
@@ -27,6 +34,41 @@ entities:
     summary: 인증된 사용자가 특정 리소스나 기능을 사용할 권한이 있는지 판단한다.
     repo: cs-theory-notes
     package: security/authorization
+    wiki_doc: wiki/security/README.md
+  - id: access-control
+    name: Access Control
+    type: process
+    summary: deny by default, least privilege, object-level check로 리소스 접근 권한을 서버에서 강제한다.
+    repo: cs-theory-notes
+    package: security/access-control
+    wiki_doc: wiki/security/README.md
+  - id: idor
+    name: IDOR
+    type: process
+    summary: 객체 식별자를 바꿔 타인 리소스에 접근하는 Broken Access Control 유형이다.
+    repo: cs-theory-notes
+    package: security/idor
+    wiki_doc: wiki/security/README.md
+  - id: session-management
+    name: Session Management
+    type: process
+    summary: 예측 불가능한 session id, 만료, rotation, server-side invalidation으로 인증 상태를 관리한다.
+    repo: cs-theory-notes
+    package: security/session-management
+    wiki_doc: wiki/security/README.md
+  - id: cookie-security
+    name: Cookie Security
+    type: data
+    summary: Secure, HttpOnly, SameSite, Domain, Path로 cookie 전송 범위와 탈취·CSRF 위험을 줄인다.
+    repo: cs-theory-notes
+    package: security/cookie-security
+    wiki_doc: wiki/security/README.md
+  - id: refresh-token-rotation
+    name: Refresh Token Rotation
+    type: process
+    summary: refresh token 재발급 시 이전 토큰을 폐기하고 재사용을 탐지해 탈취 피해를 줄인다.
+    repo: cs-theory-notes
+    package: security/refresh-token-rotation
     wiki_doc: wiki/security/README.md
   - id: cryptography
     name: 암호화
@@ -49,6 +91,13 @@ entities:
     repo: cs-theory-notes
     package: security/hashing
     wiki_doc: wiki/security/README.md
+  - id: password-policy
+    name: Password Policy
+    type: process
+    summary: 충분한 길이, 유출 비밀번호 차단, login throttling, MFA로 계정 탈취 위험을 줄인다.
+    repo: cs-theory-notes
+    package: security/password-policy
+    wiki_doc: wiki/security/README.md
   - id: owasp
     name: OWASP Top Risks
     type: data
@@ -63,6 +112,27 @@ entities:
     repo: cs-theory-notes
     package: security/sql-injection
     wiki_doc: wiki/security/README.md
+  - id: command-injection
+    name: Command Injection
+    type: process
+    summary: 사용자 입력이 OS shell command 구조를 바꿔 임의 명령 실행으로 이어지는 취약점이다.
+    repo: cs-theory-notes
+    package: security/command-injection
+    wiki_doc: wiki/security/README.md
+  - id: xss
+    name: XSS
+    type: process
+    summary: 신뢰하지 못한 데이터가 브라우저에서 스크립트로 실행되어 세션 탈취와 화면 변조를 일으킨다.
+    repo: cs-theory-notes
+    package: security/xss
+    wiki_doc: wiki/security/README.md
+  - id: ssrf
+    name: SSRF
+    type: process
+    summary: 서버가 공격자가 지정한 내부·외부 URL로 요청을 보내게 해 내부망 접근을 유발한다.
+    repo: cs-theory-notes
+    package: security/ssrf
+    wiki_doc: wiki/security/README.md
   - id: csrf
     name: CSRF
     type: process
@@ -70,16 +140,86 @@ entities:
     repo: cs-theory-notes
     package: security/csrf
     wiki_doc: wiki/security/README.md
+  - id: cors-security
+    name: CORS 보안
+    type: process
+    summary: 브라우저의 cross-origin response 노출 정책이며 인증·인가를 대체하지 않는다.
+    repo: cs-theory-notes
+    package: security/cors
+    wiki_doc: wiki/security/README.md
+  - id: csp
+    name: Content Security Policy
+    type: process
+    summary: 브라우저가 로드하거나 실행할 리소스 출처를 제한해 XSS 피해를 완화한다.
+    repo: cs-theory-notes
+    package: security/csp
+    wiki_doc: wiki/security/README.md
+  - id: clickjacking
+    name: Clickjacking
+    type: process
+    summary: frame embedding을 악용한 의도치 않은 클릭을 CSP frame-ancestors나 X-Frame-Options로 줄인다.
+    repo: cs-theory-notes
+    package: security/clickjacking
+    wiki_doc: wiki/security/README.md
+  - id: secret-management
+    name: Secret Management
+    type: process
+    summary: API key, DB password, signing key를 코드가 아닌 안전한 저장소와 rotation 절차로 관리한다.
+    repo: cs-theory-notes
+    package: security/secret-management
+    wiki_doc: wiki/security/README.md
+  - id: supply-chain-security
+    name: Supply Chain Security
+    type: process
+    summary: dependency, build pipeline, artifact 무결성, CI token 권한을 관리해 공급망 공격을 줄인다.
+    repo: cs-theory-notes
+    package: security/supply-chain
+    wiki_doc: wiki/security/README.md
+  - id: security-logging
+    name: Security Logging
+    type: process
+    summary: 인증 실패, 권한 거부, 관리자 작업, token 폐기 같은 보안 이벤트를 구조적으로 기록하고 알림으로 연결한다.
+    repo: cs-theory-notes
+    package: security/logging
+    wiki_doc: wiki/security/README.md
+  - id: rate-limit
+    name: Rate Limit
+    type: process
+    summary: 로그인, OTP, 결제, 쿠폰 같은 남용 지점에 요청 횟수 제한과 backoff를 적용한다.
+    repo: cs-theory-notes
+    package: security/rate-limit
+    wiki_doc: wiki/security/README.md
 
 relations:
+  - from: mfa
+    to: authentication
+    type: depends_on
   - from: authorization
     to: authentication
     type: depends_on
+  - from: access-control
+    to: authorization
+    type: depends_on
+  - from: idor
+    to: access-control
+    type: failure_mode_of
   - from: authentication
     to: jwt
     type: produces
+  - from: session-management
+    to: authentication
+    type: depends_on
+  - from: cookie-security
+    to: session-management
+    type: depends_on
+  - from: refresh-token-rotation
+    to: jwt
+    type: depends_on
   - from: hashing
     to: authentication
+    type: depends_on
+  - from: password-policy
+    to: hashing
     type: depends_on
   - from: authentication
     to: cryptography
@@ -93,7 +233,40 @@ relations:
   - from: sql-injection
     to: owasp
     type: depends_on
+  - from: command-injection
+    to: owasp
+    type: depends_on
+  - from: xss
+    to: owasp
+    type: depends_on
+  - from: ssrf
+    to: owasp
+    type: depends_on
   - from: csrf
+    to: authentication
+    type: depends_on
+  - from: csrf
+    to: cookie-security
+    type: depends_on
+  - from: cors-security
+    to: csrf
+    type: depends_on
+  - from: csp
+    to: xss
+    type: depends_on
+  - from: clickjacking
+    to: csp
+    type: depends_on
+  - from: secret-management
+    to: cryptography
+    type: depends_on
+  - from: supply-chain-security
+    to: owasp
+    type: depends_on
+  - from: security-logging
+    to: owasp
+    type: depends_on
+  - from: rate-limit
     to: authentication
     type: depends_on
   - from: cryptography
