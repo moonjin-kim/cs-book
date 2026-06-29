@@ -28,6 +28,20 @@ entities:
     repo: cs-theory-notes
     package: spring/bean-management
     wiki_doc: wiki/spring/README.md
+  - id: bean-scope
+    name: Bean Scope
+    type: data
+    summary: singleton, prototype, request, session 같은 Bean 생존 범위와 scope mismatch 대응을 설명한다.
+    repo: cs-theory-notes
+    package: spring/bean-scope
+    wiki_doc: wiki/spring/README.md
+  - id: circular-dependency
+    name: 순환 의존성
+    type: data
+    summary: 서로를 필요로 하는 Bean 관계가 생겼을 때 설계 문제, 초기화 순서, 지연 참조 대안을 설명한다.
+    repo: cs-theory-notes
+    package: spring/circular-dependency
+    wiki_doc: wiki/spring/README.md
   - id: component-stereotypes
     name: Component Stereotypes
     type: data
@@ -41,6 +55,13 @@ entities:
     summary: 프록시로 트랜잭션, 로깅, 보안 같은 공통 관심사를 비즈니스 코드 밖으로 분리한다.
     repo: cs-theory-notes
     package: spring/aop
+    wiki_doc: wiki/spring/README.md
+  - id: spring-proxy-types
+    name: JDK Proxy와 CGLIB
+    type: process
+    summary: interface 기반 JDK dynamic proxy와 class 상속 기반 CGLIB proxy의 적용 조건과 제약을 비교한다.
+    repo: cs-theory-notes
+    package: spring/proxy-types
     wiki_doc: wiki/spring/README.md
   - id: aop-self-invocation
     name: AOP Self Invocation
@@ -83,6 +104,13 @@ entities:
     summary: 반환값을 뷰 이름으로 볼지, HTTP 본문으로 직렬화할지 결정하는 흐름이다.
     repo: cs-theory-notes
     package: spring/response-handling
+    wiki_doc: wiki/spring/README.md
+  - id: mvc-validation
+    name: MVC Validation
+    type: process
+    summary: Request DTO에 Bean Validation을 적용하고 전역 예외 처리로 검증 실패 응답을 표준화한다.
+    repo: cs-theory-notes
+    package: spring/mvc-validation
     wiki_doc: wiki/spring/README.md
   - id: transaction-management
     name: 트랜잭션 관리
@@ -140,6 +168,20 @@ entities:
     repo: cs-theory-notes
     package: spring/value-configuration
     wiki_doc: wiki/spring/README.md
+  - id: profile-environment
+    name: Profile과 Environment
+    type: data
+    summary: 환경별 Bean과 설정을 profile, property, secret 관리 기준으로 분리한다.
+    repo: cs-theory-notes
+    package: spring/profile-environment
+    wiki_doc: wiki/spring/README.md
+  - id: boot-actuator
+    name: Spring Boot Actuator
+    type: process
+    summary: health, metrics, env, loggers 같은 production-ready endpoint로 운영 관측과 관리를 지원한다.
+    repo: cs-theory-notes
+    package: spring/actuator
+    wiki_doc: wiki/spring/README.md
   - id: jpa-stack
     name: JPA, Hibernate, Spring Data JPA
     type: data
@@ -196,6 +238,13 @@ entities:
     repo: cs-theory-notes
     package: spring/test-isolation
     wiki_doc: wiki/spring/README.md
+  - id: spring-test-slices
+    name: Spring Slice Test
+    type: process
+    summary: WebMvcTest, DataJpaTest 같은 slice test로 특정 계층만 좁게 로딩해 테스트 비용을 줄인다.
+    repo: cs-theory-notes
+    package: spring/test-slices
+    wiki_doc: wiki/spring/README.md
 
 relations:
   - from: bean-lifecycle
@@ -204,11 +253,20 @@ relations:
   - from: bean-management
     to: dependency-injection
     type: depends_on
+  - from: bean-scope
+    to: bean-lifecycle
+    type: depends_on
+  - from: circular-dependency
+    to: dependency-injection
+    type: failure_mode_of
   - from: component-stereotypes
     to: bean-management
     type: depends_on
   - from: aop
     to: bean-lifecycle
+    type: depends_on
+  - from: spring-proxy-types
+    to: aop
     type: depends_on
   - from: aop-self-invocation
     to: aop
@@ -227,6 +285,9 @@ relations:
     type: depends_on
   - from: response-handling
     to: spring-mvc
+    type: depends_on
+  - from: mvc-validation
+    to: request-binding
     type: depends_on
   - from: transaction-management
     to: aop
@@ -252,6 +313,12 @@ relations:
   - from: value-configuration
     to: boot-autoconfiguration
     type: depends_on
+  - from: profile-environment
+    to: boot-autoconfiguration
+    type: depends_on
+  - from: boot-actuator
+    to: spring-boot
+    type: depends_on
   - from: jpa-stack
     to: boot-autoconfiguration
     type: depends_on
@@ -276,6 +343,9 @@ relations:
   - from: spring-test-isolation
     to: osiv
     type: references
+  - from: spring-test-slices
+    to: spring-test-isolation
+    type: depends_on
   - from: spring-mvc
     to: jvm
     type: deployed_in

@@ -63,12 +63,23 @@
 - 결제 API를 멱등하게 만들기 위해 어떤 key와 저장소 설계를 사용할 것인가?
 - Spring `@Transactional`의 기본 rollback 규칙과 `@Async` 주의점을 설명할 수 있는가?
 - Spring이 객체를 Bean으로 관리하는 이유를 DI, lifecycle, AOP, test 관점에서 설명할 수 있는가?
+- Bean 생명주기와 BeanPostProcessor가 AOP proxy 생성에 관여하는 지점을 설명할 수 있는가?
+- Singleton Bean의 mutable field가 thread-safe하지 않은 이유와 Bean scope 선택 기준을 설명할 수 있는가?
+- 생성자 주입을 선호하는 이유와 순환 의존성이 드러났을 때의 구조 개선 방향을 설명할 수 있는가?
 - `@Component`, `@Controller`, `@Service`, `@Repository`의 역할 차이를 설명할 수 있는가?
+- JDK dynamic proxy와 CGLIB proxy의 적용 조건과 final/private method 제약을 설명할 수 있는가?
 - 트랜잭션 전파 속성과 트랜잭션 AOP 동작 흐름을 설명할 수 있는가?
 - private 메서드나 self-invocation에서 `@Transactional`이 동작하지 않는 이유를 설명할 수 있는가?
+- 트랜잭션 isolation, readOnly, timeout, rollbackFor를 DB 동작과 연결해 설명할 수 있는가?
+- `REQUIRES_NEW`가 connection pool 고갈을 만들 수 있는 이유를 설명할 수 있는가?
 - Spring Boot 자동 설정이 후보 조회, 조건 평가, bean 등록으로 이어지는 흐름을 설명할 수 있는가?
+- `@SpringBootApplication`이 포함하는 핵심 애너테이션과 component scan 범위 주의점을 설명할 수 있는가?
+- `@Value`와 `@ConfigurationProperties`, profile과 environment 설정의 선택 기준을 설명할 수 있는가?
+- Spring Boot Actuator의 health, metrics, env endpoint를 운영에서 노출할 때의 보안 주의점을 설명할 수 있는가?
 - `@RequestBody`와 `@ModelAttribute`, `@Controller`와 `@RestController`의 차이를 설명할 수 있는가?
 - Filter와 Interceptor의 실행 위치와 적합한 사용 사례를 구분할 수 있는가?
+- HandlerMethodArgumentResolver와 HttpMessageConverter가 MVC 요청/응답 흐름에서 맡는 역할을 설명할 수 있는가?
+- Bean Validation과 비즈니스 검증을 어느 계층에서 나눌지 설명할 수 있는가?
 - `@ExceptionHandler`, `@ControllerAdvice`, `ResponseEntity`를 언제 사용하는지 설명할 수 있는가?
 - Gradle의 `implementation`, `api`, `runtimeOnly`, `annotationProcessor` 차이를 설명할 수 있는가?
 - Micrometer의 Counter, Timer, Gauge와 tag cardinality 주의점을 설명할 수 있는가?
@@ -103,6 +114,8 @@
 - 일급 컬렉션과 방어적 복사가 캡슐화를 어떻게 강화하는지 설명할 수 있는가?
 - 테스트 격리와 비결정적 테스트가 발생하는 원인을 설명할 수 있는가?
 - Spring 테스트에서 `@DirtiesContext`, `@Sql`, `@Transactional` rollback의 trade-off를 설명할 수 있는가?
+- `@WebMvcTest`, `@DataJpaTest`, `@SpringBootTest`의 로딩 범위와 비용 차이를 설명할 수 있는가?
+- MockMvc와 RANDOM_PORT 통합 테스트의 차이, 테스트 트랜잭션 rollback 한계를 설명할 수 있는가?
 - 테스트 더블의 Dummy, Stub, Fake, Spy, Mock 차이를 설명할 수 있는가?
 - 단위 테스트, 통합 테스트, slice test의 목적과 비용 차이를 설명할 수 있는가?
 - TDD red-green-refactor와 code coverage의 한계를 설명할 수 있는가?
