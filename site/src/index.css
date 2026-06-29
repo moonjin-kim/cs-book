@@ -98,13 +98,30 @@ html, body {
 .wiki-content h2 {
   font-size: 18px;
   font-weight: 700;
-  margin: 32px 0 12px;
+  margin: 36px 0 14px;
+  padding: 10px 12px;
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  background: var(--bg-code);
+  color: var(--text);
 }
 
 .wiki-content h3 {
   font-size: 15px;
   font-weight: 600;
   margin: 24px 0 8px;
+  color: var(--text);
+}
+
+.wiki-content h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 20px 0 8px;
+  color: var(--text-muted);
+}
+
+.wiki-content strong {
+  color: var(--text);
 }
 
 .wiki-content p {
