@@ -6,10 +6,22 @@
 - 쿠키와 세션의 저장 위치, 보안성, 성능 영향을 비교할 수 있는가?
 - HTTP Keep-Alive와 TCP Keep-Alive의 차이를 설명할 수 있는가?
 - DNS 질의 과정에서 local, root, TLD, authoritative name server의 역할을 설명할 수 있는가?
+- DNS TTL cache가 장애 전환과 IP 변경 전파에 어떤 영향을 주는가?
+- DNS가 UDP와 TCP를 각각 사용하는 상황을 설명할 수 있는가?
 - NAT/NAPT가 필요한 이유와 port 변환 테이블을 설명할 수 있는가?
+- 같은 subnet이 아닌 목적지로 갈 때 gateway MAC과 목적지 IP가 어떻게 쓰이는가?
+- IPv4와 IPv6의 주소 공간, NAT 의존도, fragmentation 차이를 설명할 수 있는가?
+- TCP 3-way handshake, 4-way close, TIME_WAIT의 목적을 설명할 수 있는가?
+- TCP sequence number, ACK, retransmission으로 신뢰성을 만드는 방식을 설명할 수 있는가?
+- TCP flow control과 congestion control의 목적 차이를 설명할 수 있는가?
+- TCP가 byte stream이라는 의미와 application protocol의 message framing 필요성을 설명할 수 있는가?
+- UDP를 선택하는 상황과 QUIC이 UDP 위에서 해결하는 문제를 설명할 수 있는가?
+- TLS handshake, certificate chain, SNI, ALPN의 역할을 설명할 수 있는가?
+- TLS termination을 load balancer나 reverse proxy에서 할 때 backend 구간 보안과 forwarded header 신뢰 범위를 설명할 수 있는가?
 - HTTP/1.1의 HOL blocking과 HTTP/2 multiplexing을 설명할 수 있는가?
 - CORS simple request, preflight request, credential request의 차이를 설명할 수 있는가?
 - connection timeout, socket timeout, read timeout을 구분할 수 있는가?
+- retry에 timeout, exponential backoff, jitter, idempotency key가 필요한 이유를 설명할 수 있는가?
 - 프로세스와 스레드의 차이를 메모리 구조와 문맥 교환 비용으로 설명할 수 있는가?
 - 명령어 파이프라이닝과 데이터/제어/구조적 위험을 설명할 수 있는가?
 - 참조 지역성으로 캐시 친화적인 배열 순회를 설명할 수 있는가?
@@ -166,6 +178,8 @@
 - CDN을 도입할 때 TTL, invalidation, 장애 fallback을 어떻게 잡을 것인가?
 - 로드밸런싱 알고리즘별 trade-off와 session affinity 문제를 설명할 수 있는가?
 - forward proxy와 reverse proxy의 위치와 목적을 구분할 수 있는가?
+- L4와 L7 load balancer의 routing 기준, health check, readiness 연동 차이를 설명할 수 있는가?
+- CDN cache key, `Vary`, cookie/authorization header가 개인정보 노출과 cache miss에 주는 영향을 설명할 수 있는가?
 - 수평 확장만으로 해결되지 않는 병목은 무엇인가?
 - 로그, 메트릭, 트레이스는 각각 어떤 질문에 답하기 위한 도구인가?
 - Health check의 liveness/readiness 차이와 load balancer 연동 방식을 설명할 수 있는가?

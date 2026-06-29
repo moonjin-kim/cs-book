@@ -35,6 +35,20 @@ entities:
     repo: cs-theory-notes
     package: network/ip-addressing
     wiki_doc: wiki/network/README.md
+  - id: ipv6
+    name: IPv6
+    type: data
+    summary: 128bit 주소 공간과 확장 헤더 기반으로 IPv4 주소 부족과 라우팅 확장 문제를 완화한다.
+    repo: cs-theory-notes
+    package: network/ipv6
+    wiki_doc: wiki/network/README.md
+  - id: arp
+    name: ARP
+    type: process
+    summary: 같은 링크에서 IP 주소를 MAC 주소로 해석해 Ethernet frame을 보낼 수 있게 한다.
+    repo: cs-theory-notes
+    package: network/arp
+    wiki_doc: wiki/network/README.md
   - id: dhcp
     name: DHCP
     type: process
@@ -56,6 +70,20 @@ entities:
     repo: cs-theory-notes
     package: network/tcp
     wiki_doc: wiki/network/README.md
+  - id: tcp-handshake
+    name: TCP Handshake와 종료
+    type: process
+    summary: 3-way handshake로 연결 상태와 초기 sequence를 만들고 FIN/ACK 및 TIME_WAIT로 안전하게 종료한다.
+    repo: cs-theory-notes
+    package: network/tcp-handshake
+    wiki_doc: wiki/network/README.md
+  - id: tcp-flow-congestion
+    name: TCP 흐름 제어와 혼잡 제어
+    type: process
+    summary: receiver window로 수신자 버퍼를 보호하고 congestion window로 네트워크 혼잡을 완화한다.
+    repo: cs-theory-notes
+    package: network/tcp-flow-congestion
+    wiki_doc: wiki/network/README.md
   - id: keep-alive
     name: Keep-Alive
     type: process
@@ -70,12 +98,26 @@ entities:
     repo: cs-theory-notes
     package: network/udp
     wiki_doc: wiki/network/README.md
+  - id: quic
+    name: QUIC
+    type: process
+    summary: UDP 위에서 TLS 1.3과 stream multiplexing을 통합해 HTTP/3 전송 기반을 제공한다.
+    repo: cs-theory-notes
+    package: network/quic
+    wiki_doc: wiki/network/README.md
   - id: dns
     name: DNS
     type: process
     summary: 사람이 읽는 도메인 이름을 서버 IP 주소로 변환하는 분산 시스템이다.
     repo: cs-theory-notes
     package: network/dns
+    wiki_doc: wiki/network/README.md
+  - id: dns-ttl-cache
+    name: DNS TTL과 Cache
+    type: process
+    summary: DNS 응답을 TTL 동안 캐시해 지연과 부하를 줄이지만 장애 전환과 IP 변경 전파를 늦출 수 있다.
+    repo: cs-theory-notes
+    package: network/dns-cache
     wiki_doc: wiki/network/README.md
   - id: tls
     name: TLS
@@ -84,12 +126,33 @@ entities:
     repo: cs-theory-notes
     package: network/tls
     wiki_doc: wiki/network/README.md
+  - id: sni-alpn
+    name: SNI와 ALPN
+    type: process
+    summary: SNI는 TLS에서 hostname 기반 인증서 선택을, ALPN은 HTTP/1.1·HTTP/2 같은 애플리케이션 프로토콜 협상을 돕는다.
+    repo: cs-theory-notes
+    package: network/sni-alpn
+    wiki_doc: wiki/network/README.md
   - id: load-balancing
     name: 로드밸런싱
     type: process
     summary: 요청을 여러 서버에 나눠 보내 처리량과 가용성을 높이는 방식이다.
     repo: cs-theory-notes
     package: network/load-balancing
+    wiki_doc: wiki/network/README.md
+  - id: reverse-proxy
+    name: Reverse Proxy
+    type: process
+    summary: 서버 앞에서 TLS termination, routing, caching, compression, 접근 제어를 담당하는 proxy다.
+    repo: cs-theory-notes
+    package: network/reverse-proxy
+    wiki_doc: wiki/network/README.md
+  - id: session-affinity
+    name: Session Affinity
+    type: process
+    summary: 같은 사용자의 요청을 같은 backend로 보내지만 쏠림과 장애 시 세션 손실 위험을 만든다.
+    repo: cs-theory-notes
+    package: network/session-affinity
     wiki_doc: wiki/network/README.md
   - id: cdn
     name: CDN
@@ -105,6 +168,13 @@ entities:
     repo: cs-theory-notes
     package: network/timeout
     wiki_doc: wiki/network/README.md
+  - id: retry-backoff
+    name: Retry와 Backoff
+    type: process
+    summary: 일시적 네트워크 장애를 재시도하되 횟수 제한, 지수 백오프, 지터, 멱등성으로 retry storm을 막는다.
+    repo: cs-theory-notes
+    package: network/retry-backoff
+    wiki_doc: wiki/network/README.md
 
 relations:
   - from: ip-routing
@@ -116,6 +186,12 @@ relations:
   - from: ip-addressing
     to: ip-routing
     type: depends_on
+  - from: ipv6
+    to: ip-addressing
+    type: depends_on
+  - from: arp
+    to: ip-routing
+    type: depends_on
   - from: dhcp
     to: ip-addressing
     type: produces
@@ -125,21 +201,42 @@ relations:
   - from: tcp
     to: ip-routing
     type: depends_on
+  - from: tcp-handshake
+    to: tcp
+    type: depends_on
+  - from: tcp-flow-congestion
+    to: tcp
+    type: depends_on
   - from: keep-alive
     to: tcp
     type: depends_on
   - from: udp
     to: ip-routing
     type: depends_on
+  - from: quic
+    to: udp
+    type: depends_on
   - from: dns
     to: udp
     type: depends_on
     note: 일반 DNS 질의는 UDP 53번을 우선 사용하고, 응답 크기나 영역 전송 상황에서는 TCP를 쓴다.
+  - from: dns-ttl-cache
+    to: dns
+    type: depends_on
   - from: tls
     to: tcp
     type: depends_on
+  - from: sni-alpn
+    to: tls
+    type: depends_on
   - from: load-balancing
     to: tcp
+    type: depends_on
+  - from: reverse-proxy
+    to: load-balancing
+    type: depends_on
+  - from: session-affinity
+    to: load-balancing
     type: depends_on
   - from: cdn
     to: dns
@@ -149,6 +246,9 @@ relations:
     type: depends_on
   - from: network-timeout
     to: tcp
+    type: depends_on
+  - from: retry-backoff
+    to: network-timeout
     type: depends_on
   - from: ip-routing
     to: internet
