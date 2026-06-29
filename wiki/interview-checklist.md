@@ -211,7 +211,24 @@
 - 보안 로그에 남겨야 할 인증/인가/관리자 이벤트와 남기면 안 되는 token/password/secret을 구분할 수 있는가?
 - Login, password reset, OTP, 결제, 쿠폰 API에 rate limit과 abuse detection이 필요한 이유를 설명할 수 있는가?
 - 분산 시스템에서 retry가 장애를 키우는 경우는 언제인가?
+- 분산 환경에서 timeout이 실패와 느린 응답을 구분하지 못한다는 점을 설명할 수 있는가?
+- node crash, network partition, timing failure, Byzantine failure의 차이를 설명할 수 있는가?
+- 물리 clock skew가 순서 판단에 위험한 이유와 logical/vector clock의 목적을 설명할 수 있는가?
+- CAP를 network partition 상황의 consistency와 availability trade-off로 정확히 설명할 수 있는가?
+- PACELC가 정상 상황의 latency와 consistency trade-off까지 다룬다는 점을 설명할 수 있는가?
+- Linearizability, causal consistency, read-your-writes, eventual consistency를 구분할 수 있는가?
+- Replication lag가 stale read와 read-after-write 깨짐을 만드는 상황과 대응 전략을 설명할 수 있는가?
+- Quorum에서 `R + W > N`의 의미와 latency/availability trade-off를 설명할 수 있는가?
+- Read repair, anti-entropy, hinted handoff가 replica divergence를 줄이는 방식을 설명할 수 있는가?
+- Raft의 leader election, term, log replication, majority commit을 설명할 수 있는가?
+- Split-brain을 quorum, fencing token, single writer로 방지해야 하는 이유를 설명할 수 있는가?
+- Shard key 선택 기준과 hot shard, resharding, cross-shard transaction 문제를 설명할 수 있는가?
+- Retry에 exponential backoff, jitter, retry budget이 필요한 이유를 설명할 수 있는가?
+- At-most-once, at-least-once, exactly-once의 범위와 외부 side effect 한계를 설명할 수 있는가?
 - Bulkhead와 Circuit Breaker로 외부 서비스 장애 전파를 어떻게 줄일 수 있는가?
+- Load shedding과 backpressure가 queue 폭증과 cascading failure를 줄이는 방식을 설명할 수 있는가?
+- 2PC의 blocking, lock 장기 보유, coordinator 장애 문제와 microservice에서의 한계를 설명할 수 있는가?
+- Saga의 choreography/orchestration 방식과 보상 트랜잭션의 한계를 설명할 수 있는가?
 - MVCC와 lock 기반 동시성 제어, gap/next-key lock을 설명할 수 있는가?
 - READ COMMITTED와 REPEATABLE READ의 snapshot 기준 차이, DB별 동작 차이를 설명할 수 있는가?
 - Lost Update와 Write Skew를 막기 위한 atomic update, version, row lock, constraint 전략을 설명할 수 있는가?
@@ -245,6 +262,8 @@
 - Serverless/FaaS/BaaS의 장점과 cold start, lock-in 제약을 설명할 수 있는가?
 - Event Sourcing과 CQRS의 장단점과 projection/snapshot 필요성을 설명할 수 있는가?
 - Transactional Outbox가 이중 쓰기 문제를 어떻게 줄이는지 설명할 수 있는가?
+- Outbox publisher와 consumer가 중복 발행/중복 수신에 대비해야 하는 이유를 설명할 수 있는가?
+- CDC, DB polling, messaging, webhook의 장단점과 운영 복잡도를 비교할 수 있는가?
 - SPOF를 식별하고 이중화, failover, health check로 개선할 수 있는가?
 - Web Server와 WAS, SSR과 CSR, PRG 패턴의 차이를 설명할 수 있는가?
 - SSR, CSR, SSG의 초기 로딩, SEO, 서버 부하, 데이터 최신성 trade-off를 설명할 수 있는가?

@@ -14,12 +14,40 @@ entities:
     repo: cs-theory-notes
     package: distributed/cap-pacelc
     wiki_doc: wiki/distributed-systems/README.md
+  - id: partial-failure
+    name: Partial Failure
+    type: failure-mode
+    summary: 일부 노드나 네트워크만 실패해 처리 여부와 전체 상태를 확정하기 어려운 분산시스템의 핵심 실패 모델이다.
+    repo: cs-theory-notes
+    package: distributed/partial-failure
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: network-partition
+    name: Network Partition
+    type: failure-mode
+    summary: 노드 그룹 사이 통신이 끊겨 CAP의 consistency와 availability trade-off가 드러나는 상황이다.
+    repo: cs-theory-notes
+    package: distributed/network-partition
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: logical-clock
+    name: Logical Clock과 Vector Clock
+    type: data
+    summary: 물리 시간 대신 이벤트의 인과 관계와 동시성을 표현해 분산 update 순서를 해석한다.
+    repo: cs-theory-notes
+    package: distributed/logical-clock
+    wiki_doc: wiki/distributed-systems/README.md
   - id: consistency
     name: 일관성 모델
     type: data
     summary: 여러 노드에서 읽은 데이터가 얼마나 최신이며 서로 같은지 나타내는 수준이다.
     repo: cs-theory-notes
     package: distributed/consistency
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: read-your-writes
+    name: Read Your Writes
+    type: data
+    summary: 사용자가 자신이 쓴 값을 이후 읽기에서 볼 수 있게 하는 session 일관성 모델이다.
+    repo: cs-theory-notes
+    package: distributed/read-your-writes
     wiki_doc: wiki/distributed-systems/README.md
   - id: replication
     name: 복제
@@ -28,12 +56,40 @@ entities:
     repo: cs-theory-notes
     package: distributed/replication
     wiki_doc: wiki/distributed-systems/README.md
+  - id: quorum
+    name: Quorum
+    type: process
+    summary: 읽기와 쓰기 quorum이 겹치도록 해 복제 환경에서 최신 값을 읽을 가능성을 높인다.
+    repo: cs-theory-notes
+    package: distributed/quorum
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: read-repair
+    name: Read Repair와 Anti-Entropy
+    type: process
+    summary: 읽기 시점 또는 백그라운드에서 오래된 복제본을 갱신해 replica divergence를 줄인다.
+    repo: cs-theory-notes
+    package: distributed/read-repair
+    wiki_doc: wiki/distributed-systems/README.md
   - id: partitioning
     name: 파티셔닝과 샤딩
     type: process
     summary: 데이터를 여러 노드로 나누어 저장해 저장 용량과 처리량을 확장한다.
     repo: cs-theory-notes
     package: distributed/partitioning
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: shard-key
+    name: Shard Key
+    type: data
+    summary: 데이터 분산 기준이 되는 key로 traffic 분포, query pattern, cross-shard 작업 비용을 좌우한다.
+    repo: cs-theory-notes
+    package: distributed/shard-key
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: hot-shard
+    name: Hot Shard
+    type: failure-mode
+    summary: 특정 shard에 읽기나 쓰기가 몰려 전체 확장성을 제한하는 장애 패턴이다.
+    repo: cs-theory-notes
+    package: distributed/hot-shard
     wiki_doc: wiki/distributed-systems/README.md
   - id: consensus
     name: 합의
@@ -42,12 +98,40 @@ entities:
     repo: cs-theory-notes
     package: distributed/consensus
     wiki_doc: wiki/distributed-systems/README.md
+  - id: leader-election
+    name: Leader Election
+    type: process
+    summary: 여러 노드 중 하나의 leader를 선택해 write 순서와 cluster 제어를 맡기는 과정이다.
+    repo: cs-theory-notes
+    package: distributed/leader-election
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: split-brain
+    name: Split-Brain
+    type: failure-mode
+    summary: 둘 이상의 노드 그룹이 자신을 primary로 믿어 동시에 write하면서 데이터 divergence를 만드는 상황이다.
+    repo: cs-theory-notes
+    package: distributed/split-brain
+    wiki_doc: wiki/distributed-systems/README.md
   - id: idempotency
     name: 멱등성과 재시도
     type: process
     summary: 재시도와 중복 요청이 발생해도 결과가 한 번 처리된 것처럼 유지되게 한다.
     repo: cs-theory-notes
     package: distributed/idempotency
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: retry-backoff
+    name: Retry, Backoff, Jitter
+    type: process
+    summary: 일시적 실패를 재시도하되 지수 백오프와 지터로 retry storm과 장애 증폭을 줄인다.
+    repo: cs-theory-notes
+    package: distributed/retry-backoff
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: retry-storm
+    name: Retry Storm
+    type: failure-mode
+    summary: 많은 client가 동시에 재시도해 장애 서비스와 네트워크 부하를 더 키우는 장애 패턴이다.
+    repo: cs-theory-notes
+    package: distributed/retry-storm
     wiki_doc: wiki/distributed-systems/README.md
   - id: bulkhead
     name: Bulkhead
@@ -63,6 +147,20 @@ entities:
     repo: cs-theory-notes
     package: distributed/circuit-breaker
     wiki_doc: wiki/distributed-systems/README.md
+  - id: load-shedding
+    name: Load Shedding과 Backpressure
+    type: process
+    summary: 처리할 수 없는 요청을 빠르게 거부하거나 upstream 생산 속도를 조절해 overload를 줄인다.
+    repo: cs-theory-notes
+    package: distributed/load-shedding
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: cascading-failure
+    name: Cascading Failure
+    type: failure-mode
+    summary: 한 dependency 장애가 retry, queue 증가, thread/connection 고갈을 통해 전체 장애로 확산되는 현상이다.
+    repo: cs-theory-notes
+    package: distributed/cascading-failure
+    wiki_doc: wiki/distributed-systems/README.md
   - id: event-sourcing
     name: Event Sourcing
     type: process
@@ -76,6 +174,20 @@ entities:
     summary: 상태 변경 모델과 조회 모델을 분리해 쓰기 규칙과 읽기 성능을 따로 최적화한다.
     repo: cs-theory-notes
     package: distributed/cqrs
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: two-phase-commit
+    name: Two-Phase Commit
+    type: process
+    summary: coordinator가 prepare와 commit 단계로 여러 participant의 atomic commit을 조정하는 프로토콜이다.
+    repo: cs-theory-notes
+    package: distributed/two-phase-commit
+    wiki_doc: wiki/distributed-systems/README.md
+  - id: saga
+    name: Saga
+    type: process
+    summary: 긴 분산 트랜잭션을 지역 트랜잭션과 보상 트랜잭션의 흐름으로 나눠 관리한다.
+    repo: cs-theory-notes
+    package: distributed/saga
     wiki_doc: wiki/distributed-systems/README.md
   - id: async-integration
     name: 시스템 간 비동기 연동
@@ -100,17 +212,53 @@ entities:
     wiki_doc: wiki/distributed-systems/README.md
 
 relations:
+  - from: cap-pacelc
+    to: network-partition
+    type: depends_on
+  - from: partial-failure
+    to: cap-pacelc
+    type: depends_on
+  - from: logical-clock
+    to: consistency
+    type: depends_on
+  - from: read-your-writes
+    to: consistency
+    type: depends_on
   - from: replication
     to: consistency
+    type: depends_on
+  - from: quorum
+    to: replication
+    type: depends_on
+  - from: read-repair
+    to: replication
     type: depends_on
   - from: partitioning
     to: cap-pacelc
     type: depends_on
+  - from: shard-key
+    to: partitioning
+    type: depends_on
+  - from: hot-shard
+    to: shard-key
+    type: depends_on
   - from: consensus
     to: consistency
     type: produces
+  - from: leader-election
+    to: consensus
+    type: depends_on
+  - from: split-brain
+    to: leader-election
+    type: depends_on
   - from: idempotency
     to: replication
+    type: depends_on
+  - from: retry-backoff
+    to: idempotency
+    type: depends_on
+  - from: retry-storm
+    to: retry-backoff
     type: depends_on
   - from: circuit-breaker
     to: idempotency
@@ -118,11 +266,23 @@ relations:
   - from: bulkhead
     to: circuit-breaker
     type: depends_on
+  - from: load-shedding
+    to: circuit-breaker
+    type: depends_on
+  - from: cascading-failure
+    to: bulkhead
+    type: depends_on
   - from: event-sourcing
     to: consistency
     type: references
   - from: cqrs
     to: event-sourcing
+    type: references
+  - from: two-phase-commit
+    to: consistency
+    type: depends_on
+  - from: saga
+    to: two-phase-commit
     type: references
   - from: async-integration
     to: idempotency
