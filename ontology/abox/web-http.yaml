@@ -14,6 +14,13 @@ entities:
     repo: cs-theory-notes
     package: web/http-message
     wiki_doc: wiki/web-http/README.md
+  - id: http-status-code
+    name: HTTP Status Code
+    type: data
+    summary: 응답 결과를 1xx, 2xx, 3xx, 4xx, 5xx 범주와 세부 코드로 표현한다.
+    repo: cs-theory-notes
+    package: web/status-code
+    wiki_doc: wiki/web-http/README.md
   - id: uri-url-urn
     name: URI, URL, URN
     type: data
@@ -27,6 +34,20 @@ entities:
     summary: HTTP/1.1의 연결 재사용과 HTTP/2의 멀티플렉싱·바이너리 프레임 차이를 비교한다.
     repo: cs-theory-notes
     package: web/http-versions
+    wiki_doc: wiki/web-http/README.md
+  - id: http3
+    name: HTTP/3
+    type: process
+    summary: HTTP semantics를 QUIC 위에 매핑해 stream 단위 멀티플렉싱과 TLS 1.3 통합을 제공한다.
+    repo: cs-theory-notes
+    package: web/http3
+    wiki_doc: wiki/web-http/README.md
+  - id: http-connection-pool
+    name: HTTP Keep-Alive와 Connection Pool
+    type: process
+    summary: TCP/TLS 연결을 재사용해 handshake 비용을 줄이지만 idle timeout과 pool 크기 조정이 필요하다.
+    repo: cs-theory-notes
+    package: web/connection-pool
     wiki_doc: wiki/web-http/README.md
   - id: rest-api
     name: REST API
@@ -42,6 +63,13 @@ entities:
     repo: cs-theory-notes
     package: web/idempotency
     wiki_doc: wiki/web-http/README.md
+  - id: idempotency-key
+    name: Idempotency Key
+    type: data
+    summary: POST 같은 상태 변경 요청을 안전하게 재시도하기 위해 요청 식별자를 저장소 제약과 함께 관리한다.
+    repo: cs-theory-notes
+    package: web/idempotency-key
+    wiki_doc: wiki/web-http/README.md
   - id: cookie-session
     name: Cookie와 Session
     type: process
@@ -49,12 +77,61 @@ entities:
     repo: cs-theory-notes
     package: web/cookie-session
     wiki_doc: wiki/web-http/README.md
+  - id: cookie-attributes
+    name: Cookie 속성
+    type: data
+    summary: Domain, Path, Max-Age, Secure, HttpOnly, SameSite로 cookie 전송 범위와 보안을 제어한다.
+    repo: cs-theory-notes
+    package: web/cookie-attributes
+    wiki_doc: wiki/web-http/README.md
+  - id: csrf-samesite
+    name: CSRF와 SameSite
+    type: process
+    summary: 브라우저의 cookie 자동 전송을 악용하는 CSRF를 SameSite, token, Origin 검증으로 줄인다.
+    repo: cs-theory-notes
+    package: web/csrf-samesite
+    wiki_doc: wiki/web-http/README.md
+  - id: http-cache
+    name: HTTP Cache
+    type: process
+    summary: Cache-Control freshness와 validator 재검증으로 응답을 재사용해 지연과 origin 부하를 줄인다.
+    repo: cs-theory-notes
+    package: web/cache
+    wiki_doc: wiki/web-http/README.md
+  - id: etag-last-modified
+    name: ETag와 Last-Modified
+    type: data
+    summary: representation validator로 조건부 요청을 처리하고 변경 없으면 304 응답으로 body 전송을 줄인다.
+    repo: cs-theory-notes
+    package: web/validators
+    wiki_doc: wiki/web-http/README.md
+  - id: vary-cache-key
+    name: Vary와 Cache Key
+    type: data
+    summary: request header별 cache entry 분리 기준을 알려 잘못된 공유 캐시와 개인정보 노출을 막는다.
+    repo: cs-theory-notes
+    package: web/vary-cache-key
+    wiki_doc: wiki/web-http/README.md
   - id: cors
     name: CORS
     type: process
     summary: 브라우저가 다른 출처 요청을 제한하고 서버의 허용 정책을 확인하는 보안 모델이다.
     repo: cs-theory-notes
     package: web/cors
+    wiki_doc: wiki/web-http/README.md
+  - id: same-origin-policy
+    name: Same-Origin Policy
+    type: process
+    summary: scheme, host, port가 다른 출처의 응답을 브라우저 JavaScript가 임의로 읽지 못하게 제한한다.
+    repo: cs-theory-notes
+    package: web/same-origin-policy
+    wiki_doc: wiki/web-http/README.md
+  - id: cors-preflight
+    name: CORS Preflight
+    type: process
+    summary: 실제 cross-origin 요청 전에 OPTIONS로 method, header, credential 허용 여부를 확인한다.
+    repo: cs-theory-notes
+    package: web/cors-preflight
     wiki_doc: wiki/web-http/README.md
   - id: proxy
     name: Forward/Reverse Proxy
@@ -78,9 +155,9 @@ entities:
     package: web/web-server-was
     wiki_doc: wiki/web-http/README.md
   - id: ssr-csr
-    name: SSR과 CSR
+    name: SSR, CSR, SSG
     type: process
-    summary: 서버가 HTML을 만들어 주는 방식과 브라우저 JS가 화면을 만드는 방식을 비교한다.
+    summary: 서버 요청 시점, 브라우저 실행 시점, 빌드 시점에 HTML을 만드는 방식의 trade-off를 비교한다.
     repo: cs-theory-notes
     package: web/ssr-csr
     wiki_doc: wiki/web-http/README.md
@@ -93,11 +170,20 @@ entities:
     wiki_doc: wiki/web-http/README.md
 
 relations:
+  - from: http-status-code
+    to: http-message
+    type: depends_on
   - from: uri-url-urn
     to: http-message
     type: depends_on
   - from: http-versions
     to: http-message
+    type: depends_on
+  - from: http3
+    to: http-versions
+    type: depends_on
+  - from: http-connection-pool
+    to: http-versions
     type: depends_on
   - from: rest-api
     to: http-message
@@ -108,12 +194,36 @@ relations:
   - from: rest-api
     to: http-idempotency
     type: depends_on
+  - from: idempotency-key
+    to: http-idempotency
+    type: depends_on
   - from: cookie-session
     to: http-message
+    type: depends_on
+  - from: cookie-attributes
+    to: cookie-session
+    type: depends_on
+  - from: csrf-samesite
+    to: cookie-attributes
+    type: depends_on
+  - from: http-cache
+    to: http-message
+    type: depends_on
+  - from: etag-last-modified
+    to: http-cache
+    type: depends_on
+  - from: vary-cache-key
+    to: http-cache
     type: depends_on
   - from: cors
     to: http-message
     type: consumes
+  - from: same-origin-policy
+    to: cors
+    type: depends_on
+  - from: cors-preflight
+    to: cors
+    type: depends_on
   - from: proxy
     to: http-message
     type: consumes

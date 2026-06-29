@@ -19,7 +19,15 @@
 - TLS handshake, certificate chain, SNI, ALPN의 역할을 설명할 수 있는가?
 - TLS termination을 load balancer나 reverse proxy에서 할 때 backend 구간 보안과 forwarded header 신뢰 범위를 설명할 수 있는가?
 - HTTP/1.1의 HOL blocking과 HTTP/2 multiplexing을 설명할 수 있는가?
+- HTTP/3가 QUIC/UDP 위에서 HTTP/2의 TCP HOL blocking을 어떻게 줄이는지 설명할 수 있는가?
+- HTTP method의 safe, idempotent 의미와 retry 가능성을 구분할 수 있는가?
+- PUT, PATCH, POST의 의미 차이와 idempotency key가 필요한 상황을 설명할 수 있는가?
+- 401, 403, 409, 422, 429, 502, 503, 504 상태 코드를 상황별로 선택할 수 있는가?
+- `Content-Type`, `Accept`, `Location`, `Vary`, `ETag`, `Cache-Control` header의 역할을 설명할 수 있는가?
+- HTTP `no-cache`와 `no-store`, ETag 기반 조건부 요청, `304 Not Modified`를 설명할 수 있는가?
+- Cookie의 `Secure`, `HttpOnly`, `SameSite`, `Domain`, `Path` 속성이 보안과 전송 범위에 주는 영향을 설명할 수 있는가?
 - CORS simple request, preflight request, credential request의 차이를 설명할 수 있는가?
+- `Access-Control-Allow-Origin: *`와 credential request를 함께 쓸 수 없는 이유를 설명할 수 있는가?
 - connection timeout, socket timeout, read timeout을 구분할 수 있는가?
 - retry에 timeout, exponential backoff, jitter, idempotency key가 필요한 이유를 설명할 수 있는가?
 - 프로세스와 스레드의 차이를 메모리 구조와 문맥 교환 비용으로 설명할 수 있는가?
@@ -196,3 +204,5 @@
 - Transactional Outbox가 이중 쓰기 문제를 어떻게 줄이는지 설명할 수 있는가?
 - SPOF를 식별하고 이중화, failover, health check로 개선할 수 있는가?
 - Web Server와 WAS, SSR과 CSR, PRG 패턴의 차이를 설명할 수 있는가?
+- SSR, CSR, SSG의 초기 로딩, SEO, 서버 부하, 데이터 최신성 trade-off를 설명할 수 있는가?
+- PRG가 새로고침 중복 POST를 줄이지만 서버 측 멱등성 보장을 대체하지 않는 이유를 설명할 수 있는가?
