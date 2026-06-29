@@ -1,7 +1,7 @@
 # CS Interview Notes
 
 <!-- deployed-url:start -->
-Live demo: https://hubtwork.github.io/command-center/
+🌐 **Live demo**: https://moonjin-kim.github.io/cs-book/
 <!-- deployed-url:end -->
 
 CS 면접 내용을 Backend Core, Web & Network, CS Foundation, Architecture & Operations 카테고리로 정리한 정적 웹사이트입니다. Vite로 빌드하고 GitHub Pages에 자동 배포합니다.
