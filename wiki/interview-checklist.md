@@ -94,12 +94,22 @@
 - Spring Data JPA `save()`가 `persist`와 `merge`를 선택하는 기준을 설명할 수 있는가?
 - OSIV의 장점과 connection 점유 위험을 설명할 수 있는가?
 - Redis 주요 자료구조를 String, Hash, Set, Sorted Set, Stream 기준으로 선택할 수 있는가?
+- Redis가 single thread command execution 모델을 쓰는 이유와 big key/긴 Lua script가 만드는 지연을 설명할 수 있는가?
+- Redis TTL, lazy/active expiration, `SET` 시 TTL 유지/제거 주의점을 설명할 수 있는가?
+- Cache Aside, Write Through, Write Behind, Refresh Ahead 패턴의 trade-off를 설명할 수 있는가?
+- Cache Stampede, Penetration, Avalanche와 TTL jitter, null caching, single flight 대응을 설명할 수 있는가?
+- Redis maxmemory와 `allkeys-lru`, `allkeys-lfu`, `volatile-lru`, `noeviction` 선택 기준을 설명할 수 있는가?
+- Hot Key와 Big Key가 latency, memory, network, cluster slot에 주는 영향을 설명할 수 있는가?
 - Redis RDB와 AOF의 손실 범위, 복구 속도, rewrite 비용을 비교할 수 있는가?
+- RDB save와 AOF rewrite가 fork/COW memory와 latency에 주는 영향을 설명할 수 있는가?
 - Redis Cluster의 hash slot, hash tag, MOVED/ASK redirect를 설명할 수 있는가?
 - Redis Sentinel과 Cluster의 목적과 multi-key 연산 제약 차이를 설명할 수 있는가?
 - Redis pipelining과 transaction의 차이를 설명할 수 있는가?
+- Redis `WATCH` optimistic locking과 `MULTI/EXEC`의 rollback 부재를 설명할 수 있는가?
+- Redis Lua script의 원자성과 event loop blocking 위험을 설명할 수 있는가?
 - Redis eviction 정책을 cache 용도에 맞게 선택할 수 있는가?
 - Redis Pub/Sub과 Stream의 메시지 보존, ACK, consumer group 차이를 설명할 수 있는가?
+- Redis Stream의 pending entry, retry/claim, trimming, idempotency 필요성을 설명할 수 있는가?
 - Redis가 command 실행을 single thread로 처리하는 이유와 Redis 6 I/O thread의 범위를 설명할 수 있는가?
 - Kafka broker, topic, partition, producer, consumer의 역할을 설명할 수 있는가?
 - Kafka consumer group의 partition assignment와 rebalancing 문제를 설명할 수 있는가?

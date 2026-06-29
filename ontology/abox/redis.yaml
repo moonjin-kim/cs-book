@@ -21,6 +21,20 @@ entities:
     repo: cs-theory-notes
     package: redis/cache
     wiki_doc: wiki/redis/README.md
+  - id: ttl-expiration
+    name: TTL과 Expiration
+    type: process
+    summary: key 만료 시간과 lazy/active expiration으로 캐시 freshness와 메모리 회수를 제어한다.
+    repo: cs-theory-notes
+    package: redis/ttl-expiration
+    wiki_doc: wiki/redis/README.md
+  - id: cache-failure-modes
+    name: Cache Stampede/Penetration/Avalanche
+    type: failure-mode
+    summary: 캐시 만료, 존재하지 않는 key, 동시 만료로 DB 부하가 급증하는 장애 패턴과 완화책이다.
+    repo: cs-theory-notes
+    package: redis/cache-failure-modes
+    wiki_doc: wiki/redis/README.md
   - id: distributed-lock
     name: 분산 락
     type: process
@@ -49,6 +63,13 @@ entities:
     repo: cs-theory-notes
     package: redis/eviction
     wiki_doc: wiki/redis/README.md
+  - id: hot-big-key
+    name: Hot Key와 Big Key
+    type: failure-mode
+    summary: 특정 key 집중과 큰 key가 latency, network, memory, cluster slot 불균형에 주는 영향을 다룬다.
+    repo: cs-theory-notes
+    package: redis/hot-big-key
+    wiki_doc: wiki/redis/README.md
   - id: pipelining
     name: Pipelining
     type: process
@@ -63,12 +84,26 @@ entities:
     repo: cs-theory-notes
     package: redis/transaction
     wiki_doc: wiki/redis/README.md
+  - id: lua-script
+    name: Lua Script
+    type: process
+    summary: 여러 Redis 명령을 서버에서 하나의 원자적 script로 실행하지만 긴 script는 event loop를 막을 수 있다.
+    repo: cs-theory-notes
+    package: redis/lua-script
+    wiki_doc: wiki/redis/README.md
   - id: pubsub-stream
     name: Pub/Sub과 Stream
     type: process
     summary: Pub/Sub은 실시간 전달, Stream은 저장·재처리·Consumer Group을 제공한다.
     repo: cs-theory-notes
     package: redis/pubsub-stream
+    wiki_doc: wiki/redis/README.md
+  - id: stream-consumer-group
+    name: Stream Consumer Group
+    type: process
+    summary: Stream 메시지를 여러 consumer가 나눠 처리하고 ACK, pending, retry로 재처리를 관리한다.
+    repo: cs-theory-notes
+    package: redis/stream-consumer-group
     wiki_doc: wiki/redis/README.md
   - id: single-thread
     name: Redis Single Thread
@@ -84,11 +119,31 @@ entities:
     repo: cs-theory-notes
     package: redis/cluster
     wiki_doc: wiki/redis/README.md
+  - id: sentinel
+    name: Redis Sentinel
+    type: process
+    summary: primary-replica 구성을 감시하고 장애 감지, 알림, 자동 failover, primary discovery를 제공한다.
+    repo: cs-theory-notes
+    package: redis/sentinel
+    wiki_doc: wiki/redis/README.md
+  - id: redis-cluster-slots
+    name: Redis Cluster Hash Slot
+    type: data
+    summary: 16384 hash slot, hash tag, MOVED/ASK redirect, 같은 slot multi-key 제약을 설명한다.
+    repo: cs-theory-notes
+    package: redis/cluster-slots
+    wiki_doc: wiki/redis/README.md
 
 relations:
   - from: cache-strategy
     to: data-structures
     type: consumes
+  - from: ttl-expiration
+    to: cache-strategy
+    type: depends_on
+  - from: cache-failure-modes
+    to: ttl-expiration
+    type: failure_mode_of
   - from: distributed-lock
     to: data-structures
     type: consumes
@@ -104,20 +159,35 @@ relations:
   - from: eviction
     to: cache-strategy
     type: depends_on
+  - from: hot-big-key
+    to: eviction
+    type: failure_mode_of
   - from: pipelining
     to: data-structures
     type: consumes
   - from: transaction
     to: data-structures
     type: consumes
+  - from: lua-script
+    to: transaction
+    type: depends_on
   - from: pubsub-stream
     to: data-structures
+    type: depends_on
+  - from: stream-consumer-group
+    to: pubsub-stream
     type: depends_on
   - from: single-thread
     to: data-structures
     type: depends_on
   - from: replication-cluster
     to: persistence
+    type: depends_on
+  - from: sentinel
+    to: replication-cluster
+    type: depends_on
+  - from: redis-cluster-slots
+    to: replication-cluster
     type: depends_on
   - from: cache-strategy
     to: redis
