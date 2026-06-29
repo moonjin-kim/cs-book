@@ -96,6 +96,62 @@ export function Home() {
                 <span className="text-[12px] text-text-dim">{group.domains.length} categories</span>
               </div>
 
+              {group.focusSections && (
+                <div className="mb-4 overflow-hidden rounded-[8px] border border-border bg-bg-card">
+                  <div className="border-l-4 border-accent bg-bg-code px-4 py-3">
+                    <h3 className="text-[15px] font-semibold tracking-tight">핵심 섹션 맵</h3>
+                    <p className="mt-1 text-[12px] leading-relaxed text-text-muted">
+                      Backend Core는 아래 순서로 답변 축을 잡으면 Java, Spring, 저장소, 메시징 질문을 하나의 서버 흐름으로 연결할 수 있습니다.
+                    </p>
+                  </div>
+
+                  {group.focusSections.map((section, index) => {
+                    const linkedDomains = section.domainIds
+                      .map((domainId) => group.domains.find((domain) => domain.id === domainId))
+                      .filter((domain): domain is NonNullable<typeof domain> => Boolean(domain));
+
+                    return (
+                      <div
+                        key={section.title}
+                        className={`grid gap-3 px-4 py-4 lg:grid-cols-[54px_minmax(0,220px)_minmax(0,1fr)_minmax(0,220px)] ${
+                          index > 0 ? 'border-t border-border' : ''
+                        }`}
+                      >
+                        <div className="text-[12px] font-semibold text-accent">
+                          {String(section.priority).padStart(2, '0')}
+                        </div>
+                        <div>
+                          <div className="text-[14px] font-semibold text-text-primary">{section.title}</div>
+                        </div>
+                        <p className="text-[13px] leading-relaxed text-text-muted">{section.question}</p>
+                        <div className="flex flex-wrap gap-2 lg:justify-end">
+                          {linkedDomains.map((domain) => {
+                            const doc = wikiIndex?.docs.find((item) => item.domain === domain.id && item.path.endsWith('/README.md'));
+                            return doc ? (
+                              <Link
+                                key={domain.id}
+                                to={`/wiki/${doc.path}`}
+                                className="rounded-md border border-border px-2.5 py-1.5 text-[12px] text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors"
+                              >
+                                {domain.name}
+                              </Link>
+                            ) : (
+                              <Link
+                                key={domain.id}
+                                to={`/domain/${domain.id}`}
+                                className="rounded-md border border-border px-2.5 py-1.5 text-[12px] text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors"
+                              >
+                                {domain.name}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               <div className="overflow-hidden rounded-[8px] border border-border bg-bg-card">
                 {group.domains.map((domain, index) => {
                   const icon = DOMAIN_ICONS[domain.id] ?? { emoji: 'CS', color: '#71717a', bg: 'rgba(113,113,122,0.12)' };
