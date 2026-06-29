@@ -25,17 +25,37 @@
 - Spring의 `@Transactional`이 왜 self-invocation에서 동작하지 않을 수 있는가?
 - Java `volatile`, `synchronized`, `Atomic*`의 차이를 설명할 수 있는가?
 - `synchronized`와 `ReentrantLock`의 선택 기준을 설명할 수 있는가?
+- Java Memory Model과 happens-before 관계를 예시로 설명할 수 있는가?
+- `sleep()`, `wait()`, `notify()`, `join()`의 lock과 상태 전이를 구분할 수 있는가?
+- deadlock의 네 가지 필요 조건과 thread dump 기반 확인 방법을 설명할 수 있는가?
 - CAS와 ABA 문제, Atomic 클래스의 한계를 설명할 수 있는가?
 - ThreadLocal을 스레드 풀에서 사용할 때 왜 `remove()`가 필요한가?
+- ThreadPoolExecutor의 core/max pool size, queue, rejection policy를 운영 관점에서 설명할 수 있는가?
 - Fork/Join과 일반 ThreadPoolExecutor의 차이를 설명할 수 있는가?
 - CompletableFuture에서 custom executor가 필요한 상황을 설명할 수 있는가?
+- CompletableFuture의 `thenApply`, `thenCompose`, `thenCombine`, `allOf`, `handle` 차이를 설명할 수 있는가?
+- Virtual Thread가 적합한 작업과 DB connection pool 같은 외부 자원 한계를 설명할 수 있는가?
 - JCF에서 초기 용량, load factor, threshold가 resize 비용에 어떤 영향을 주는가?
 - HashMap과 ConcurrentHashMap의 동시성 전략과 복합 연산 주의점을 설명할 수 있는가?
+- HashMap 내부 bucket, hash collision, treeification, mutable key 위험을 설명할 수 있는가?
+- ArrayList와 LinkedList의 시간 복잡도와 cache locality 차이를 설명할 수 있는가?
+- fail-fast iterator와 weakly consistent iterator의 차이를 설명할 수 있는가?
 - JVM 메모리 구조와 GC Root 기반 reachability를 설명할 수 있는가?
+- ClassLoader의 loading/linking/initialization과 delegation model을 설명할 수 있는가?
+- JIT compiler의 warm-up, hot code, runtime optimization 개념을 설명할 수 있는가?
 - G1의 Humongous 객체와 JDK 17 기본 GC 선택 기준을 설명할 수 있는가?
+- Java 메모리 누수 원인으로 static collection, ThreadLocal, unbounded queue/cache, classloader leak을 설명할 수 있는가?
 - String, StringBuilder, StringBuffer의 차이와 String Constant Pool을 설명할 수 있는가?
+- primitive와 wrapper의 boxing/unboxing, null unboxing, `Integer` 비교 주의점을 설명할 수 있는가?
+- Generic type erasure와 PECS 원칙을 설명할 수 있는가?
+- `Optional`, Stream, Lambda를 사용할 때의 장점과 남용 위험을 설명할 수 있는가?
 - Record를 DTO나 VO에 사용할 때의 장점과 한계를 설명할 수 있는가?
+- sealed class와 pattern matching for switch가 닫힌 타입 계층에서 주는 장점을 설명할 수 있는가?
 - equals와 hashCode를 함께 재정의해야 하는 이유를 설명할 수 있는가?
+- 얕은 복사, 깊은 복사, 방어적 복사의 차이와 `List.copyOf`의 한계를 설명할 수 있는가?
+- BigDecimal에서 `equals()`와 `compareTo()` 차이, scale과 rounding mode를 설명할 수 있는가?
+- `Instant`, `LocalDateTime`, `ZonedDateTime`의 차이와 서버 저장 기준을 설명할 수 있는가?
+- checked exception과 unchecked exception을 API 설계 관점에서 구분할 수 있는가?
 - Redis 캐시를 적용했을 때 cache stampede와 stale data를 어떻게 줄일 것인가?
 - Redis 분산 락의 `SET NX PX`와 RedLock의 한계를 설명할 수 있는가?
 - Kafka consumer가 중복 처리할 수 있는 이유와 멱등 처리 방법은 무엇인가?

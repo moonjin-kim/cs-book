@@ -14,6 +14,20 @@ entities:
     repo: cs-theory-notes
     package: java/jvm
     wiki_doc: wiki/java/README.md
+  - id: class-loading
+    name: Class Loading
+    type: process
+    summary: JVM이 class 파일을 loading, linking, initialization 단계로 사용할 수 있게 만드는 과정이다.
+    repo: cs-theory-notes
+    package: java/class-loading
+    wiki_doc: wiki/java/README.md
+  - id: jit-compiler
+    name: JIT Compiler
+    type: process
+    summary: 자주 실행되는 bytecode를 실행 중 native code로 컴파일하고 runtime profile 기반 최적화를 적용한다.
+    repo: cs-theory-notes
+    package: java/jit
+    wiki_doc: wiki/java/README.md
   - id: memory-model
     name: Java Memory Model
     type: data
@@ -27,6 +41,13 @@ entities:
     summary: 더 이상 참조되지 않는 객체를 찾아 회수해 힙 메모리를 자동으로 관리하는 기능이다.
     repo: cs-theory-notes
     package: java/gc
+    wiki_doc: wiki/java/README.md
+  - id: java-memory-leak
+    name: Java 메모리 누수
+    type: data
+    summary: GC Root에서 계속 도달 가능한 불필요 객체가 회수되지 않아 heap, metaspace, native memory를 압박하는 현상이다.
+    repo: cs-theory-notes
+    package: java/memory-leak
     wiki_doc: wiki/java/README.md
   - id: gc-algorithms
     name: GC 알고리즘
@@ -42,6 +63,13 @@ entities:
     repo: cs-theory-notes
     package: java/collections
     wiki_doc: wiki/java/README.md
+  - id: hashmap-internals
+    name: HashMap 내부 구조
+    type: data
+    summary: hashCode, bucket, equals, resize, treeification으로 HashMap의 평균 O(1)과 예외 상황을 설명한다.
+    repo: cs-theory-notes
+    package: java/hashmap-internals
+    wiki_doc: wiki/java/README.md
   - id: concurrent-hash-map
     name: ConcurrentHashMap
     type: data
@@ -55,6 +83,20 @@ entities:
     summary: Thread, Executor, Future, CompletableFuture로 작업을 병렬 실행하고 결과를 조합한다.
     repo: cs-theory-notes
     package: java/concurrency
+    wiki_doc: wiki/java/README.md
+  - id: happens-before
+    name: Happens-before
+    type: process
+    summary: 한 작업의 결과가 다른 작업에 관찰 가능하도록 보장하는 Java Memory Model의 순서 관계다.
+    repo: cs-theory-notes
+    package: java/happens-before
+    wiki_doc: wiki/java/README.md
+  - id: deadlock
+    name: Deadlock
+    type: process
+    summary: 여러 스레드가 서로의 자원을 기다리며 더 이상 진행하지 못하는 동시성 장애다.
+    repo: cs-theory-notes
+    package: java/deadlock
     wiki_doc: wiki/java/README.md
   - id: locks
     name: synchronized와 ReentrantLock
@@ -147,19 +189,55 @@ entities:
     repo: cs-theory-notes
     package: java/generics-variance
     wiki_doc: wiki/java/README.md
+  - id: type-erasure
+    name: Type Erasure
+    type: process
+    summary: Java generic 타입 정보가 컴파일 후 대부분 제거되어 런타임에는 raw type 중심으로 동작하는 방식이다.
+    repo: cs-theory-notes
+    package: java/type-erasure
+    wiki_doc: wiki/java/README.md
+  - id: java-time
+    name: Java Time API
+    type: data
+    summary: Instant, LocalDateTime, ZonedDateTime 등 날짜와 시간을 timezone과 용도 기준으로 다루는 API다.
+    repo: cs-theory-notes
+    package: java/time
+    wiki_doc: wiki/java/README.md
+  - id: bigdecimal
+    name: BigDecimal
+    type: data
+    summary: 금액처럼 정확한 10진 계산이 필요한 값을 scale과 rounding mode를 명시해 다루는 숫자 타입이다.
+    repo: cs-theory-notes
+    package: java/bigdecimal
+    wiki_doc: wiki/java/README.md
 
 relations:
+  - from: class-loading
+    to: jvm-runtime
+    type: depends_on
+  - from: jit-compiler
+    to: jvm-runtime
+    type: depends_on
   - from: jvm-runtime
     to: jvm
     type: deployed_in
   - from: garbage-collection
     to: jvm-runtime
     type: depends_on
+  - from: java-memory-leak
+    to: garbage-collection
+    type: depends_on
   - from: gc-algorithms
     to: garbage-collection
     type: depends_on
   - from: thread-concurrency
     to: memory-model
+    type: depends_on
+  - from: happens-before
+    to: memory-model
+    type: depends_on
+  - from: deadlock
+    to: thread-concurrency
     type: depends_on
   - from: locks
     to: thread-concurrency
@@ -191,6 +269,9 @@ relations:
   - from: collections
     to: memory-model
     type: depends_on
+  - from: hashmap-internals
+    to: collections
+    type: depends_on
   - from: concurrent-hash-map
     to: collections
     type: depends_on
@@ -208,4 +289,13 @@ relations:
     type: depends_on
   - from: generics-variance
     to: collections
+    type: depends_on
+  - from: type-erasure
+    to: generics-variance
+    type: depends_on
+  - from: java-time
+    to: jvm-runtime
+    type: depends_on
+  - from: bigdecimal
+    to: jvm-runtime
     type: depends_on
