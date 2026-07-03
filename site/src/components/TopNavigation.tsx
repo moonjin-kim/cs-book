@@ -1,12 +1,30 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useOntology } from '@/hooks/useOntologyData';
 import { CATEGORY_GROUPS } from '@/lib/categories';
 import { ThemeToggle } from './ThemeToggle';
 
 export function TopNavigation() {
   const { ontology } = useOntology();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const scrollToGroup = (groupId: string) => {
+    const target = document.getElementById(groupId);
+    if (!target || typeof target.scrollIntoView !== 'function') return;
+    target.scrollIntoView({ block: 'start' });
+  };
+
+  const goToGroup = (groupId: string) => {
+    setMobileMenuOpen(false);
+    if (location.pathname !== '/') {
+      navigate('/');
+      window.setTimeout(() => scrollToGroup(groupId), 0);
+      return;
+    }
+    scrollToGroup(groupId);
+  };
 
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/95 backdrop-blur">
@@ -66,14 +84,14 @@ export function TopNavigation() {
               홈
             </Link>
             {CATEGORY_GROUPS.map((group) => (
-              <Link
+              <button
+                type="button"
                 key={group.id}
-                to={`/#${group.id}`}
-                onClick={() => setMobileMenuOpen(false)}
-                className="rounded-md px-3 py-2 text-[13px] text-text-muted hover:bg-bg-hover hover:text-text-primary"
+                onClick={() => goToGroup(group.id)}
+                className="rounded-md px-3 py-2 text-left text-[13px] text-text-muted hover:bg-bg-hover hover:text-text-primary"
               >
                 {group.title}
-              </Link>
+              </button>
             ))}
             <NavLink
               to="/wiki/interview-checklist.md"

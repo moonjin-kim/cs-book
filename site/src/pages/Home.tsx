@@ -1,12 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useOntology } from '@/hooks/useOntologyData';
 import { DOMAIN_ICONS } from '@/lib/constants';
 import { CATEGORY_GROUPS } from '@/lib/categories';
 
 export function Home() {
   const { ontology, wikiIndex } = useOntology();
-  const { hash } = useLocation();
   const [query, setQuery] = useState('');
 
   const normalizedQuery = query.trim().toLowerCase();
@@ -47,12 +46,6 @@ export function Home() {
 
   const totalConcepts = ontology.domains.reduce((sum, domain) => sum + domain.entities.length, 0);
   const wikiDocCount = wikiIndex?.docs.length ?? 0;
-
-  useEffect(() => {
-    if (!hash) return;
-    const target = document.getElementById(hash.slice(1));
-    target?.scrollIntoView({ block: 'start' });
-  }, [hash, visibleGroups]);
 
   return (
     <div className="space-y-6 sm:space-y-8">
