@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { useOntology } from '@/hooks/useOntologyData';
 import { DOMAIN_ICONS, TYPE_LABELS, TYPE_ORDER } from '@/lib/constants';
 import { findCategoryGroup } from '@/lib/categories';
@@ -31,6 +31,10 @@ export function CategoryPage() {
   const domain = ontology.domains.find((item) => item.id === id);
   if (!domain) {
     return <div className="text-text-muted text-sm">카테고리를 찾을 수 없습니다: {id}</div>;
+  }
+
+  if (domain.id === 'java') {
+    return <Navigate to="/wiki/java/README.md" replace />;
   }
 
   const icon = DOMAIN_ICONS[domain.id] ?? { emoji: 'CS', color: '#71717a', bg: 'rgba(113,113,122,0.12)' };
