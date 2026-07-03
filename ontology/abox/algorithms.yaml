@@ -91,6 +91,55 @@ entities:
     repo: cs-theory-notes
     package: algorithms/bfs-dfs
     wiki_doc: wiki/algorithms/README.md
+  - id: heap-priority-queue
+    name: Heap과 Priority Queue
+    type: data
+    summary: 부모가 자식보다 우선순위가 높다는 invariant를 유지해 최솟값이나 최댓값을 빠르게 꺼낸다.
+    repo: cs-theory-notes
+    package: algorithms/heap-priority-queue
+    wiki_doc: wiki/algorithms/README.md
+  - id: binary-search
+    name: Binary Search
+    type: process
+    summary: 정렬되었거나 단조 조건을 가진 탐색 공간을 절반씩 줄여 경계를 찾는다.
+    repo: cs-theory-notes
+    package: algorithms/binary-search
+    wiki_doc: wiki/algorithms/README.md
+  - id: sliding-window
+    name: Sliding Window
+    type: process
+    summary: 연속 구간의 시작과 끝을 한 방향으로 움직이며 구간 상태를 빠르게 갱신한다.
+    repo: cs-theory-notes
+    package: algorithms/sliding-window
+    wiki_doc: wiki/algorithms/README.md
+  - id: prefix-sum
+    name: Prefix Sum
+    type: data
+    summary: 누적 값을 저장해 구간 합이나 빈도 기반 부분 배열 계산을 빠르게 처리한다.
+    repo: cs-theory-notes
+    package: algorithms/prefix-sum
+    wiki_doc: wiki/algorithms/README.md
+  - id: greedy
+    name: Greedy
+    type: process
+    summary: 매 단계의 최선 선택이 전체 최적해로 이어진다는 성질을 증명해 사용하는 알고리즘 패턴이다.
+    repo: cs-theory-notes
+    package: algorithms/greedy
+    wiki_doc: wiki/algorithms/README.md
+  - id: dynamic-programming
+    name: Dynamic Programming
+    type: process
+    summary: 중복 부분 문제와 최적 부분 구조를 상태와 점화식으로 표현해 해결한다.
+    repo: cs-theory-notes
+    package: algorithms/dynamic-programming
+    wiki_doc: wiki/algorithms/README.md
+  - id: topological-sort
+    name: Topological Sort
+    type: process
+    summary: DAG에서 의존 관계를 만족하는 처리 순서를 구한다.
+    repo: cs-theory-notes
+    package: algorithms/topological-sort
+    wiki_doc: wiki/algorithms/README.md
 
 relations:
   - from: sorting-searching
@@ -132,3 +181,36 @@ relations:
   - from: bfs-dfs
     to: binary-tree
     type: consumes
+  - from: heap-priority-queue
+    to: binary-tree
+    type: depends_on
+  - from: heap-priority-queue
+    to: complexity
+    type: depends_on
+  - from: binary-search
+    to: sorting-searching
+    type: depends_on
+  - from: sliding-window
+    to: array-list
+    type: consumes
+  - from: sliding-window
+    to: hash-table
+    type: consumes
+  - from: prefix-sum
+    to: array-list
+    type: depends_on
+  - from: greedy
+    to: complexity
+    type: depends_on
+  - from: dynamic-programming
+    to: complexity
+    type: depends_on
+  - from: dynamic-programming
+    to: array-list
+    type: consumes
+  - from: topological-sort
+    to: tree-graph
+    type: consumes
+  - from: topological-sort
+    to: bfs-dfs
+    type: depends_on

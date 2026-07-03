@@ -57,8 +57,60 @@ entities:
     repo: cs-theory-notes
     package: computer-architecture/cache
     wiki_doc: wiki/computer-architecture/README.md
+  - id: isa-microarchitecture
+    name: ISA와 Microarchitecture
+    type: data
+    summary: 소프트웨어가 보는 명령어 계약과 이를 실제 칩에서 구현하는 내부 구조를 구분한다.
+    repo: cs-theory-notes
+    package: computer-architecture/isa-microarchitecture
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: out-of-order-execution
+    name: Out-of-Order Execution
+    type: process
+    summary: 의존성이 없는 명령을 원래 순서보다 먼저 실행해 pipeline 대기 시간을 숨긴다.
+    repo: cs-theory-notes
+    package: computer-architecture/out-of-order
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: simd
+    name: SIMD
+    type: process
+    summary: 하나의 명령으로 여러 데이터에 같은 연산을 수행해 데이터 병렬성을 활용한다.
+    repo: cs-theory-notes
+    package: computer-architecture/simd
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: cache-line
+    name: Cache Line
+    type: data
+    summary: CPU cache와 memory 사이 데이터 이동의 기본 단위로 공간 지역성과 false sharing의 기준이 된다.
+    repo: cs-theory-notes
+    package: computer-architecture/cache-line
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: cache-coherence
+    name: Cache Coherence
+    type: data
+    summary: 여러 core의 cache가 같은 메모리 값을 모순 없이 관찰하도록 유지하는 규칙이다.
+    repo: cs-theory-notes
+    package: computer-architecture/cache-coherence
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: false-sharing
+    name: False Sharing
+    type: data
+    summary: 독립 변수들이 같은 cache line에 있어 불필요한 cache invalidation을 일으키는 성능 문제다.
+    repo: cs-theory-notes
+    package: computer-architecture/false-sharing
+    wiki_doc: wiki/computer-architecture/README.md
+  - id: dma-io
+    name: DMA와 I/O
+    type: process
+    summary: 장치가 CPU 개입을 줄이고 memory에 직접 데이터를 전송해 I/O copy 부담을 낮춘다.
+    repo: cs-theory-notes
+    package: computer-architecture/dma-io
+    wiki_doc: wiki/computer-architecture/README.md
 
 relations:
+  - from: instruction-pipelining
+    to: isa-microarchitecture
+    type: depends_on
   - from: instruction-pipelining
     to: pipeline-hazard
     type: produces
@@ -73,4 +125,31 @@ relations:
     type: owns
   - from: cpu-cache
     to: locality-of-reference
+    type: depends_on
+  - from: cpu-cache
+    to: cache-line
+    type: owns
+  - from: cache-line
+    to: locality-of-reference
+    type: depends_on
+  - from: false-sharing
+    to: cache-line
+    type: depends_on
+  - from: false-sharing
+    to: cache-coherence
+    type: depends_on
+  - from: cache-coherence
+    to: cpu-cache
+    type: depends_on
+  - from: out-of-order-execution
+    to: instruction-pipelining
+    type: depends_on
+  - from: out-of-order-execution
+    to: data-hazard
+    type: depends_on
+  - from: simd
+    to: isa-microarchitecture
+    type: depends_on
+  - from: dma-io
+    to: cpu-cache
     type: depends_on
