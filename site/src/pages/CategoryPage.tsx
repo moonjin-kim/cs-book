@@ -40,8 +40,8 @@ export function CategoryPage() {
   const groupedEntities = groupEntities(domain.entities);
 
   return (
-    <div className="space-y-7">
-      <section className="border-b border-border pb-6">
+    <div className="space-y-6 sm:space-y-7">
+      <section className="border-b border-border pb-5 sm:pb-6">
         <div className="mb-4 flex flex-wrap items-center gap-2 text-[12px] text-text-dim">
           <Link to="/" className="hover:text-text-primary">Home</Link>
           <span>/</span>
@@ -49,31 +49,31 @@ export function CategoryPage() {
         </div>
 
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-3 sm:gap-4">
             <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md text-[12px] font-bold"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-[11px] font-bold sm:h-12 sm:w-12 sm:text-[12px]"
               style={{ background: icon.bg, color: icon.color }}
             >
               {icon.emoji}
             </div>
             <div>
-              <h1 className="text-[32px] font-bold leading-tight tracking-tight">{domain.name}</h1>
+              <h1 className="text-[26px] font-bold leading-tight tracking-tight sm:text-[32px]">{domain.name}</h1>
               <p className="mt-2 max-w-[780px] text-[14px] leading-relaxed text-text-muted">{domain.summary}</p>
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex">
             {primaryDoc && (
               <Link
                 to={`/wiki/${primaryDoc.path}`}
-                className="rounded-md bg-accent px-3 py-2 text-[13px] font-medium text-white hover:opacity-90 transition-opacity"
+                className="rounded-md bg-accent px-3 py-2 text-center text-[13px] font-medium text-white hover:opacity-90 transition-opacity"
               >
                 대표 문서
               </Link>
             )}
             <Link
               to={`/graph/domain/${domain.id}`}
-              className="rounded-md border border-border px-3 py-2 text-[13px] text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors"
+              className="rounded-md border border-border px-3 py-2 text-center text-[13px] text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors"
             >
               관계 그래프
             </Link>
@@ -101,7 +101,7 @@ export function CategoryPage() {
                   {entities.map((entity, index) => (
                     <div
                       key={entity.id}
-                      className={`grid gap-3 px-4 py-4 sm:grid-cols-[40px_minmax(0,1fr)] ${
+                      className={`grid gap-2 px-4 py-4 sm:grid-cols-[40px_minmax(0,1fr)] sm:gap-3 ${
                         index > 0 ? 'border-t border-border' : ''
                       }`}
                     >

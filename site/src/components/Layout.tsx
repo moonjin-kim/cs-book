@@ -8,7 +8,7 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-bg text-text-primary">
       <TopNavigation />
-      <main className="mx-auto max-w-[1180px] px-5 py-8">
+      <main className="mx-auto max-w-[1180px] px-4 py-5 sm:px-5 sm:py-8">
         <ErrorBoundary resetKey={pathname}>
           <Outlet />
         </ErrorBoundary>

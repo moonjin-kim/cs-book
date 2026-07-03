@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useOntology } from '@/hooks/useOntologyData';
 import { DOMAIN_ICONS } from '@/lib/constants';
 import { CATEGORY_GROUPS } from '@/lib/categories';
 
 export function Home() {
   const { ontology, wikiIndex } = useOntology();
+  const { hash } = useLocation();
   const [query, setQuery] = useState('');
 
   const normalizedQuery = query.trim().toLowerCase();
@@ -47,13 +48,19 @@ export function Home() {
   const totalConcepts = ontology.domains.reduce((sum, domain) => sum + domain.entities.length, 0);
   const wikiDocCount = wikiIndex?.docs.length ?? 0;
 
+  useEffect(() => {
+    if (!hash) return;
+    const target = document.getElementById(hash.slice(1));
+    target?.scrollIntoView({ block: 'start' });
+  }, [hash, visibleGroups]);
+
   return (
-    <div className="space-y-8">
-      <section className="border-b border-border pb-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-6 sm:space-y-8">
+      <section className="border-b border-border pb-6 sm:pb-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-[760px]">
             <div className="text-[12px] font-semibold uppercase tracking-wide text-accent">CS Interview Notes</div>
-            <h1 className="mt-3 text-[32px] font-bold leading-tight tracking-tight sm:text-[40px]">
+            <h1 className="mt-3 text-[28px] font-bold leading-tight tracking-tight sm:text-[40px]">
               면접 질문을 카테고리별 문서로 빠르게 찾습니다
             </h1>
             <p className="mt-3 text-[15px] leading-relaxed text-text-muted">
@@ -62,7 +69,7 @@ export function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 border border-border bg-bg-card p-4 rounded-[8px] lg:w-[340px]">
+          <div className="grid grid-cols-3 gap-2 rounded-[8px] border border-border bg-bg-card p-3 sm:gap-4 sm:p-4 lg:w-[340px]">
             <Metric label="Categories" value={ontology.domains.length} />
             <Metric label="Concepts" value={totalConcepts} />
             <Metric label="Docs" value={wikiDocCount} />
@@ -160,7 +167,7 @@ export function Home() {
                   return (
                     <div
                       key={domain.id}
-                      className={`grid gap-4 px-4 py-4 md:grid-cols-[42px_minmax(0,1fr)_150px] md:items-center ${
+                      className={`grid gap-3 px-4 py-4 md:grid-cols-[42px_minmax(0,1fr)_150px] md:items-center ${
                         index > 0 ? 'border-t border-border' : ''
                       }`}
                     >
@@ -186,17 +193,17 @@ export function Home() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2 md:justify-end">
+                      <div className="grid grid-cols-2 gap-2 md:flex md:justify-end">
                         <Link
                           to={`/domain/${domain.id}`}
-                          className="rounded-md bg-accent-dim px-3 py-2 text-[12px] font-medium text-accent hover:opacity-85 transition-opacity"
+                          className="rounded-md bg-accent-dim px-3 py-2 text-center text-[12px] font-medium text-accent hover:opacity-85 transition-opacity"
                         >
                           열기
                         </Link>
                         {doc && (
                           <Link
                             to={`/wiki/${doc.path}`}
-                            className="rounded-md border border-border px-3 py-2 text-[12px] text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors"
+                            className="rounded-md border border-border px-3 py-2 text-center text-[12px] text-text-muted hover:bg-bg-hover hover:text-text-primary transition-colors"
                           >
                             문서
                           </Link>
@@ -224,9 +231,9 @@ export function Home() {
 
 function Metric({ label, value }: { label: string; value: number }) {
   return (
-    <div>
+    <div className="min-w-0">
       <div className="text-[11px] uppercase tracking-wide text-text-dim">{label}</div>
-      <div className="mt-1 text-[24px] font-bold tracking-tight">{value}</div>
+      <div className="mt-1 text-[20px] font-bold tracking-tight sm:text-[24px]">{value}</div>
     </div>
   );
 }
