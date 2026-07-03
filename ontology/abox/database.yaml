@@ -13,238 +13,238 @@ entities:
     summary: 데이터를 테이블, 행, 컬럼, 키, 관계로 표현하는 RDB의 기본 모델이다.
     repo: cs-theory-notes
     package: database/model
-    wiki_doc: wiki/database/relational-modeling.md
+    wiki_doc: wiki/database/README.md
   - id: normalization
     name: 정규화
     type: process
     summary: 데이터 중복과 삽입·수정·삭제 이상을 줄이기 위해 테이블을 분해하는 과정이다.
     repo: cs-theory-notes
     package: database/normalization
-    wiki_doc: wiki/database/relational-modeling.md
+    wiki_doc: wiki/database/README.md
   - id: database-key-design
     name: Key 설계
     type: data
     summary: primary key, foreign key, surrogate key, natural key를 기준으로 식별성과 제약 조건을 설계한다.
     repo: cs-theory-notes
     package: database/key-design
-    wiki_doc: wiki/database/relational-modeling.md
+    wiki_doc: wiki/database/README.md
   - id: acid
     name: ACID
     type: data
     summary: 트랜잭션이 안전하려면 원자성, 일관성, 격리성, 지속성을 만족해야 한다는 원칙이다.
     repo: cs-theory-notes
     package: database/acid
-    wiki_doc: wiki/database/transactions-isolation.md
+    wiki_doc: wiki/database/README.md
   - id: transaction
     name: 트랜잭션과 ACID
     type: process
     summary: 여러 DB 작업을 하나의 성공 또는 실패 단위로 묶는 논리적 작업이다.
     repo: cs-theory-notes
     package: database/transaction
-    wiki_doc: wiki/database/transactions-isolation.md
+    wiki_doc: wiki/database/README.md
   - id: isolation-level
     name: 격리 수준
     type: data
     summary: 동시에 실행되는 트랜잭션이 서로의 변경을 어느 정도 볼 수 있는지 정하는 수준이다.
     repo: cs-theory-notes
     package: database/isolation
-    wiki_doc: wiki/database/transactions-isolation.md
+    wiki_doc: wiki/database/README.md
   - id: lost-update-write-skew
     name: Lost Update와 Write Skew
     type: failure-mode
     summary: 동시 트랜잭션이 같은 값이나 서로 다른 row를 갱신하면서 비즈니스 불변식을 깨는 현상이다.
     repo: cs-theory-notes
     package: database/lost-update-write-skew
-    wiki_doc: wiki/database/transactions-isolation.md
+    wiki_doc: wiki/database/README.md
   - id: index-query-plan
     name: 인덱스와 실행 계획
     type: process
     summary: 인덱스 선택과 실행 계획을 읽어 쿼리가 느린 이유와 개선 방법을 찾는다.
     repo: cs-theory-notes
     package: database/index-plan
-    wiki_doc: wiki/database/query-tuning.md
+    wiki_doc: wiki/database/README.md
   - id: btree-bplustree
     name: B-Tree와 B+Tree
     type: data
     summary: DB 인덱스에 자주 쓰이는 트리 구조로, B+Tree는 범위 조회에 유리하다.
     repo: cs-theory-notes
     package: database/btree-bplustree
-    wiki_doc: wiki/database/indexes.md
+    wiki_doc: wiki/database/README.md
   - id: clustered-index
     name: Clustered/Secondary Index
     type: data
     summary: 데이터 자체의 정렬 방식과 보조 인덱스의 조회 비용 차이를 설명한다.
     repo: cs-theory-notes
     package: database/clustered-index
-    wiki_doc: wiki/database/indexes.md
+    wiki_doc: wiki/database/README.md
   - id: covering-index
     name: Covering Index
     type: data
     summary: 필요한 컬럼이 모두 인덱스에 있어 테이블을 추가 조회하지 않는 최적화다.
     repo: cs-theory-notes
     package: database/covering-index
-    wiki_doc: wiki/database/indexes.md
+    wiki_doc: wiki/database/README.md
   - id: explain
     name: EXPLAIN
     type: process
     summary: DB가 어떤 인덱스와 접근 방식을 선택했는지 확인하는 실행 계획 분석 도구다.
     repo: cs-theory-notes
     package: database/explain
-    wiki_doc: wiki/database/query-tuning.md
+    wiki_doc: wiki/database/README.md
   - id: explain-analyze
     name: EXPLAIN ANALYZE
     type: process
     summary: 실제 쿼리를 실행해 예상 실행 계획과 실제 row/time 차이를 비교하는 분석 도구다.
     repo: cs-theory-notes
     package: database/explain-analyze
-    wiki_doc: wiki/database/query-tuning.md
+    wiki_doc: wiki/database/README.md
   - id: cardinality-selectivity
     name: Cardinality와 Selectivity
     type: data
     summary: 값의 다양성과 필터링 비율을 기준으로 인덱스 효율을 판단한다.
     repo: cs-theory-notes
     package: database/cardinality-selectivity
-    wiki_doc: wiki/database/indexes.md
+    wiki_doc: wiki/database/README.md
   - id: lock-mvcc
     name: Lock과 MVCC
     type: process
     summary: 잠금과 다중 버전 스냅샷으로 읽기·쓰기 충돌을 제어하는 방식이다.
     repo: cs-theory-notes
     package: database/concurrency
-    wiki_doc: wiki/database/locks-mvcc.md
+    wiki_doc: wiki/database/README.md
   - id: optimistic-pessimistic-lock
     name: 낙관적 락과 비관적 락
     type: process
     summary: 충돌을 나중에 검증할지, 먼저 잠글지에 따라 동시성 제어 방식을 선택한다.
     repo: cs-theory-notes
     package: database/optimistic-pessimistic-lock
-    wiki_doc: wiki/database/locks-mvcc.md
+    wiki_doc: wiki/database/README.md
   - id: shared-exclusive-lock
     name: 공유 락과 배타 락
     type: process
     summary: 읽기는 함께 허용하고 쓰기는 단독으로 허용해 병행 접근을 제어한다.
     repo: cs-theory-notes
     package: database/shared-exclusive-lock
-    wiki_doc: wiki/database/locks-mvcc.md
+    wiki_doc: wiki/database/README.md
   - id: gap-nextkey-lock
     name: Gap Lock과 Next-Key Lock
     type: process
     summary: 레코드 사이의 빈 공간까지 잠가 범위 조건에서 phantom read를 막는다.
     repo: cs-theory-notes
     package: database/gap-nextkey-lock
-    wiki_doc: wiki/database/locks-mvcc.md
+    wiki_doc: wiki/database/README.md
   - id: database-deadlock
     name: DB Deadlock
     type: failure-mode
     summary: 서로 다른 트랜잭션이 상대가 가진 lock을 기다리며 순환 대기하는 장애 상황이다.
     repo: cs-theory-notes
     package: database/deadlock
-    wiki_doc: wiki/database/locks-mvcc.md
+    wiki_doc: wiki/database/README.md
   - id: replication
     name: DB Replication
     type: process
     summary: Primary의 변경 로그를 Replica로 전달해 읽기 분산과 장애 대응을 가능하게 한다.
     repo: cs-theory-notes
     package: database/replication
-    wiki_doc: wiki/database/operations.md
+    wiki_doc: wiki/database/README.md
   - id: nosql-types
     name: NoSQL 유형
     type: data
     summary: Key-Value, Document, Column, Graph 등 RDB 밖의 저장 모델과 사용 사례를 비교한다.
     repo: cs-theory-notes
     package: database/nosql-types
-    wiki_doc: wiki/database/operations.md
+    wiki_doc: wiki/database/README.md
   - id: partitioning-sharding
     name: Partitioning과 Sharding
     type: process
     summary: 하나의 DB 내부 분할과 여러 DB 인스턴스 분산 저장을 확장성과 운영 비용 기준으로 비교한다.
     repo: cs-theory-notes
     package: database/partitioning-sharding
-    wiki_doc: wiki/database/operations.md
+    wiki_doc: wiki/database/README.md
   - id: paging-query
     name: Paging Query
     type: process
     summary: Offset paging의 후반 페이지 비용과 Cursor 방식의 장단점을 비교한다.
     repo: cs-theory-notes
     package: database/paging
-    wiki_doc: wiki/database/paging-modeling.md
+    wiki_doc: wiki/database/README.md
   - id: connection-pool
     name: Connection Pool
     type: process
     summary: DB 연결을 미리 만들어 재사용해 연결 비용과 커넥션 고갈 위험을 줄인다.
     repo: cs-theory-notes
     package: database/connection-pool
-    wiki_doc: wiki/database/operations.md
+    wiki_doc: wiki/database/README.md
   - id: backup-restore-migration
     name: Backup, Restore, Migration
     type: process
     summary: RPO/RTO, PITR, restore drill, schema migration으로 운영 데이터 복구성과 변경 안정성을 관리한다.
     repo: cs-theory-notes
     package: database/backup-restore-migration
-    wiki_doc: wiki/database/operations.md
+    wiki_doc: wiki/database/README.md
   - id: sargable-query
     name: SARGable Query
     type: process
     summary: 인덱스를 탐색 조건으로 활용할 수 있도록 컬럼을 함수나 계산으로 감싸지 않는 쿼리 작성 방식이다.
     repo: cs-theory-notes
     package: database/sargable-query
-    wiki_doc: wiki/database/deep-patterns.md
+    wiki_doc: wiki/database/README.md
   - id: join-optimization
     name: Join Optimization
     type: process
     summary: join 순서, cardinality 추정, access path, 중간 결과 크기를 기준으로 join 성능을 개선한다.
     repo: cs-theory-notes
     package: database/join-optimization
-    wiki_doc: wiki/database/query-tuning.md
+    wiki_doc: wiki/database/README.md
   - id: hot-row-contention
     name: Hot Row Contention
     type: data
     summary: 특정 row나 index range에 쓰기가 몰려 lock wait, deadlock, replication lag를 유발하는 병목이다.
     repo: cs-theory-notes
     package: database/hot-row-contention
-    wiki_doc: wiki/database/deep-patterns.md
+    wiki_doc: wiki/database/README.md
   - id: idempotency-constraint
     name: Idempotency와 Unique Constraint
     type: process
     summary: 재시도 가능한 요청에서 unique constraint와 idempotency key로 중복 처리를 방지한다.
     repo: cs-theory-notes
     package: database/idempotency-constraint
-    wiki_doc: wiki/database/deep-patterns.md
+    wiki_doc: wiki/database/README.md
   - id: outbox-pattern
     name: Outbox Pattern
     type: process
     summary: 비즈니스 변경과 outbox event 저장을 같은 transaction에 묶어 메시지 발행 실패와 데이터 불일치를 줄인다.
     repo: cs-theory-notes
     package: database/outbox-pattern
-    wiki_doc: wiki/database/deep-patterns.md
+    wiki_doc: wiki/database/README.md
   - id: read-write-split
     name: Read/Write Split
     type: process
     summary: primary write와 replica read를 분리해 읽기 부하를 분산하지만 read-your-writes와 replication lag를 고려해야 한다.
     repo: cs-theory-notes
     package: database/read-write-split
-    wiki_doc: wiki/database/deep-patterns.md
+    wiki_doc: wiki/database/README.md
   - id: online-schema-migration
     name: Online Schema Migration
     type: process
     summary: expand-migrate-contract 순서로 서비스 중 schema와 data를 호환성 있게 변경한다.
     repo: cs-theory-notes
     package: database/online-schema-migration
-    wiki_doc: wiki/database/deep-patterns.md
+    wiki_doc: wiki/database/README.md
   - id: optimizer-statistics
     name: Optimizer Statistics
     type: data
     summary: table과 index의 row 수, 분포, selectivity 추정으로 optimizer가 실행 계획을 선택하는 근거다.
     repo: cs-theory-notes
     package: database/optimizer-statistics
-    wiki_doc: wiki/database/deep-patterns.md
+    wiki_doc: wiki/database/README.md
   - id: id-index-locality
     name: ID와 Index Locality
     type: data
     summary: sequence, UUID, time-ordered ID 선택이 B+Tree locality, page split, 분산 생성에 미치는 영향을 설명한다.
     repo: cs-theory-notes
     package: database/id-index-locality
-    wiki_doc: wiki/database/deep-patterns.md
+    wiki_doc: wiki/database/README.md
 
 relations:
   - from: normalization
