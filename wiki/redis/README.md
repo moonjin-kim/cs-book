@@ -79,7 +79,7 @@ Redis는 in-memory data structure server입니다. database, cache, message brok
 
 ### 시간 복잡도와 Big Key
 
-Redis command는 빠르지만 모든 command가 O(1)은 아닙니다.
+Redis command는 빠르지만 모두 O(1)은 아닙니다.
 
 | 패턴 | 위험 |
 | --- | --- |
@@ -161,8 +161,8 @@ Redis key는 TTL을 가질 수 있고, 만료된 key는 lazy deletion과 active 
 
 면접 포인트:
 
-- TTL은 freshness를 보장하는 절대 장치가 아니라 stale data 기간을 제한하는 장치입니다.
-- 같은 TTL을 대량 key에 주면 같은 시점에 만료되어 cache avalanche가 생길 수 있습니다.
+- TTL은 freshness를 보장하는 절대 장치가 아니라 stale data 기간을 제한할 뿐입니다.
+- 대량 key에 같은 TTL을 주면 동시에 만료되어 cache avalanche가 생길 수 있습니다.
 - TTL 없는 key는 eviction 정책에 따라 남거나 제거될 수 있습니다.
 
 주의:
@@ -435,7 +435,7 @@ EXEC
 
 ### Lua Script
 
-Lua script는 server-side에서 여러 command를 하나의 script로 실행합니다.
+Lua script는 server-side에서 여러 command를 하나로 묶어 실행합니다.
 
 장점:
 
@@ -484,7 +484,7 @@ end
 
 ### RedLock과 Fencing Token
 
-RedLock은 여러 독립 Redis node에 lock 획득을 시도하고 과반수 성공 시 lock 획득으로 판단합니다.
+RedLock은 여러 독립 Redis node에 lock을 시도하고 과반수가 성공하면 획득으로 판단합니다.
 
 주의:
 

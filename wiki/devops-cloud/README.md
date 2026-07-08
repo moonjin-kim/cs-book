@@ -113,7 +113,7 @@ checkout -> test -> build -> package -> deploy -> health check
 
 ## Graceful Shutdown
 
-Graceful Shutdown은 종료 신호를 받았을 때 즉시 죽지 않고 정리 후 종료하는 방식입니다.
+Graceful Shutdown은 종료 신호를 받아도 즉시 죽지 않고 정리한 뒤 종료하는 방식입니다.
 
 흐름:
 

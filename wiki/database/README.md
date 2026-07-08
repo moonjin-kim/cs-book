@@ -2,7 +2,7 @@
 
 Database 면접은 **정확한 데이터를 안전하게 바꾸고 빠르게 읽기 위해 트랜잭션, 인덱스, 락, 실행 계획을 어떻게 이해하는지**가 핵심입니다.
 
-이 문서는 Database 주제 전체를 한 페이지에서 읽되, 오른쪽 목차로 필요한 섹션을 빠르게 이동하는 구조입니다.
+이 문서는 Database 주제 전체를 한 페이지에 담고, 오른쪽 목차로 필요한 섹션에 빠르게 이동합니다.
 
 ## 핵심 섹션 맵
 
@@ -152,7 +152,7 @@ Surrogate key와 natural key:
 DB별 주의:
 
 - PostgreSQL은 `READ UNCOMMITTED`를 요청해도 내부적으로 `READ COMMITTED`처럼 동작합니다.
-- PostgreSQL `REPEATABLE READ`는 snapshot isolation 기반이라 phantom read를 허용하지 않는 강한 동작을 제공합니다.
+- PostgreSQL `REPEATABLE READ`는 snapshot isolation 기반이라 phantom read를 허용하지 않습니다.
 - MySQL InnoDB는 `REPEATABLE READ`가 기본이고 next-key lock으로 일부 phantom을 막습니다.
 - SQL 표준의 격리 수준 이름만 외우면 실제 DB 동작 차이를 놓칠 수 있습니다.
 
@@ -186,7 +186,7 @@ SET stock = stock - 1
 WHERE id = ? AND stock > 0;
 ```
 
-이런 조건부 update는 read 후 update보다 race condition을 줄이기 쉽습니다.
+조건부 update는 read 후 update보다 race condition을 줄이기 쉽습니다.
 
 ## 3. Lock과 MVCC
 
@@ -602,7 +602,7 @@ API 입력값은 `PreparedStatement`로 바인딩하는 것이 기본입니다.
 
 ### SARGable Query
 
-SARGable은 Search ARGument ABLE의 줄임말로, DB가 인덱스 탐색 조건으로 사용할 수 있는 형태의 query를 뜻합니다.
+SARGable은 Search ARGument ABLE의 줄임말로, DB가 인덱스 탐색 조건으로 쓸 수 있는 query를 뜻합니다.
 
 인덱스 사용이 어려운 예:
 

@@ -84,7 +84,7 @@ parent process
 면접 포인트:
 
 - `fork()` 후 parent와 child는 별도 virtual address space를 갖습니다.
-- 처음에는 같은 내용을 보는 것처럼 보이지만 write 시 copy-on-write로 분리됩니다.
+- 처음에는 같은 내용을 공유하지만 write 시 copy-on-write로 분리됩니다.
 - child는 parent의 open file descriptor를 복사받고, 같은 open file description을 가리키면 file offset을 공유할 수 있습니다.
 - `execve()`는 PID를 유지한 채 code/heap/stack/data를 새 program으로 바꿉니다.
 - parent가 child 종료를 회수하지 않으면 zombie process가 남을 수 있습니다.
@@ -400,7 +400,7 @@ child write
 주의:
 
 - 큰 process에서 fork 후 많은 write가 일어나면 COW 비용이 커집니다.
-- GC heap이 큰 application에서 fork를 사용하는 방식은 memory spike를 만들 수 있습니다.
+- GC heap이 큰 application에서 fork하면 memory spike가 생길 수 있습니다.
 
 ## 5. 메모리 관리와 OOM
 

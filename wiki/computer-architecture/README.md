@@ -57,7 +57,7 @@
 핵심:
 
 - 같은 ISA라도 CPU 모델이 다르면 성능 특성이 다를 수 있습니다.
-- 프로그램은 ISA 명령어로 실행되지만, 실제 CPU 내부에서는 명령어를 더 작은 micro-operation으로 쪼개 실행할 수 있습니다.
+- 프로그램은 ISA 명령어로 실행되지만, 실제 CPU 내부에서는 이를 더 작은 micro-operation으로 쪼개 실행할 수 있습니다.
 - 컴파일러와 JIT는 target architecture의 특성을 고려해 instruction selection, register allocation, vectorization을 수행합니다.
 
 ### CPU 기본 구성
@@ -137,7 +137,7 @@ R4 = R1 + R5
 실무 연결:
 
 - 예측하기 어려운 branch가 많은 코드는 pipeline 효율을 떨어뜨릴 수 있습니다.
-- 정렬된 데이터에서 조건 분기가 더 빠르게 보이는 사례는 branch prediction과 cache locality가 함께 작용할 수 있습니다.
+- 정렬된 데이터에서 조건 분기가 빨라 보이는 것은 branch prediction과 cache locality가 함께 작용한 결과일 수 있습니다.
 
 ### Structural Hazard
 
