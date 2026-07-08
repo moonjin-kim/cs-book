@@ -103,7 +103,7 @@ Cache-Control: no-store
 
 주의:
 
-- GET에도 body가 물리적으로 가능할 수 있지만 의미와 상호운용성이 약해 실무 API에서는 피하는 편이 안전합니다.
+- GET에도 body를 넣을 수 있지만 의미와 상호운용성이 약해 실무 API에서는 피하는 편이 안전합니다.
 - `Content-Type`은 body 형식을 말하고, `Accept`는 원하는 응답 형식을 말합니다.
 - header 크기가 커지면 proxy, WAS, browser 제한에 걸릴 수 있습니다.
 

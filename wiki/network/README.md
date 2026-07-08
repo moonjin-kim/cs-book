@@ -160,7 +160,7 @@ host range: 10.0.1.1 ~ 10.0.1.254
 
 ### ARP와 Gateway
 
-같은 subnet 안에서는 IP만으로 frame을 보낼 수 없습니다. Ethernet frame을 보내려면 MAC address가 필요합니다.
+같은 subnet 안이라도 IP만으로는 frame을 보낼 수 없습니다. Ethernet frame에는 MAC address가 필요합니다.
 
 흐름:
 
@@ -317,7 +317,7 @@ Nagle algorithm은 작은 segment를 너무 많이 보내지 않도록 모아서
 주의:
 
 - TCP 자체는 연결 상대가 갑자기 사라진 것을 즉시 알지 못할 수 있습니다.
-- NAT, load balancer, firewall idle timeout보다 keepalive/heartbeat 주기를 짧게 잡아야 연결 유지에 도움이 됩니다.
+- NAT, load balancer, firewall의 idle timeout보다 keepalive/heartbeat 주기를 짧게 잡아야 연결이 유지됩니다.
 
 ### UDP
 
@@ -520,7 +520,7 @@ Client가 확인하는 것:
 
 ### Session Resumption과 0-RTT
 
-TLS handshake는 비용이 있으므로 session resumption으로 재접속 비용을 줄일 수 있습니다.
+TLS handshake는 비용이 크므로, 재접속 시 session resumption으로 이를 줄일 수 있습니다.
 
 주의:
 

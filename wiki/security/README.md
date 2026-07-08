@@ -419,7 +419,7 @@ XSS는 신뢰하지 못한 데이터가 browser에서 script로 실행되는 취
 
 ### SSRF
 
-SSRF는 서버가 공격자가 지정한 URL로 요청하게 만드는 취약점입니다.
+SSRF는 공격자가 지정한 URL로 서버가 요청하게 만드는 취약점입니다.
 
 위험:
 
@@ -443,7 +443,7 @@ SSRF는 서버가 공격자가 지정한 URL로 요청하게 만드는 취약점
 
 ### CSRF
 
-CSRF는 사용자가 로그인한 사이트에 browser가 cookie를 자동 전송하는 성질을 악용합니다.
+CSRF는 로그인된 사이트로 browser가 cookie를 자동 전송하는 성질을 악용합니다.
 
 ```text
 사용자 로그인 상태
@@ -496,7 +496,7 @@ Content Security Policy는 browser가 실행하거나 로드할 수 있는 resou
 
 ### Clickjacking
 
-Clickjacking은 사용자가 보이지 않는 frame 위에서 의도치 않은 클릭을 하게 만드는 공격입니다.
+Clickjacking은 보이지 않는 frame 위에서 사용자가 의도치 않은 클릭을 하게 만드는 공격입니다.
 
 대응:
 
