@@ -453,14 +453,9 @@ Circuit breaker는 실패가 누적되는 호출을 잠시 차단합니다.
 
 실무 포인트:
 
-올리브영:
-
 - 장애 판정 기준은 실패 응답(failure call)과 기준 시간 초과 응답(slow call) 두 가지입니다. `failureRateThreshold` 50%, `slowCallDurationThreshold` 60,000ms, `waitDurationInOpenState` 60,000ms, `minimumNumberOfCalls` 100 등이 기본값이며, 실제 운영에서는 실패율 10%·slow 기준 500ms·Open 대기 30초처럼 더 엄격하게 조정할 수 있습니다. (출처: 올리브영)
 - 서킷브레이커가 없으면 의존 대상 장애 시 (연결 대기 timeout × 재시도 횟수)만큼 지연이 낭비되지만, 서킷이 Open이면 장애 의존성을 건너뛰고 fallback 경로(예: 대체 저장소)로 곧바로 우회합니다. fallback 메서드는 원 함수와 파라미터·반환 타입이 같아야 합니다. (출처: 올리브영)
 - Resilience4j 데코레이터 기본 적용 순서는 `Retry(CircuitBreaker(RateLimiter(TimeLimiter(Bulkhead(함수)))))`입니다. Retry를 CircuitBreaker보다 바깥(먼저)에 두면 재시도 실패 횟수까지 서킷의 실패율에 합산되므로 임계값 설정에 주의해야 합니다. (출처: 올리브영)
-
-우아한형제들:
-
 - Resilience4j는 Hystrix가 maintenance 모드로 전환되며 그 대체로 쓰이는 경량 라이브러리로, CLOSED/OPEN/HALF_OPEN 외에 항상 허용하는 DISABLED와 항상 거부하는 FORCED_OPEN 특수 상태가 있고 실패율은 슬라이딩 윈도우(COUNT_BASED/TIME_BASED)로 측정합니다. (출처: 우아한형제들)
 - fallback은 상태와 무관하게 CLOSED에서도 메서드가 실패하면 실행되므로 fallback 실행 여부만으로 서킷 Open을 판단할 수 없고, fallback이 실행되면 원래 예외가 상위로 전파되지 않아 기존 예외 처리 흐름을 함께 조정해야 합니다. Open 전용 예외인 `CallNotPermittedException`은 별도 분기 처리할 수 있습니다. (출처: 우아한형제들)
 
