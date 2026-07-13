@@ -95,6 +95,13 @@ Bean으로 관리하는 이유:
 - 선택 의존성은 setter 또는 `ObjectProvider`를 고려합니다.
 - 순환 의존성이 생기면 대부분 역할 분리나 이벤트/포트 분리가 필요한 신호입니다.
 
+실무 포인트:
+
+- `@Bean` 메서드 이름이 그대로 bean name으로 등록되며, 동일 타입 빈이 1개면 이름과 무관하게 타입 기반으로 주입됩니다. (출처: 카카오페이)
+- 동일 타입 빈이 여러 개면 `@Qualifier`(bean name 강제 매칭, 실패 시 즉시 오류) > `@Primary`(타입 기반, field name 무시) > `@Priority` > field name ↔ bean name 매칭 순으로 후보가 결정됩니다. (출처: 카카오페이)
+- `@Primary` 빈이 존재하면 field name 기반 매칭이 무력화되어 의도치 않은 빈이 주입될 수 있습니다. `@Qualifier`는 후보 탐색 이전 단계에서 처리되므로 `@Primary`보다 우선합니다. (출처: 카카오페이)
+- field injection은 빈이 없을 때 런타임에야 NPE로 드러나는 반면, 생성자 주입은 `final` 필드로 컨텍스트 로딩 시점에 오류를 감지할 수 있어 권장됩니다. (출처: 카카오페이)
+
 ### Bean Scope
 
 | scope | 의미 | 주의점 |
@@ -224,6 +231,13 @@ public void inner() {}
 - public service method를 외부에서 호출하도록 application service를 나눕니다.
 - 자기 자신 proxy 주입이나 `AopContext` 사용은 프레임워크 결합과 순환 의존성이 커져 우선순위가 낮습니다.
 
+실무 포인트:
+
+- Spring AOP는 JDK Dynamic Proxy든 CGLIB든 `this`를 통한 내부 함수 호출은 프록시를 거치지 않아 부가기능이 동작하지 않으며, private/protected 메서드에도 프록시 기반 AOP는 적용되지 않습니다. (출처: 카카오페이)
+- Pointcut 표현식은 컴파일 시점에 검증되지 않아, 패키지·클래스명을 변경하면 AOP가 조용히 빠지고 런타임에야 발견됩니다. (출처: 카카오페이)
+- `joinPoint.args`가 타입 정보 없는 배열로 반환되어 인자명·순서 변경 시 런타임 오류가 나고, `@Cacheable`의 SpEL key도 인자명 불일치 시 잘못된 캐시 키를 만들지만 컴파일에서 잡히지 않습니다. (출처: 카카오페이)
+- 내부 호출 우회를 위해 클래스를 분리하면 서비스 레이어 계층이 늘어나 복잡도가 증가하는 트레이드오프가 있습니다. (출처: 카카오페이)
+
 ## 3. MVC 요청 처리
 
 ### DispatcherServlet 요청 흐름
@@ -288,6 +302,12 @@ public void inner() {}
 - Interceptor는 handler method 정보를 알 수 있어 MVC 인증/로깅에 유리합니다.
 - ArgumentResolver는 Controller 반복 코드를 줄이지만 숨은 의존성을 만들 수 있습니다.
 
+실무 포인트:
+
+- Access log에는 실제 요청 URL(`/v1/orders/A0000001`)만 남아 컨트롤러의 URL 패턴(`/v1/orders/{id}`)과 매핑하기 어렵습니다. 이는 다수 API 중 미사용 API를 찾을 때의 출발점 문제입니다. (출처: 우아한형제들)
+- `RequestMappingHandlerMapping`은 매칭된 URL 패턴을 `HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE` 속성으로 `HttpServletRequest`에 저장하므로, Interceptor의 `preHandle()`에서 이 속성을 읽으면 패턴 단위 로그를 남길 수 있습니다. 핸들러 정보를 활용하는 로깅은 Filter보다 Interceptor가 유리합니다. (출처: 우아한형제들)
+- `RequestMappingHandlerMapping.getHandlerMethods()`로 등록된 전체 (HTTP method, URL 패턴) 목록을 얻고, 수집한 호출 카운트가 0인 항목을 미사용 API로 판별할 수 있습니다. (출처: 우아한형제들)
+
 ### Validation
 
 | 위치 | 방법 |
@@ -320,6 +340,13 @@ public void inner() {}
 - 클라이언트 오류는 4xx, 서버 오류는 5xx로 명확히 매핑합니다.
 - 내부 예외 메시지를 그대로 노출하지 않습니다.
 
+실무 포인트:
+
+- `IllegalArgumentException`은 클라이언트 잘못뿐 아니라 프레임워크/라이브러리 내부 버그(예: `Thread.setPriority()`)로도 발생하므로, 일괄 400으로 매핑하면 서버 결함이 클라이언트 잘못으로 오인되어 대응이 지연됩니다. Spring 기본 동작도 이 예외를 500으로 처리합니다. (출처: 우아한형제들)
+- 4xx/5xx 판단 기준은 오류 책임이 클라이언트냐 서버냐입니다. 4xx는 요청 수정 없이는 재시도가 무의미한 경우, 5xx는 일시 장애일 수 있어 backoff 재시도가 가능한 경우입니다. (출처: 우아한형제들)
+- 상태 코드를 혼용하면 모니터링이 망가집니다. 서버 오류를 4xx로 내리면 신속 대응이 어렵고, 클라이언트 오류를 5xx로 올리면 경보 피로도가 증가합니다. (출처: 우아한형제들)
+- 범용 예외를 직접 400에 매핑하지 말고 `code`를 가진 커스텀 비즈니스 예외 계층을 정의한 뒤, `@RestControllerAdvice` + `@ExceptionHandler`로 의도된 클라이언트 오류만 400으로 매핑하고 예상치 못한 예외는 기본 500 동작에 맡기는 전략이 권장됩니다. (출처: 우아한형제들)
+
 ## 4. 트랜잭션
 
 ### `@Transactional` 기본 동작
@@ -350,6 +377,14 @@ public void importFile() throws IOException {
     // ...
 }
 ```
+
+실무 포인트:
+
+- 예외가 프록시를 통과하면 `TransactionInterceptor`가 `rollbackOn`을 확인해 unchecked exception이면 트랜잭션에 rollback-only를 마킹하며, 이 마킹은 트랜잭션 단위이므로 호출자가 예외를 catch해도 커밋 시점에 롤백됩니다. (출처: 하이퍼커넥트)
+- 반대로 프록시를 거치지 않은 메서드에서 발생한 예외를 catch하면 마킹이 없어 정상 커밋되고, self-invocation에서는 `REQUIRES_NEW`를 선언해도 새 트랜잭션이 열리지 않습니다. (출처: 하이퍼커넥트)
+- Kotlin은 checked exception 선언 강제가 없어 checked exception이 프록시를 통과하면 `UndeclaredThrowableException`(RuntimeException 계열)으로 래핑되어 의도와 달리 롤백되므로, `@Throws`를 명시해야 checked exception이 그대로 전달됩니다. (출처: 하이퍼커넥트)
+- `REQUIRES_NEW`는 동일 스레드에서 수행되는 새 물리 트랜잭션이라, 이미 커밋된 자식은 부모가 롤백돼도 되돌아가지 않고, ThreadLocal 기반이라 `@Async` 등 다른 스레드에는 전파되지 않습니다. (출처: 하이퍼커넥트)
+- 긴 트랜잭션을 `REQUIRES_NEW` + 커서 기반 배치로 분할하면 재시도 시 이미 성공한 분량을 재처리하지 않으면서 트랜잭션 점유 시간을 줄일 수 있습니다. (출처: 하이퍼커넥트)
 
 ### Propagation
 
@@ -769,3 +804,11 @@ OSIV는 요청이 끝날 때까지 persistence context를 열어두어 Controlle
 - Spring Boot Reference 3.5: https://docs.spring.io/spring-boot/3.5/
 - Spring Boot Auto-Configuration API: https://docs.spring.io/spring-boot/3.5/api/java/org/springframework/boot/autoconfigure/EnableAutoConfiguration.html
 - Spring Boot Actuator: https://docs.spring.io/spring-boot/3.5/reference/actuator/
+
+## 참고한 기술블로그
+
+- 카카오페이 — Spring Bean Injection 이야기(feat. 모두가 다 알고 있는 스프링빈, 정말 다 알고 있는가?): https://tech.kakaopay.com/post/martin-dev-honey-tip-2/
+- 카카오페이 — Kotlin으로 Spring AOP 극복하기!: https://tech.kakaopay.com/post/overcome-spring-aop-with-kotlin/
+- 하이퍼커넥트 — Spring Transactional Rollback Deep Dive: https://hyperconnect.github.io/2025/02/10/spring-transactional-rollback.html
+- 우아한형제들 — IllegalArgumentException은 400 Bad Request인가?: https://techblog.woowahan.com/21686/
+- 우아한형제들 — Spring 웹 애플리케이션에서 사용하지 않는 API를 찾아보자: https://techblog.woowahan.com/2610/
