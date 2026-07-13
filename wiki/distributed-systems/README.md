@@ -159,6 +159,13 @@ Else: Latency vs Consistency
 - read-after-write가 필요한 API는 primary read, session stickiness, version check 같은 전략이 필요합니다.
 - eventual consistency는 자동으로 안전한 것이 아니라 conflict resolution과 관측이 필요합니다.
 
+실무 포인트:
+
+- 메시지 브로커(Kafka) 기반 이벤트 연동에서는 소비 측이 받는 순서가 발행 순서와 달라질 수 있어, "수정 → 등록"처럼 역전되면 오래된 데이터가 최신 데이터를 덮어써 결과가 비정상이 됩니다. (출처: 우아한형제들)
+- 결과적 일관성은 그 자체로 안전한 것이 아니라, 역전을 감지하는 모니터링/로깅과 보정(fallback) 로직 같은 추가 검증 장치가 있어야 실제 수렴을 보장합니다. (출처: 우아한형제들)
+- 순서 문제를 구조적으로 회피하려면 Zero Payload 패턴을 씁니다. 이벤트에 데이터를 싣지 않고 식별자(ID)만 전달하고 수신 측이 그 ID로 원본을 다시 조회해 저장하면, 도착 순서가 뒤바뀌어도 최종 결과가 최신값으로 수렴하고 스키마 변경에도 덜 민감합니다. 대신 수신 시마다 원본을 재조회하는 부하가 트레이드오프입니다. (출처: 우아한형제들)
+- 처리에 실패한 이벤트는 별도 DeadLetter 토픽으로 격리해 재처리 경로를 둡니다. (출처: 우아한형제들)
+
 ## 3. 복제, Quorum, 합의
 
 ### Replication
@@ -270,6 +277,13 @@ Split-brain은 두 개 이상의 노드 그룹이 자신이 primary/leader라고
 - lease 만료와 clock skew 주의
 - single writer 보장
 - old primary가 write하지 못하도록 차단
+
+실무 포인트:
+
+- `synchronized` 같은 언어 수준 상호배제는 같은 프로세스 안에서만 유효하므로, 여러 인스턴스가 공유 자원을 다루는 분산 환경에서는 "동시에 하나의 writer만 자원을 변경"하도록 강제하는 분산 락이 필요합니다. (출처: 컬리)
+- Redisson은 획득한 락에 `leaseTime`(자동 만료 TTL)을 둬, 락을 점유한 프로세스가 죽어도 lease 만료로 소유권을 회수합니다. 이는 락 점유자 장애로 인한 영구 점유(데드락)를 막는 fencing/lease와 같은 문제의식입니다. (출처: 컬리)
+- Redis 기반 락에서 Lettuce는 `setnx`/`setex`로 계속 폴링하는 스핀락이라 대기 클라이언트가 많을수록 Redis 부하가 커지지만, Redisson은 pub/sub으로 락 해제 시 구독자에게 신호를 보내 재시도해 불필요한 폴링이 없습니다. (출처: 컬리)
+- 락 해제를 트랜잭션 커밋보다 앞에 두면 안 됩니다. 락만 먼저 풀리고 다음 스레드가 변경 전 값을 읽으면(재고 10개를 두 클라이언트가 각각 10으로 읽고 차감) 정합성이 깨지므로, 별도 트랜잭션(REQUIRES_NEW)으로 처리하고 커밋 완료 후 `finally`에서 락을 해제해야 합니다. (출처: 컬리)
 
 ## 4. 파티셔닝과 샤딩
 
@@ -436,6 +450,19 @@ Circuit breaker는 실패가 누적되는 호출을 잠시 차단합니다.
 - circuit breaker는 장애를 고치는 것이 아니라 빠른 실패와 자원 보호를 위한 장치입니다.
 - fallback이 잘못 설계되면 stale data나 잘못된 비즈니스 결정을 만들 수 있습니다.
 - timeout, retry, bulkhead와 함께 설계해야 효과가 있습니다.
+
+실무 포인트:
+
+올리브영:
+
+- 장애 판정 기준은 실패 응답(failure call)과 기준 시간 초과 응답(slow call) 두 가지입니다. `failureRateThreshold` 50%, `slowCallDurationThreshold` 60,000ms, `waitDurationInOpenState` 60,000ms, `minimumNumberOfCalls` 100 등이 기본값이며, 실제 운영에서는 실패율 10%·slow 기준 500ms·Open 대기 30초처럼 더 엄격하게 조정할 수 있습니다. (출처: 올리브영)
+- 서킷브레이커가 없으면 의존 대상 장애 시 (연결 대기 timeout × 재시도 횟수)만큼 지연이 낭비되지만, 서킷이 Open이면 장애 의존성을 건너뛰고 fallback 경로(예: 대체 저장소)로 곧바로 우회합니다. fallback 메서드는 원 함수와 파라미터·반환 타입이 같아야 합니다. (출처: 올리브영)
+- Resilience4j 데코레이터 기본 적용 순서는 `Retry(CircuitBreaker(RateLimiter(TimeLimiter(Bulkhead(함수)))))`입니다. Retry를 CircuitBreaker보다 바깥(먼저)에 두면 재시도 실패 횟수까지 서킷의 실패율에 합산되므로 임계값 설정에 주의해야 합니다. (출처: 올리브영)
+
+우아한형제들:
+
+- Resilience4j는 Hystrix가 maintenance 모드로 전환되며 그 대체로 쓰이는 경량 라이브러리로, CLOSED/OPEN/HALF_OPEN 외에 항상 허용하는 DISABLED와 항상 거부하는 FORCED_OPEN 특수 상태가 있고 실패율은 슬라이딩 윈도우(COUNT_BASED/TIME_BASED)로 측정합니다. (출처: 우아한형제들)
+- fallback은 상태와 무관하게 CLOSED에서도 메서드가 실패하면 실행되므로 fallback 실행 여부만으로 서킷 Open을 판단할 수 없고, fallback이 실행되면 원래 예외가 상위로 전파되지 않아 기존 예외 처리 흐름을 함께 조정해야 합니다. Open 전용 예외인 `CallNotPermittedException`은 별도 분기 처리할 수 있습니다. (출처: 우아한형제들)
 
 ### Load Shedding과 Backpressure
 
@@ -623,3 +650,10 @@ Event Sourcing 장점:
 - Google SRE Book, Addressing Cascading Failures: https://sre.google/sre-book/addressing-cascading-failures/
 - Microsoft Azure Architecture, Saga distributed transactions pattern: https://learn.microsoft.com/azure/architecture/patterns/saga
 - Microservices.io, Transactional Outbox: https://microservices.io/patterns/data/transactional-outbox.html
+
+## 참고한 기술블로그
+
+- 컬리 — 풀필먼트 입고 서비스팀에서 분산락을 사용하는 방법 - Spring Redisson: https://helloworld.kurly.com/blog/distributed-redisson-lock/
+- 우아한형제들 — 이벤트 기반 아키텍처 도입 사례(전시 영역): https://techblog.woowahan.com/13101/
+- 올리브영 — Circuitbreaker를 사용한 장애 전파 방지: https://oliveyoung.tech/2023-08-31/circuitbreaker-inventory-squad/
+- 우아한형제들 — 개발자 의식의 흐름대로 적용해보는 서킷브레이커: https://techblog.woowahan.com/15694/
