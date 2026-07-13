@@ -131,6 +131,11 @@ Cache-Control: no-store
 | 503 | 일시적 과부하/점검 | retry 가능성 |
 | 504 | gateway timeout | upstream 응답 시간 초과 |
 
+실무 포인트:
+
+- 응답은 상태 줄(프로토콜 버전 + 상태 코드, 예 `HTTP/2 404`), 응답 헤더(Key:Value), 응답 본문(JSON) 3요소로 나눠 읽고, 상태 코드 5개 범주(1xx~5xx)를 기준으로 요청·에러 처리 로직을 분기합니다. (출처: 토스페이먼츠)
+- 상태 코드만으로는 어떤 리소스가 왜 문제인지 알 수 없으므로, 실패 시 응답 본문에 `code`·`message` 필드로 구체적 원인을 내려주는 설계가 실무 관례입니다(예: 404 + `"code":"NOT_FOUND_PAYMENT"`). 상태 코드 범주 + 본문 에러 코드의 2단 구조로 이해하면 좋습니다. (출처: 토스페이먼츠)
+
 ### Method의 Safe와 Idempotent
 
 | Method | 주 용도 | Safe | Idempotent | Body |
@@ -149,6 +154,13 @@ Cache-Control: no-store
 - Idempotent는 같은 요청을 여러 번 보내도 의도한 최종 server state가 같다는 뜻입니다.
 - Idempotent여도 응답 코드나 로그, metric, updated_at 같은 부수 효과는 달라질 수 있습니다.
 - 재시도 가능성은 method만 보지 말고 idempotency key, DB constraint, transaction 설계까지 봐야 합니다.
+
+실무 포인트:
+
+- 멱등성은 응답 값이 같은 것만으로는 부족하고 서버 상태(DB)에도 추가 영향이 없어야 성립합니다. POST/PATCH 같은 비멱등 메서드에 재시도 안전성을 주려면 서버가 멱등키를 직접 구현해야 하며, 키는 UUID v4처럼 충분히 무작위적인 고유값을 권장합니다. (출처: 토스페이먼츠)
+- 중복 요청 판별은 멱등키 단독이 아니라 멱등키 + API 키 + API 주소 + HTTP 메서드 조합으로 수행합니다. 저장소는 별도 테이블이나 Redis 같은 K-V 저장소를 쓰고, 유효기간(예: 15일)을 두어 만료 후 동일 키 재사용을 허용합니다. (출처: 토스페이먼츠)
+- 멱등키 관련 에러는 형식 오류는 400, 첫 요청이 아직 처리 중일 때 동일 키 재요청은 409, 같은 멱등키에 다른 요청 본문이 오면 422로 구분해 응답하는 설계가 실무 관례입니다. (출처: 토스페이먼츠)
+- 멱등성이 필요한 핵심 동기는 네트워크 오류나 타임아웃으로 응답을 못 받아 재시도하는 경우, 그리고 사용자의 중복 클릭("따닥")으로 인한 중복 결제를 막는 것입니다. (출처: 토스페이먼츠)
 
 ## 2. URI와 REST API 설계
 
@@ -220,6 +232,13 @@ POST /orders/123/cancel-requests
 - 모든 작업을 CRUD로 억지 매핑하지 않습니다.
 - 결제 승인, 주문 취소처럼 business action은 하위 resource나 command resource로 표현할 수 있습니다.
 - idempotent create가 필요하면 client-generated id 또는 `Idempotency-Key`를 검토합니다.
+
+실무 포인트:
+
+- 단수 명사는 도큐먼트, 복수 명사는 컬렉션으로 구분하고 계층은 `/`로 표현합니다. RFC 3986 기준 path는 대소문자를 구분하므로 소문자로 통일하는 편이 안전합니다. (출처: 스포카)
+- URI에 파일 확장자(`.xml`, `.png`)를 넣지 말고 같은 URI에 대해 Content-Type 협상(헤더)으로 표현 형식을 지정합니다. 리소스와 표현(representation)은 별개라는 원칙의 실무 적용입니다. (출처: 스포카)
+- CRUD로 표현하기 어려운 행위는 URI 끝에 동사를 붙인 컨트롤러 리소스로 처리하고 POST를 사용합니다(예: `/students/morgan/register`). 페이징(`pageSize=10`), 필터링(`color=red`), 응답 필드 제한(`fields=id,name`)은 query string으로 표현합니다. (출처: 스포카)
+- 상태 코드는 201(생성), 202(비동기 수락 — 결과 대신 모니터링 리소스나 예상 경과 시간 안내), 409(상태 충돌), 503(과부하/점검)처럼 의미에 맞게 사용합니다. (출처: 스포카)
 
 ### PUT vs PATCH vs POST
 
@@ -307,6 +326,8 @@ HTTP/3는 HTTP semantics를 QUIC 위에 매핑합니다.
 - LB idle timeout이 client pool idle timeout보다 짧으면 재사용 시 broken pipe/reset이 날 수 있습니다.
 - pool 크기가 너무 작으면 대기 시간이 늘고, 너무 크면 server connection 자원을 고갈시킬 수 있습니다.
 - HTTP/2는 한 연결에서 여러 stream을 처리하므로 pool sizing 관점이 HTTP/1.1과 다릅니다.
+- LB idle timeout과 서버 keep-alive timeout이 어긋나면 간헐적 502가 납니다. ALB idle timeout 기본값 60초와 애플리케이션 서버(Gunicorn) keep-alive timeout 기본값 2초처럼 서버가 먼저 연결을 닫으면, LB는 커넥션을 유효하다고 보고 재사용하다 502를 반환합니다. (출처: SK)
+- 타겟 서버의 keep-alive timeout은 반드시 LB의 connection idle timeout보다 길게 설정합니다(예: 65초 > 60초). 연결 재사용 구간마다 timeout을 정렬해야 broken pipe/reset과 502를 막을 수 있습니다. (출처: SK)
 
 ## 4. Cookie, Session, 인증 상태
 
@@ -634,3 +655,10 @@ PRG는 Post/Redirect/Get 패턴입니다.
 - RFC 3986 URI Generic Syntax: https://www.rfc-editor.org/rfc/rfc3986.html
 - RFC 6265 HTTP State Management Mechanism: https://www.rfc-editor.org/rfc/rfc6265.html
 - WHATWG Fetch Standard: https://fetch.spec.whatwg.org/
+
+## 참고한 기술블로그
+
+- 토스페이먼츠 — 멱등성이 뭔가요?: https://docs.tosspayments.com/blog/what-is-idempotency
+- 토스페이먼츠 — API 응답을 받고 나면 어떻게 해요?: https://www.tosspayments.com/blog/articles/dev-5
+- 스포카 — RESTful API를 설계하기 위한 디자인 팁: https://spoqa.github.io/2013/06/11/more-restful-interface.html
+- SK — AWS ALB로 부터 반환되는 502 bad gateway 에러 트러블슈팅: https://devocean.sk.com/blog/techBoardDetail.do?ID=165428&boardType=techBlog
