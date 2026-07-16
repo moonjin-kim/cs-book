@@ -55,6 +55,16 @@ export function TopNavigation() {
             >
               Checklist
             </NavLink>
+            <NavLink
+              to="/wiki/tech-blog-cases.md"
+              className={({ isActive }) =>
+                `px-3 py-2 rounded-md text-[13px] transition-colors ${
+                  isActive ? 'bg-accent-dim text-accent' : 'text-text-muted hover:bg-bg-hover hover:text-text-primary'
+                }`
+              }
+            >
+              실무 사례
+            </NavLink>
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -103,6 +113,17 @@ export function TopNavigation() {
               }
             >
               면접 체크리스트
+            </NavLink>
+            <NavLink
+              to="/wiki/tech-blog-cases.md"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `rounded-md px-3 py-2 text-[13px] ${
+                  isActive ? 'bg-accent-dim text-accent' : 'text-text-muted hover:bg-bg-hover hover:text-text-primary'
+                }`
+              }
+            >
+              기술블로그 실무 사례
             </NavLink>
           </nav>
         )}

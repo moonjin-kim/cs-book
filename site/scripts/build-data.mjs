@@ -85,7 +85,7 @@ const ontologyData = { domains, sharedInfra, crossDomain, repoBaseUrl };
 // wiki index
 const wikiRoot = path.join(ROOT, 'wiki');
 const allowedWikiDomains = new Set(domains.map((d) => d.id));
-const rootWikiDocs = new Set(['README.md', 'glossary.md', 'study-roadmap.md', 'interview-checklist.md']);
+const rootWikiDocs = new Set(['README.md', 'glossary.md', 'study-roadmap.md', 'interview-checklist.md', 'tech-blog-cases.md']);
 const allMdFiles = await glob('**/*.md', { cwd: wikiRoot });
 const mdFiles = allMdFiles.filter((relPath) => {
   if (rootWikiDocs.has(relPath)) return true;
