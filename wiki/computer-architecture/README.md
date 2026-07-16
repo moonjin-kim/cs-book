@@ -190,6 +190,12 @@ SIMD는 하나의 명령으로 여러 데이터에 같은 연산을 적용합니
 - 데이터가 연속적이고 정렬되어 있으면 vectorization에 유리합니다.
 - branch가 많거나 데이터 의존성이 강하면 SIMD 효율이 떨어집니다.
 
+실무 포인트:
+
+- 데이터 처리 라이브러리 Polars는 벡터화 연산과 SIMD로 CPU를 최적화하는데, 그 전제로 Apache Arrow 기반 컬럼(columnar) 메모리 배치를 사용합니다. 같은 연산을 연속된 값에 일괄 적용하려면 데이터가 메모리상 칼럼 구조로 연속 배치되어야 하므로, 공간 지역성이 벡터화 효율의 조건입니다. (출처: 우아한형제들)
+- 벡터화 파이프라인 중간에 Python UDF 같은 스칼라 콜백을 끼우면 "러스트 코어의 장점이나 벡터화 연산의 장점을 많이 잃어버린다"고 명시합니다. 스칼라 콜백이 SIMD 이득을 무너뜨리는 전형적 안티패턴입니다. (출처: 우아한형제들)
+- 710MB parquet 읽기에서 Polars는 4초 554ms, Pandas는 33초 916ms였고, 1.8GB 처리 시 Eager API 17.84GB/9.07초에서 Lazy API 5.9GB/1.009초로 메모리와 시간이 동시에 개선되어 데이터 처리가 memory-bound임을 실측으로 보여줍니다. (출처: 우아한형제들)
+
 ### Amdahl's Law
 
 병렬화로 얻을 수 있는 성능 향상은 병렬화할 수 없는 부분에 의해 제한됩니다.
@@ -206,6 +212,13 @@ speedup = 1 / ((1 - p) + p / n)
 - thread 수를 늘려도 항상 빨라지지 않습니다.
 - lock, serialization, memory bandwidth, GC pause, I/O wait가 병렬화 한계를 만듭니다.
 - 성능 개선은 병목 구간을 측정한 뒤 적용해야 합니다.
+
+실무 포인트:
+
+- CPU 사용량(Usage)은 시간 기반(100ns 샘플링) 지표이고 활용률(Utilization)은 주파수 기반(유효 주파수÷기본 주파수) 지표라 근본이 다릅니다. 기본 2.5GHz 코어가 터보 부스트로 3.1GHz로 돌면 활용률은 3.1/2.5 = 124%로 100%를 넘을 수 있어, 시간 점유율만으로는 실제 처리량을 잡지 못합니다. (출처: 넷마블)
+- 사용률 측정 단위가 논리 프로세서(Logical Processor) 기준이라 SMT/하이퍼스레딩에서 물리코어 1개가 논리코어 2개로 잡힙니다. "CPU 사용률이 낮다=여유 있다"가 항상 참이 아니며, 유효 주파수는 RDTSC 같은 하드웨어 카운터로 봐야 정확합니다. (출처: 넷마블)
+- 연산량이 많은 HD 계층 압축을 전용 하드웨어 코덱에 오프로딩하면 소프트웨어 코덱 대비 압축 시간을 약 20% 수준으로 줄이고, 그동안 CPU는 병렬로 다른 작업을 진행할 수 있습니다. 특화 하드웨어로 넘겨 CPU 병렬성을 확보하는 구조입니다. (출처: LINE)
+- 소프트웨어 코덱만으로는 50% 이상의 시간을 압축에만 써야 해 실시간 HD가 어렵지만, 하이브리드는 iPhone 8·HD 30FPS·10초 영상 기준 데드라인의 56% 수준에서 압축을 끝냅니다. CPU-bound 실시간 작업의 한계와 하드웨어 분담 효과를 수치로 보여줍니다. (출처: LINE)
 
 ## 5. 메모리 계층과 참조 지역성
 
@@ -266,6 +279,12 @@ Cache 관련 면접 포인트:
 | No-write-allocate | write miss 시 memory에 직접 씀 |
 
 실무에서는 CPU cache뿐 아니라 DB buffer pool, OS page cache, CDN cache도 비슷하게 hit/miss, eviction, write-back 관점으로 설명할 수 있습니다.
+
+실무 포인트:
+
+- 멀티코어 CPU에서 각 코어는 메모리 컨트롤러를 경유해 메모리에 접근하며, 서버용 메인보드처럼 CPU 소켓이 여러 개면 소켓 간 통신 경로가 누적되어 로컬 메모리 대비 리모트 메모리 접근 비용이 커집니다. 같은 메인 메모리라도 물리적 거리(NUMA 노드)에 따라 지연이 달라진다는 점입니다. (출처: 넷마블)
+- NUMA 기본 설정에서는 단일 프로세스의 스레드가 한 소켓 노드에만 몰리는 코어 쏠림이 생깁니다. 실측에서 밸런싱 없이 스레드 40개일 때 한쪽 노드만 100%(총 CPU 50%)에 대기열 26.0이었고, 밸런싱 시 양쪽 100%(총 100%)에 대기열 16.0으로, 절반의 코어를 놀리는 손실이 확인됐습니다. (출처: 넷마블)
+- Node interleaving(NUMA를 UMA처럼 동작)을 켜자 코어 쏠림이 해소됐습니다. 단일 프로세스 서버 앱에서는 이 옵션을 권장하며, 메모리 배치 정책이 멀티코어 활용률을 직접 좌우함을 보여줍니다. (출처: 넷마블)
 
 ## 6. 멀티코어와 Cache Coherence
 
@@ -404,3 +423,10 @@ CPU와 main memory의 속도 차이가 크기 때문입니다. cache hit는 CPU 
 ### CPU-bound와 I/O-bound는 어떻게 구분하나요?
 
 CPU-bound는 계산 때문에 core 사용률이 높고, I/O-bound는 disk, network, DB 같은 외부 응답을 기다리는 시간이 큽니다. CPU 사용률, run queue, context switch, I/O wait, latency breakdown, profiler를 함께 봐야 합니다.
+
+## 참고한 기술블로그
+
+- 우아한형제들 — Polars로 데이터 처리를 더 빠르고 가볍게 with 실무 적용기: https://techblog.woowahan.com/18632/
+- 넷마블 — 단일 프로세스에서 NUMA가 야기한 성능 저하: https://netmarble.engineering/single-process-programming-numa-effect/
+- 넷마블 — CPU 이용률의 두 가지 얼굴 – CPU 코어 사용량(Usage)과 활용률(Utilization): https://netmarble.engineering/cpu-core-usage-and-utilization/
+- LINE — 하드웨어 비디오 코덱과 소프트웨어 비디오 코덱의 하이브리드!: https://engineering.linecorp.com/ko/blog/develop-hardware-software-hybrid-codec

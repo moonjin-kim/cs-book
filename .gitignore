@@ -7,6 +7,7 @@ projects/*
 worktrees/
 
 # 스킬 세션 데이터 (임시)
+.dev/
 .lens/
 .slack-digest/
 
