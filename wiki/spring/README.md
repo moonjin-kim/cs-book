@@ -15,7 +15,8 @@ Spring 면접은 **컨테이너가 객체를 어떻게 관리하고, 요청·트
 | 5 | Spring Boot | 자동 설정, starter, configuration properties, profile, actuator가 어떤 문제를 줄이는가? |
 | 6 | JPA와 영속성 | EntityManager, 1차 캐시, 변경 감지, flush, 지연 로딩을 설명할 수 있는가? |
 | 7 | JPA 성능과 운영 주의점 | N+1, fetch join paging, ID 전략, ddl-auto, OSIV의 trade-off를 설명할 수 있는가? |
-| 8 | 테스트와 실전 Q&A | slice test, `@SpringBootTest`, test transaction rollback, 격리 전략을 설명할 수 있는가? |
+| 8 | 심화: 컨테이너와 프록시 내부 | refresh 생명주기, BeanPostProcessor, AOP 프록시 생성 시점, 순환 의존성 3단계 캐시가 어떻게 동작하는가? |
+| 9 | 테스트와 실전 Q&A | slice test, `@SpringBootTest`, test transaction rollback, 격리 전략을 설명할 수 있는가? |
 
 ## 빠른 요약
 
@@ -669,7 +670,87 @@ OSIV는 요청이 끝날 때까지 persistence context를 열어두어 Controlle
 
 트래픽이 많거나 read replica, CQRS, 긴 외부 API 호출이 있으면 OSIV 비활성화를 검토합니다.
 
-## 8. 테스트와 실전 Q&A
+## 8. 심화: 컨테이너와 프록시 내부
+
+`@Transactional`이 왜 프록시 경유에서만 동작하는지, 순환 의존성이 왜 생성자 주입에서만 실패하는지는 **컨테이너 초기화 순서**를 알면 한 번에 설명됩니다. (개념은 §1 순환 의존성, §2 self-invocation 참고 — 여기서는 내부 메커니즘을 다룹니다.)
+
+### ApplicationContext refresh() 생명주기
+
+컨테이너 기동은 `refresh()`가 정해진 순서로 진행합니다. 핵심 단계만 추리면:
+
+```text
+1. BeanDefinition 로딩   ← 컴포넌트 스캔/파싱, "어떤 빈이 있는지" 메타데이터만 수집(아직 인스턴스 없음)
+2. BeanFactoryPostProcessor 실행  ← BeanDefinition 자체를 조작 (@Configuration 파싱, @Value/${} 치환)
+3. BeanPostProcessor 등록
+4. 싱글톤 인스턴스화        ← 생성자 → 의존성 주입 → 초기화(@PostConstruct/InitializingBean)
+   4-1. 각 빈 초기화 전후로 BeanPostProcessor의 before/after 훅 호출
+```
+
+| 확장 지점 | 대상 | 시점 |
+| --- | --- | --- |
+| BeanFactoryPostProcessor | BeanDefinition(정의) | 인스턴스화 **이전** |
+| BeanPostProcessor | Bean(인스턴스) | 각 빈 초기화 **전후** |
+
+면접 포인트: "정의를 바꾸는 것"과 "인스턴스를 가공하는 것"이 다른 단계라는 점이 핵심입니다. `@Value` 치환은 정의 단계(BeanFactoryPostProcessor), AOP 프록시 래핑은 인스턴스 단계(BeanPostProcessor)에서 일어납니다.
+
+### AOP 프록시는 언제 주입되나
+
+`@Transactional`, `@Async`, `@Cacheable`의 프록시는 **`AbstractAutoProxyCreator`라는 BeanPostProcessor**가 만듭니다.
+
+```text
+빈 초기화 완료 → postProcessAfterInitialization()에서
+  이 빈이 advisor(pointcut)에 걸리면 → 프록시로 감싸서 반환
+  → 컨테이너에 등록되는 것은 원본이 아니라 "프록시"
+```
+
+면접 포인트:
+
+- 그래서 다른 빈에 주입되는 것도 프록시이고, 외부에서 호출하면 프록시의 부가기능(트랜잭션 등)이 동작합니다.
+- 반대로 같은 클래스 내부의 `this.method()` 호출은 프록시를 우회하므로 부가기능이 빠집니다(= self-invocation 함정의 근본 원인). private 메서드도 프록시가 감쌀 수 없습니다.
+
+### 순환 의존성과 3단계 캐시
+
+Spring이 setter/field 주입의 순환 의존성을 푸는 방법은 **3단계 캐시**입니다.
+
+| 캐시 | 내용 |
+| --- | --- |
+| `singletonObjects` (1차) | 초기화까지 끝난 완성된 빈 |
+| `earlySingletonObjects` (2차) | 생성은 됐지만 아직 초기화 전인 조기 노출 빈 |
+| `singletonFactories` (3차) | 조기 참조를 만들어 줄 `ObjectFactory` |
+
+A → B → A 순환 흐름:
+
+```text
+1. A 인스턴스 생성(생성자 호출) 직후, A의 ObjectFactory를 3차 캐시에 등록
+2. A가 B를 주입받으려 함 → B 생성 시작
+3. B가 A를 주입받으려 함 → 3차 캐시의 factory로 "초기화 전 A" 참조를 얻어 주입 완료
+4. B 완성 → A로 돌아와 A 초기화 완료
+```
+
+면접 포인트:
+
+- **생성자 주입 순환은 해결 불가**입니다. 3차 캐시에 factory를 등록하려면 먼저 인스턴스가 있어야 하는데, 생성자 순환은 인스턴스 생성 자체가 서로를 기다리기 때문입니다(`BeanCurrentlyInCreationException`). setter/field 주입만 조기 노출로 풀 수 있습니다.
+- AOP가 걸린 빈이 순환에 있으면, 3차 캐시의 factory가 **조기에 프록시**를 만들어(`getEarlyBeanReference`) 주입된 참조와 최종 빈이 같은 프록시가 되도록 맞춥니다.
+- Spring Boot 2.6+는 순환 의존성을 기본 금지합니다. 순환이 필요하다는 건 대개 책임 분리가 안 된 신호입니다.
+
+### @Configuration의 CGLIB 프록시
+
+`@Configuration` 클래스는 기본적으로 **CGLIB 프록시**로 감싸집니다(full mode).
+
+```java
+@Configuration
+class AppConfig {
+    @Bean A a() { return new A(b()); }  // b() 내부 호출
+    @Bean B b() { return new B(); }
+}
+```
+
+면접 포인트:
+
+- full mode에서는 `a()` 안의 `b()` 호출을 CGLIB이 가로채 **컨테이너의 싱글톤 B**를 반환합니다. 그래서 B는 한 개만 생성됩니다.
+- `@Configuration(proxyBeanMethods = false)`(lite mode)면 프록시하지 않아 `b()`가 매번 **새 인스턴스**를 만듭니다. 싱글톤 보장이 필요 없고 시작 성능이 중요하면 lite mode를 씁니다.
+
+## 9. 테스트와 실전 Q&A
 
 ### 테스트 종류
 
@@ -749,6 +830,8 @@ OSIV는 요청이 끝날 때까지 persistence context를 열어두어 Controlle
 | `@RequestBody`와 `@ModelAttribute` 차이는? | body를 message converter로 읽는지, query/form/multipart를 data binding하는지의 차이입니다. |
 | Boot 자동 설정은 어떻게 동작하나? | classpath, property, Bean 존재 여부를 조건으로 Bean을 등록합니다. |
 | Actuator를 운영에서 열 때 주의점은? | endpoint 노출 범위, 인증/인가, 민감 정보 노출을 제어해야 합니다. |
+| 웹서버와 WAS(서블릿 컨테이너)의 차이는? | 웹서버는 정적 리소스와 요청 전달을 담당하고, WAS는 서블릿 컨테이너로 동적 요청을 실행합니다. Spring Boot는 Tomcat 등 서블릿 컨테이너를 내장해 별도 WAS 배포 없이 실행됩니다. |
+| Spring MVC와 WebFlux 차이는? | MVC는 요청당 스레드(blocking, 서블릿 기반), WebFlux는 이벤트 루프 기반 논블로킹(Reactor)입니다. I/O 대기가 많고 고동시성이면 WebFlux가 유리하지만, blocking 라이브러리를 섞으면 이점이 사라집니다. |
 
 #### JPA / Test
 
@@ -759,6 +842,7 @@ OSIV는 요청이 끝날 때까지 persistence context를 열어두어 Controlle
 | OSIV 장단점은? | lazy loading 편의는 있지만 connection 점유와 계층 의존 위험이 있습니다. |
 | `ddl-auto=update`를 운영에서 피하는 이유는? | 의도치 않은 schema 변경과 데이터 손실/불일치 위험이 있습니다. |
 | Spring test rollback의 한계는? | 별도 thread, `REQUIRES_NEW`, `@Async`, 실제 HTTP server 경계에서는 기대와 다를 수 있습니다. |
+| QueryDsl을 쓰는 이유는? | 문자열 JPQL과 달리 타입 안전하게 쿼리를 작성해 컴파일 시점에 오류를 잡고, 동적 조건 조합을 코드로 안전하게 구성할 수 있습니다. |
 
 ## 참고한 공식 문서
 
@@ -769,3 +853,4 @@ OSIV는 요청이 끝날 때까지 persistence context를 열어두어 Controlle
 - Spring Boot Reference 3.5: https://docs.spring.io/spring-boot/3.5/
 - Spring Boot Auto-Configuration API: https://docs.spring.io/spring-boot/3.5/api/java/org/springframework/boot/autoconfigure/EnableAutoConfiguration.html
 - Spring Boot Actuator: https://docs.spring.io/spring-boot/3.5/reference/actuator/
+- (커뮤니티 면접 정리) Backend Interview for Beginner — Spring & JPA: https://github.com/backtony/Backend_Interview_for_Beginner/blob/master/Spring%20%26%20JPA.md

@@ -15,7 +15,8 @@ Kafka 면접은 **메시지를 큐가 아니라 파티션 로그로 저장하고
 | 5 | 전달 보장과 Exactly Once | at-most/at-least/exactly-once, transaction, `read_committed`, external DB idempotency를 구분할 수 있는가? |
 | 6 | 파티션 설계와 운영 | partition 수, replication factor, retention, compaction, lag, throughput을 어떻게 설계하고 관측할 것인가? |
 | 7 | Streams, Connect, RabbitMQ 비교 | Streams와 Connect의 역할, Kafka와 RabbitMQ의 모델 차이를 설명할 수 있는가? |
-| 8 | 실전 면접 Q&A | 짧은 답변으로 파티션, offset, rebalance, EOS, 운영 질문을 빠르게 복습할 수 있는가? |
+| 8 | 심화: 내부 동작 원리 | 순차 I/O, page cache, zero-copy, log segment, 인덱스가 Kafka의 높은 처리량을 어떻게 만드는가? |
+| 9 | 실전 면접 Q&A | 짧은 답변으로 파티션, offset, rebalance, EOS, 운영 질문을 빠르게 복습할 수 있는가? |
 
 ## 빠른 요약
 
@@ -520,7 +521,131 @@ Kafka는 강력하지만 운영 비용이 큽니다.
 - Redis Stream
 - managed event bus
 
-## 8. 실전 면접 Q&A
+## 8. 심화: 내부 동작 원리
+
+Kafka가 "디스크 기반인데 왜 빠른가"라는 질문은 면접에서 자주 나옵니다. 답의 핵심은 **순차 I/O + OS page cache + zero-copy** 세 가지가 맞물려 디스크와 네트워크 병목을 줄인다는 것입니다.
+
+### 왜 디스크 기반인데 빠른가
+
+Kafka는 메시지를 메모리가 아니라 디스크의 append-only log에 씁니다. 그런데도 빠른 이유는 접근 패턴이 **순차(sequential)** 이기 때문입니다.
+
+| 항목 | 설명 |
+| --- | --- |
+| 순차 write | log 끝에만 append → 디스크 head 이동(seek)이 없어 random write보다 수백 배 빠름 |
+| 순차 read | consumer가 offset 순서대로 읽음 → readahead(선반입)가 잘 맞음 |
+| 페이지 캐시 write-back | write는 일단 page cache에 쌓이고 flush는 OS가 모아서 수행 |
+
+면접 포인트:
+
+- "디스크는 느리다"는 random access 기준입니다. 순차 접근에서는 디스크 대역폭이 충분히 큽니다.
+- Kafka는 fsync를 매 메시지마다 강제하지 않고, **복제(replication)로 내구성을 확보**합니다. 즉 디스크 flush가 아니라 다른 broker로의 복제가 손실 방어선입니다.
+
+### Page Cache에 의존하는 이유
+
+Kafka broker는 메시지를 **JVM heap에 캐싱하지 않고 OS page cache에 맡깁니다.**
+
+| 이유 | 설명 |
+| --- | --- |
+| GC 회피 | 대용량 데이터를 heap에 두면 GC 대상이 되어 pause가 커짐. page cache는 GC와 무관 |
+| 재시작 후에도 유지 | broker 프로세스를 재시작해도 OS page cache는 남아 warm 상태 유지 |
+| 중복 캐싱 제거 | 애플리케이션 캐시 + page cache 이중 보관을 피함 |
+
+면접 포인트:
+
+- 그래서 Kafka broker는 heap을 크게 잡지 않고(보통 수 GB), 나머지 메모리를 page cache로 OS에 양보하는 것이 권장됩니다.
+- consumer가 최신 offset을 따라 읽으면(lag이 작으면) 대부분 page cache hit이라 디스크를 거의 안 칩니다. lag이 커져 오래된 offset을 읽으면 page cache miss로 디스크 read가 늘어납니다.
+
+### Zero-Copy와 sendfile
+
+consumer에게 데이터를 보낼 때 Kafka는 **zero-copy**(`FileChannel.transferTo()` → OS의 `sendfile`)를 사용합니다.
+
+전통적인 `read()` + `send()` 경로는 복사가 4번 일어납니다.
+
+```text
+1. DMA:  disk → kernel page cache
+2. CPU:  page cache → user buffer      ← 불필요한 복사
+3. CPU:  user buffer → socket buffer    ← 불필요한 복사
+4. DMA:  socket buffer → NIC
+```
+
+zero-copy(sendfile)는 데이터를 user space로 올리지 않고 커널 안에서 바로 전송합니다.
+
+```text
+1. DMA:  disk → kernel page cache
+2. DMA:  page cache → NIC (scatter-gather)
+```
+
+효과:
+
+- user ↔ kernel 사이의 CPU 복사 2회와 context switch를 제거해 CPU와 메모리 대역폭을 절약합니다.
+- 데이터가 애플리케이션(JVM)을 거치지 않으므로 broker는 "전달만" 하며 throughput이 올라갑니다.
+
+zero-copy가 **깨지는** 경우(면접 함정):
+
+- **TLS/SSL 암호화**: 암호화는 user space(또는 kernel TLS)에서 일어나야 하므로 sendfile 경로가 깨지고 복사가 다시 늘어납니다. 보안과 성능의 trade-off입니다.
+- **압축 형식 변환**: broker가 메시지를 재압축/변환하면 데이터를 user space로 올려야 해 zero-copy를 못 씁니다.
+
+### Record Batch와 압축의 end-to-end 유지
+
+producer는 여러 record를 하나의 **record batch**로 묶고 압축합니다. broker는 이를 **풀지 않고 압축된 상태 그대로 저장·전송**하고, consumer가 최종적으로 해제합니다.
+
+| 단계 | 동작 |
+| --- | --- |
+| Producer | batch 단위로 묶고 `compression.type`으로 압축 |
+| Broker | 압축을 유지한 채 log에 저장, 그대로 fetch 응답에 전달 |
+| Consumer | fetch 후 압축 해제 |
+
+면접 포인트:
+
+- 압축을 broker가 풀지 않기 때문에 **zero-copy가 유지**되고 broker CPU도 아낍니다.
+- 단, `log.message.format`이나 압축 타입이 producer와 broker 간 불일치하면 broker가 재압축(recompression)해야 하고, 이때 zero-copy와 CPU 이점이 사라집니다.
+- batch가 클수록 압축률과 throughput은 오르지만 end-to-end latency는 늘어납니다(`linger.ms`, `batch.size` trade-off).
+
+### Log Segment와 인덱스 구조
+
+partition은 하나의 거대한 파일이 아니라 여러 **segment 파일**로 나뉩니다.
+
+```text
+partition-0/
+  00000000000000000000.log        ← record 저장(base offset이 파일명)
+  00000000000000000000.index      ← offset → 파일 내 물리 위치 (sparse)
+  00000000000000000000.timeindex  ← timestamp → offset (sparse)
+  00000000000000371337.log        ← 다음 segment
+  ...
+```
+
+| 구성 | 역할 |
+| --- | --- |
+| active segment | 현재 append 중인 마지막 segment. 여기에만 write |
+| segment roll | 크기(`segment.bytes`)나 시간(`segment.ms`) 초과 시 새 segment 생성 |
+| .index | offset을 물리 위치로 변환하는 **sparse index**(모든 offset이 아니라 일정 간격) |
+| .timeindex | timestamp 기준 조회(retention, `offsetsForTimes`)에 사용 |
+
+offset 조회 흐름:
+
+1. 찾는 offset이 속한 segment를 base offset으로 선택합니다(파일명이 base offset).
+2. 해당 segment의 `.index`(mmap된 sparse index)에서 **가장 가까운 낮은 위치**를 binary search로 찾습니다.
+3. 그 지점부터 `.log`를 순차 스캔해 정확한 record를 찾습니다.
+
+면접 포인트:
+
+- 인덱스가 sparse라서 메모리를 적게 쓰고, mmap이라 페이지 단위로 필요한 부분만 메모리에 올라옵니다.
+- retention/compaction은 **segment 단위**로 동작합니다. 오래된 segment 파일을 통째로 삭제하거나 compaction하므로 개별 record 삭제보다 효율적입니다.
+- log compaction은 같은 key의 최신 값만 남기며, 삭제는 tombstone(value=null) record로 표현합니다.
+
+### 정리: 높은 처리량의 조합
+
+```text
+순차 I/O        → 디스크 seek 제거
+page cache      → 대부분의 read/write가 메모리 속도, GC 무관
+zero-copy       → broker가 데이터를 복사·처리하지 않고 커널이 직접 전송
+batch + 압축     → 네트워크/디스크 바이트 감소, 압축 유지로 broker CPU 절약
+sparse index    → 적은 메모리로 빠른 offset lookup
+```
+
+이 다섯이 맞물려 broker 한 대가 초당 수십만~수백만 메시지를 처리할 수 있습니다. 반대로 **TLS, 압축 변환, 큰 consumer lag**은 이 최적화를 하나씩 무너뜨리는 요인이라는 점을 함께 기억하면 좋습니다.
+
+## 9. 실전 면접 Q&A
 
 ### 로그 모델 / 파티션
 
@@ -549,6 +674,7 @@ Kafka는 강력하지만 운영 비용이 큽니다.
 | rebalance가 왜 문제인가? | 소비 중단, partition revocation, 중복 처리, state restore 비용이 생깁니다. |
 | at-least-once가 중복을 만드는 이유는? | 처리 후 commit 전에 장애가 나면 같은 record를 다시 읽기 때문입니다. |
 | Kafka EOS는 외부 DB까지 보장하나? | 아닙니다. Kafka 내부 read-process-write에 강하고 외부 DB는 outbox/idempotency가 필요합니다. |
+| 파티션 할당 전략(assignor)에는 뭐가 있나? | Range(토픽별로 파티션을 순서 분배, 토픽 수가 많으면 편중), RoundRobin(전체 파티션을 고루 분배), Sticky(재할당 시 기존 할당을 최대한 유지해 이동 최소화), CooperativeSticky(rebalance 때 전체 revoke 없이 필요한 파티션만 점진 이동)로 나뉩니다. |
 
 ### 운영 / 비교
 
@@ -570,3 +696,4 @@ Kafka는 강력하지만 운영 비용이 큽니다.
 - Kafka Streams: https://kafka.apache.org/documentation/streams/
 - Kafka Connect: https://kafka.apache.org/documentation/#connect
 - KafkaConsumer Javadoc: https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html
+- (커뮤니티 면접 정리) Backend Interview for Beginner — Kafka: https://github.com/backtony/Backend_Interview_for_Beginner/blob/master/Kafka.md
