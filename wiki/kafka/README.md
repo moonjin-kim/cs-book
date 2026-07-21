@@ -674,6 +674,7 @@ sparse index    → 적은 메모리로 빠른 offset lookup
 | rebalance가 왜 문제인가? | 소비 중단, partition revocation, 중복 처리, state restore 비용이 생깁니다. |
 | at-least-once가 중복을 만드는 이유는? | 처리 후 commit 전에 장애가 나면 같은 record를 다시 읽기 때문입니다. |
 | Kafka EOS는 외부 DB까지 보장하나? | 아닙니다. Kafka 내부 read-process-write에 강하고 외부 DB는 outbox/idempotency가 필요합니다. |
+| 파티션 할당 전략(assignor)에는 뭐가 있나? | Range(토픽별로 파티션을 순서 분배, 토픽 수가 많으면 편중), RoundRobin(전체 파티션을 고루 분배), Sticky(재할당 시 기존 할당을 최대한 유지해 이동 최소화), CooperativeSticky(rebalance 때 전체 revoke 없이 필요한 파티션만 점진 이동)로 나뉩니다. |
 
 ### 운영 / 비교
 
@@ -695,3 +696,4 @@ sparse index    → 적은 메모리로 빠른 offset lookup
 - Kafka Streams: https://kafka.apache.org/documentation/streams/
 - Kafka Connect: https://kafka.apache.org/documentation/#connect
 - KafkaConsumer Javadoc: https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html
+- (커뮤니티 면접 정리) Backend Interview for Beginner — Kafka: https://github.com/backtony/Backend_Interview_for_Beginner/blob/master/Kafka.md

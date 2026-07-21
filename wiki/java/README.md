@@ -1375,6 +1375,7 @@ CPU는 메모리를 **cache line**(보통 64바이트) 단위로 캐싱합니다
 | deadlock을 어떻게 찾나? | thread dump에서 blocked monitor와 순환 대기를 확인합니다. |
 | `sleep`과 `wait` 차이는? | sleep은 lock을 놓지 않고, wait은 monitor lock을 놓고 notify를 기다립니다. |
 | virtual thread를 쓰면 pool size 튜닝이 사라지나? | platform thread pool 튜닝 부담은 줄지만 DB connection, HTTP connection, rate limit 같은 외부 자원 제어는 필요합니다. |
+| Sync/Async와 Blocking/Non-blocking 차이는? | Sync/Async는 "결과를 누가 언제 확인·통지하는가"(직접 확인이면 sync, 콜백/알림 위임이면 async), Blocking/Non-blocking은 "호출이 제어권을 즉시 돌려주는가"입니다. 두 축은 독립이라 4가지 조합이 가능합니다. |
 
 ### 언어 기능
 
@@ -1409,3 +1410,4 @@ CPU는 메모리를 **cache line**(보통 64바이트) 단위로 캐싱합니다
 - JEP 409 Sealed Classes: https://openjdk.org/jeps/409
 - JEP 441 Pattern Matching for switch: https://openjdk.org/jeps/441
 - JEP 440 Record Patterns: https://openjdk.org/jeps/440
+- (커뮤니티 면접 정리) Backend Interview for Beginner — Java: https://github.com/backtony/Backend_Interview_for_Beginner/blob/master/Java.md

@@ -830,6 +830,8 @@ class AppConfig {
 | `@RequestBody`와 `@ModelAttribute` 차이는? | body를 message converter로 읽는지, query/form/multipart를 data binding하는지의 차이입니다. |
 | Boot 자동 설정은 어떻게 동작하나? | classpath, property, Bean 존재 여부를 조건으로 Bean을 등록합니다. |
 | Actuator를 운영에서 열 때 주의점은? | endpoint 노출 범위, 인증/인가, 민감 정보 노출을 제어해야 합니다. |
+| 웹서버와 WAS(서블릿 컨테이너)의 차이는? | 웹서버는 정적 리소스와 요청 전달을 담당하고, WAS는 서블릿 컨테이너로 동적 요청을 실행합니다. Spring Boot는 Tomcat 등 서블릿 컨테이너를 내장해 별도 WAS 배포 없이 실행됩니다. |
+| Spring MVC와 WebFlux 차이는? | MVC는 요청당 스레드(blocking, 서블릿 기반), WebFlux는 이벤트 루프 기반 논블로킹(Reactor)입니다. I/O 대기가 많고 고동시성이면 WebFlux가 유리하지만, blocking 라이브러리를 섞으면 이점이 사라집니다. |
 
 #### JPA / Test
 
@@ -840,6 +842,7 @@ class AppConfig {
 | OSIV 장단점은? | lazy loading 편의는 있지만 connection 점유와 계층 의존 위험이 있습니다. |
 | `ddl-auto=update`를 운영에서 피하는 이유는? | 의도치 않은 schema 변경과 데이터 손실/불일치 위험이 있습니다. |
 | Spring test rollback의 한계는? | 별도 thread, `REQUIRES_NEW`, `@Async`, 실제 HTTP server 경계에서는 기대와 다를 수 있습니다. |
+| QueryDsl을 쓰는 이유는? | 문자열 JPQL과 달리 타입 안전하게 쿼리를 작성해 컴파일 시점에 오류를 잡고, 동적 조건 조합을 코드로 안전하게 구성할 수 있습니다. |
 
 ## 참고한 공식 문서
 
@@ -850,3 +853,4 @@ class AppConfig {
 - Spring Boot Reference 3.5: https://docs.spring.io/spring-boot/3.5/
 - Spring Boot Auto-Configuration API: https://docs.spring.io/spring-boot/3.5/api/java/org/springframework/boot/autoconfigure/EnableAutoConfiguration.html
 - Spring Boot Actuator: https://docs.spring.io/spring-boot/3.5/reference/actuator/
+- (커뮤니티 면접 정리) Backend Interview for Beginner — Spring & JPA: https://github.com/backtony/Backend_Interview_for_Beginner/blob/master/Spring%20%26%20JPA.md
