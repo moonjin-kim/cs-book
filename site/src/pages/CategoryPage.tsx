@@ -175,7 +175,6 @@ export function CategoryPage() {
 
           <Panel title="전체 문서">
             <div className="space-y-2">
-              <QuickLink to="/wiki/interview-checklist.md">면접 체크리스트</QuickLink>
               <QuickLink to="/wiki/study-roadmap.md">학습 로드맵</QuickLink>
               <QuickLink to="/wiki/glossary.md">용어 사전</QuickLink>
             </div>

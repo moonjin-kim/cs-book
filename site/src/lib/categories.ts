@@ -3,14 +3,6 @@ export interface CategoryGroup {
   title: string;
   description: string;
   domainIds: string[];
-  focusSections?: CategoryFocusSection[];
-}
-
-export interface CategoryFocusSection {
-  priority: number;
-  title: string;
-  question: string;
-  domainIds: string[];
 }
 
 export const CATEGORY_GROUPS: CategoryGroup[] = [
@@ -19,44 +11,6 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
     title: 'Backend Core',
     description: '서버 개발 면접에서 가장 자주 묻는 언어, 프레임워크, 저장소, 메시징 핵심 질문입니다.',
     domainIds: ['java', 'spring', 'database', 'redis', 'kafka'],
-    focusSections: [
-      {
-        priority: 1,
-        title: 'Java 런타임과 동시성',
-        question: 'JVM, GC, JMM, 컬렉션, Executor를 실행 원리와 장애 사례까지 설명할 수 있는가?',
-        domainIds: ['java'],
-      },
-      {
-        priority: 2,
-        title: 'Spring 요청 처리와 트랜잭션',
-        question: 'Bean, AOP proxy, MVC 흐름, @Transactional, JPA 영속성 컨텍스트를 연결해 설명할 수 있는가?',
-        domainIds: ['spring'],
-      },
-      {
-        priority: 3,
-        title: 'Database 정합성과 성능',
-        question: '트랜잭션 격리 수준, MVCC, 인덱스, 실행 계획, lock이 API 동작에 주는 영향을 설명할 수 있는가?',
-        domainIds: ['database'],
-      },
-      {
-        priority: 4,
-        title: 'Redis 캐시와 분산 제어',
-        question: '캐시 전략, stampede, stale data, 분산 락, persistence, cluster trade-off를 설명할 수 있는가?',
-        domainIds: ['redis'],
-      },
-      {
-        priority: 5,
-        title: 'Kafka 메시징과 이벤트 처리',
-        question: 'partition, consumer group, offset commit, 재처리, 멱등성, 전달 보장을 설명할 수 있는가?',
-        domainIds: ['kafka'],
-      },
-      {
-        priority: 6,
-        title: '백엔드 통합 설계',
-        question: 'DB, cache, message broker를 함께 쓸 때 이중 쓰기, 재시도, idempotency, 장애 전파를 어떻게 다룰 것인가?',
-        domainIds: ['spring', 'database', 'redis', 'kafka'],
-      },
-    ],
   },
   {
     id: 'web-network',
