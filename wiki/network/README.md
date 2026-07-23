@@ -4,19 +4,6 @@
 
 처음부터 끝까지 외우기보다 아래 핵심 섹션 단위로 나눠 보는 편이 효율적입니다.
 
-## 핵심 섹션 맵
-
-| 우선순위 | 섹션 | 먼저 답할 수 있어야 하는 질문 |
-| --- | --- | --- |
-| 1 | 계층 모델과 요청 흐름 | URL 입력 후 DNS, TCP/TLS, HTTP, 서버까지 어떤 계층을 거치는가? |
-| 2 | IP, 라우팅, NAT | IP 주소, subnet, gateway, routing table, NAT/NAPT가 패킷 전달에 어떤 역할을 하는가? |
-| 3 | TCP와 UDP | TCP가 순서·재전송·흐름 제어를 제공하는 방식과 UDP를 선택하는 이유는 무엇인가? |
-| 4 | DNS | recursive resolver, root, TLD, authoritative server, TTL cache 흐름을 설명할 수 있는가? |
-| 5 | TLS와 HTTPS | TLS handshake, certificate, key exchange, session resumption이 HTTPS 비용과 보안에 미치는 영향은 무엇인가? |
-| 6 | Load Balancing, Proxy, CDN | L4/L7 load balancing, reverse proxy, health check, session affinity, CDN cache를 구분할 수 있는가? |
-| 7 | Timeout, Retry, 장애 진단 | timeout, retry, backoff, idempotency, packet loss, latency를 실무 장애 관점으로 설명할 수 있는가? |
-| 8 | 실전 면접 Q&A | 짧은 답변으로 URL 흐름, TCP/UDP, DNS, TLS, LB, CDN 질문을 빠르게 복습할 수 있는가? |
-
 ## 빠른 요약
 
 | 주제 | 핵심 답변 |

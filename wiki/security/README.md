@@ -4,19 +4,6 @@
 
 처음부터 끝까지 외우기보다 아래 핵심 섹션 단위로 나눠 보는 편이 효율적입니다.
 
-## 핵심 섹션 맵
-
-| 우선순위 | 섹션 | 먼저 답할 수 있어야 하는 질문 |
-| --- | --- | --- |
-| 1 | 인증과 인가 | Authentication, Authorization, principal, role, permission, object-level authorization을 구분할 수 있는가? |
-| 2 | Session, Cookie, JWT | 세션과 토큰의 폐기, 탈취, 만료, refresh, cookie 보안 속성 trade-off는 무엇인가? |
-| 3 | 암호화, TLS, 비밀번호 저장 | 암호화·해시·서명·MAC을 구분하고 password hashing을 왜 느리게 해야 하는가? |
-| 4 | 입력 처리와 Injection | SQL/Command/NoSQL Injection, XSS, SSRF가 입력을 어떻게 악용하는지 설명할 수 있는가? |
-| 5 | 브라우저 보안 | CORS, CSRF, SameSite, CSP, Clickjacking이 브라우저 경계에서 어떤 문제를 막는가? |
-| 6 | OWASP Top 10과 설계 보안 | Broken Access Control, Misconfiguration, Supply Chain, Insecure Design을 실무 사례로 설명할 수 있는가? |
-| 7 | API·운영 보안 | Rate limit, logging/alerting, secret 관리, dependency 관리, error handling을 운영 관점으로 설명할 수 있는가? |
-| 8 | 실전 면접 Q&A | 짧은 답변으로 JWT, CSRF, XSS, SQL Injection, TLS, 비밀번호 저장 질문을 빠르게 복습할 수 있는가? |
-
 ## 빠른 요약
 
 | 주제 | 핵심 답변 |

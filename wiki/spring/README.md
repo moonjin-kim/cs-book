@@ -4,20 +4,6 @@ Spring 면접은 **컨테이너가 객체를 어떻게 관리하고, 요청·트
 
 처음부터 끝까지 읽기보다 아래 핵심 섹션 단위로 나눠 보는 편이 효율적입니다.
 
-## 핵심 섹션 맵
-
-| 우선순위 | 섹션 | 먼저 답할 수 있어야 하는 질문 |
-| --- | --- | --- |
-| 1 | IoC 컨테이너와 Bean | Spring은 왜 객체를 Bean으로 관리하고, 생명주기와 scope는 어떻게 동작하는가? |
-| 2 | AOP와 프록시 | `@Transactional`, `@Async`, `@Cacheable`은 왜 내부 호출에서 동작하지 않을 수 있는가? |
-| 3 | MVC 요청 처리 | DispatcherServlet부터 Controller, ArgumentResolver, Converter, 예외 처리까지 흐름을 설명할 수 있는가? |
-| 4 | 트랜잭션 | propagation, isolation, rollback rule, connection 점유를 실무 문제와 연결할 수 있는가? |
-| 5 | Spring Boot | 자동 설정, starter, configuration properties, profile, actuator가 어떤 문제를 줄이는가? |
-| 6 | JPA와 영속성 | EntityManager, 1차 캐시, 변경 감지, flush, 지연 로딩을 설명할 수 있는가? |
-| 7 | JPA 성능과 운영 주의점 | N+1, fetch join paging, ID 전략, ddl-auto, OSIV의 trade-off를 설명할 수 있는가? |
-| 8 | 심화: 컨테이너와 프록시 내부 | refresh 생명주기, BeanPostProcessor, AOP 프록시 생성 시점, 순환 의존성 3단계 캐시가 어떻게 동작하는가? |
-| 9 | 테스트와 실전 Q&A | slice test, `@SpringBootTest`, test transaction rollback, 격리 전략을 설명할 수 있는가? |
-
 ## 빠른 요약
 
 | 주제 | 핵심 답변 |

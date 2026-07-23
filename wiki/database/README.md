@@ -4,21 +4,6 @@ Database 면접은 **정확한 데이터를 안전하게 바꾸고 빠르게 읽
 
 이 문서는 Database 주제 전체를 한 페이지에 담고, 오른쪽 목차로 필요한 섹션에 빠르게 이동합니다.
 
-## 핵심 섹션 맵
-
-| 우선순위 | 섹션 | 먼저 답할 수 있어야 하는 질문 |
-| --- | --- | --- |
-| 1 | 관계형 모델과 정규화 | 테이블, key, 제약 조건, 정규화가 데이터 이상 현상을 어떻게 줄이는가? |
-| 2 | 트랜잭션과 격리 수준 | ACID, dirty/non-repeatable/phantom read, DB별 isolation 차이를 설명할 수 있는가? |
-| 3 | Lock과 MVCC | shared/exclusive lock, MVCC snapshot, gap/next-key lock, deadlock을 연결해 설명할 수 있는가? |
-| 4 | 인덱스 설계 | B+Tree, 복합 인덱스, covering index, cardinality/selectivity 기준으로 인덱스를 설계할 수 있는가? |
-| 5 | 실행 계획과 쿼리 튜닝 | EXPLAIN에서 access type, rows, key, sort/temp, scan 범위를 보고 병목을 찾을 수 있는가? |
-| 6 | 페이징과 데이터 모델링 | offset과 cursor paging, 정규화/역정규화, 삭제 전략의 trade-off를 설명할 수 있는가? |
-| 7 | 확장과 운영 | replication, partitioning, sharding, connection pool, backup/restore를 운영 관점에서 설명할 수 있는가? |
-| 8 | 심화 설계와 운영 패턴 | hot row, idempotency, outbox, online migration, read/write split 일관성 문제를 설명할 수 있는가? |
-| 9 | 심화: 스토리지 엔진 내부 | 버퍼 풀, WAL/redo, checkpoint, clustered index, LSM vs B-Tree가 성능과 내구성을 어떻게 만드는가? |
-| 10 | 실전 면접 Q&A | 짧은 답변으로 트랜잭션, 인덱스, 락, 운영 질문을 빠르게 복습할 수 있는가? |
-
 ## 빠른 요약
 
 | 주제 | 핵심 답변 |

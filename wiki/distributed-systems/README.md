@@ -4,19 +4,6 @@
 
 처음부터 끝까지 외우기보다 아래 핵심 섹션 단위로 나눠 보는 편이 효율적입니다.
 
-## 핵심 섹션 맵
-
-| 우선순위 | 섹션 | 먼저 답할 수 있어야 하는 질문 |
-| --- | --- | --- |
-| 1 | 분산시스템의 실패 모델 | 네트워크 지연, timeout, partition, partial failure가 단일 서버와 무엇을 다르게 만드는가? |
-| 2 | CAP, PACELC, 일관성 모델 | partition 상황과 정상 상황에서 consistency, availability, latency trade-off를 설명할 수 있는가? |
-| 3 | 복제, Quorum, 합의 | replication, quorum read/write, leader election, Raft/Paxos가 어떤 문제를 푸는가? |
-| 4 | 파티셔닝과 샤딩 | shard key, hot shard, resharding, cross-shard transaction 문제를 어떻게 다룰 것인가? |
-| 5 | Timeout, Retry, 멱등성 | timeout 후 처리 여부를 모르는 상황에서 retry, backoff, idempotency key를 어떻게 설계할 것인가? |
-| 6 | 장애 격리와 복원력 | bulkhead, circuit breaker, rate limit, load shedding, backpressure로 장애 전파를 어떻게 줄이는가? |
-| 7 | 이벤트 기반 연동과 분산 트랜잭션 | 2PC, Saga, Outbox, CDC, Event Sourcing, CQRS의 trade-off를 설명할 수 있는가? |
-| 8 | 실전 면접 Q&A | 짧은 답변으로 CAP, quorum, retry, outbox, split-brain, HA 질문을 빠르게 복습할 수 있는가? |
-
 ## 빠른 요약
 
 | 주제 | 핵심 답변 |
