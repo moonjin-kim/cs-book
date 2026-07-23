@@ -4,19 +4,6 @@
 
 운영체제, JVM, 데이터베이스 성능 질문과도 연결되므로 **명령어 실행, 병렬성, 메모리 계층, 캐시 일관성, I/O 병목**을 함께 봐야 합니다.
 
-## 핵심 섹션 맵
-
-| 우선순위 | 섹션 | 먼저 답할 수 있어야 하는 질문 |
-| --- | --- | --- |
-| 1 | CPU 실행 모델 | CPU가 fetch, decode, execute, memory, write-back 단계를 거쳐 명령어를 처리하는 흐름을 설명할 수 있는가? |
-| 2 | 파이프라이닝과 Hazard | pipeline이 처리량을 높이는 방식과 data/control/structural hazard 대응을 구분할 수 있는가? |
-| 3 | 메모리 계층 | register, cache, memory, storage의 속도·용량 trade-off를 설명할 수 있는가? |
-| 4 | Cache와 지역성 | cache line, hit/miss, temporal/spatial locality, prefetch가 성능에 미치는 영향을 설명할 수 있는가? |
-| 5 | 멀티코어와 일관성 | cache coherence, MESI, false sharing, memory ordering을 실무 성능 문제와 연결할 수 있는가? |
-| 6 | 병렬성과 한계 | ILP, SIMD, Amdahl's law, branch prediction 실패가 처리량을 제한하는 이유를 말할 수 있는가? |
-| 7 | I/O와 저장장치 | CPU-bound와 I/O-bound를 구분하고 DMA, interrupt, SSD/NVMe 특성을 설명할 수 있는가? |
-| 8 | 실전 면접 Q&A | 짧은 답변으로 cache locality, pipeline, false sharing, CPU-bound 질문을 복습할 수 있는가? |
-
 ## 빠른 요약
 
 | 주제 | 핵심 답변 |

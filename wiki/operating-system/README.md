@@ -4,19 +4,6 @@
 
 처음부터 끝까지 외우기보다 아래 핵심 섹션 단위로 나눠 보는 편이 효율적입니다.
 
-## 핵심 섹션 맵
-
-| 우선순위 | 섹션 | 먼저 답할 수 있어야 하는 질문 |
-| --- | --- | --- |
-| 1 | 프로세스, 스레드, 시스템 콜 | process와 thread가 어떤 자원을 공유하고, user mode에서 kernel mode로 왜 전환되는가? |
-| 2 | CPU 스케줄링과 Context Switching | scheduler가 실행 대상을 고르고 context switch 비용이 latency와 throughput에 어떤 영향을 주는가? |
-| 3 | 동기화와 Deadlock | mutex, semaphore, condition variable, futex가 race condition과 blocking을 어떻게 다루는가? |
-| 4 | 가상 메모리와 Paging | address space, page table, TLB, page fault, copy-on-write를 설명할 수 있는가? |
-| 5 | 메모리 관리와 OOM | heap/stack/mmap, page cache, swap, overcommit, OOM killer가 애플리케이션에 어떤 영향을 주는가? |
-| 6 | File, I/O, Event Multiplexing | file descriptor, VFS, page cache, blocking/non-blocking I/O, select/poll/epoll 차이는 무엇인가? |
-| 7 | 저장장치, 컨테이너, 관측 | HDD/SSD/NVMe, fsync, cgroup, namespace, metrics로 운영 문제를 어떻게 해석하는가? |
-| 8 | 실전 면접 Q&A | 짧은 답변으로 process/thread, memory, deadlock, I/O, container 질문을 빠르게 복습할 수 있는가? |
-
 ## 빠른 요약
 
 | 주제 | 핵심 답변 |

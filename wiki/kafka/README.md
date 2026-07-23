@@ -4,20 +4,6 @@ Kafka 면접은 **메시지를 큐가 아니라 파티션 로그로 저장하고
 
 처음부터 끝까지 읽기보다 아래 핵심 섹션 단위로 나눠 보는 편이 효율적입니다.
 
-## 핵심 섹션 맵
-
-| 우선순위 | 섹션 | 먼저 답할 수 있어야 하는 질문 |
-| --- | --- | --- |
-| 1 | 로그 모델과 기본 구성 | Topic, Partition, Broker, Replica, Offset이 왜 Kafka 확장성과 재처리의 기반인가? |
-| 2 | Producer와 쓰기 보장 | key, partitioner, batch, acks, ISR, idempotence가 손실·중복·순서에 어떤 영향을 주는가? |
-| 3 | Consumer Group과 Offset | Consumer Group이 파티션을 나눠 읽고 offset commit으로 처리 위치를 관리하는 방식을 설명할 수 있는가? |
-| 4 | Rebalancing과 Backpressure | consumer 변화, poll 지연, partition revocation이 처리 중단과 중복 처리로 이어지는 이유는 무엇인가? |
-| 5 | 전달 보장과 Exactly Once | at-most/at-least/exactly-once, transaction, `read_committed`, external DB idempotency를 구분할 수 있는가? |
-| 6 | 파티션 설계와 운영 | partition 수, replication factor, retention, compaction, lag, throughput을 어떻게 설계하고 관측할 것인가? |
-| 7 | Streams, Connect, RabbitMQ 비교 | Streams와 Connect의 역할, Kafka와 RabbitMQ의 모델 차이를 설명할 수 있는가? |
-| 8 | 심화: 내부 동작 원리 | 순차 I/O, page cache, zero-copy, log segment, 인덱스가 Kafka의 높은 처리량을 어떻게 만드는가? |
-| 9 | 실전 면접 Q&A | 짧은 답변으로 파티션, offset, rebalance, EOS, 운영 질문을 빠르게 복습할 수 있는가? |
-
 ## 빠른 요약
 
 | 주제 | 핵심 답변 |
