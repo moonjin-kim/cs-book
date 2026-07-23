@@ -214,6 +214,25 @@ html, body {
   background: var(--bg-hover);
 }
 
+/* 퀴즈 모드: 답변(마지막) 열을 가리고 클릭하면 공개 */
+.wiki-content.quiz-mode .quiz-table tbody td:last-child {
+  filter: blur(5px);
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+  transition: filter 0.12s ease;
+}
+
+.wiki-content.quiz-mode .quiz-table tbody td:last-child:hover {
+  background: var(--accent-dim);
+}
+
+.wiki-content.quiz-mode .quiz-table tbody td:last-child.revealed {
+  filter: none;
+  cursor: default;
+  user-select: auto;
+}
+
 .wiki-content blockquote {
   border-left: 3px solid var(--border);
   padding-left: 16px;

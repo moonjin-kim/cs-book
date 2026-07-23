@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -23,6 +23,17 @@ function extractText(node: ReactNode): string {
   if (Array.isArray(node)) return node.map(extractText).join('');
   if (node && typeof node === 'object' && 'props' in node) {
     return extractText((node as { props?: { children?: ReactNode } }).props?.children);
+  }
+  return '';
+}
+
+// 표의 헤더(thead) 텍스트만 추출한다. 답변 셀 내용은 제외해 오탐을 막는다.
+function tableHeaderText(children: ReactNode): string {
+  const arr = Array.isArray(children) ? children : [children];
+  for (const child of arr) {
+    if (child && typeof child === 'object' && 'type' in child && (child as { type?: unknown }).type === 'thead') {
+      return extractText((child as { props?: { children?: ReactNode } }).props?.children);
+    }
   }
   return '';
 }
@@ -52,10 +63,13 @@ export function WikiPage() {
   const mdPath = pathname.replace('/wiki/', '');
   const [content, setContent] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [quizMode, setQuizMode] = useState(false);
+  const articleRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     setContent(null);
     setError(false);
+    setQuizMode(false);
     fetch(`./data/wiki/${mdPath}`)
       .then((r) => {
         if (!r.ok) throw new Error('Not found');
@@ -91,6 +105,28 @@ export function WikiPage() {
     target.scrollIntoView({ block: 'start' });
   };
 
+  // 퀴즈 모드를 켤 때는 이전에 공개된 답을 다시 가린다.
+  const toggleQuiz = () => {
+    setQuizMode((prev) => {
+      const next = !prev;
+      if (next) {
+        articleRef.current?.querySelectorAll('td.revealed').forEach((cell) => cell.classList.remove('revealed'));
+      }
+      return next;
+    });
+  };
+
+  // 퀴즈 모드에서 답변(마지막) 셀을 클릭하면 공개를 토글한다.
+  const handleReveal = (event: MouseEvent<HTMLElement>) => {
+    if (!quizMode) return;
+    const cell = (event.target as HTMLElement).closest('td');
+    if (!cell || cell !== cell.parentElement?.lastElementChild) return;
+    if (!cell.closest('table')?.classList.contains('quiz-table')) return;
+    cell.classList.toggle('revealed');
+  };
+
+  const hasQuizTable = /\|[^|\n]*답변[^|\n]*\|/.test(content);
+
   const components: Components = {
     h2: ({ children, ...props }) => {
       const text = extractText(children);
@@ -106,6 +142,14 @@ export function WikiPage() {
         <h3 id={nextHeadingId(text)} {...props}>
           {children}
         </h3>
+      );
+    },
+    table: ({ children, ...props }) => {
+      const isQuiz = tableHeaderText(children).includes('답변');
+      return (
+        <table className={isQuiz ? 'quiz-table' : undefined} {...props}>
+          {children}
+        </table>
       );
     },
     a: ({ href, children, ...props }) => {
@@ -128,7 +172,27 @@ export function WikiPage() {
 
   return (
     <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,760px)_220px] lg:items-start lg:justify-center">
-      <article className="wiki-content min-w-0">
+      <article
+        ref={articleRef}
+        className={`wiki-content min-w-0 ${quizMode ? 'quiz-mode' : ''}`}
+        onClick={handleReveal}
+      >
+        {hasQuizTable && (
+          <div className="mb-4 flex justify-end">
+            <button
+              type="button"
+              onClick={toggleQuiz}
+              aria-pressed={quizMode}
+              className={`rounded-md border px-3 py-1.5 text-[12px] font-medium transition-colors ${
+                quizMode
+                  ? 'border-accent bg-accent-dim text-accent'
+                  : 'border-border text-text-muted hover:bg-bg-hover hover:text-text-primary'
+              }`}
+            >
+              {quizMode ? '✓ 퀴즈 모드 · 답을 클릭해 공개' : '🎯 퀴즈 모드 (답 가리기)'}
+            </button>
+          </div>
+        )}
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
           {content}
         </ReactMarkdown>
