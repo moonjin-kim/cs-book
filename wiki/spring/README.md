@@ -736,99 +736,130 @@ class AppConfig {
 - full mode에서는 `a()` 안의 `b()` 호출을 CGLIB이 가로채 **컨테이너의 싱글톤 B**를 반환합니다. 그래서 B는 한 개만 생성됩니다.
 - `@Configuration(proxyBeanMethods = false)`(lite mode)면 프록시하지 않아 `b()`가 매번 **새 인스턴스**를 만듭니다. 싱글톤 보장이 필요 없고 시작 성능이 중요하면 lite mode를 씁니다.
 
-## 9. 테스트와 실전 Q&A
+## 9. 핵심 개념 퀴즈
 
-### 테스트 종류
+### IoC 컨테이너와 Bean
 
-| 테스트 | 목적 | 비용 |
-| --- | --- | --- |
-| 단위 테스트 | Spring 없이 순수 객체 검증 | 낮음 |
-| slice test | MVC, JPA 등 특정 계층만 검증 | 중간 |
-| `@SpringBootTest` | 전체 ApplicationContext 검증 | 높음 |
-| end-to-end test | 실제 HTTP/DB/외부 의존성 포함 | 높음 |
-
-대표 slice:
-
-| 애너테이션 | 범위 |
+| 질문 | 답변 |
 | --- | --- |
-| `@WebMvcTest` | Controller, MVC infrastructure 중심 |
-| `@DataJpaTest` | JPA repository, EntityManager 중심 |
-| `@JsonTest` | JSON serialization/deserialization |
-| `@RestClientTest` | REST client 관련 Bean |
+| IoC란 무엇인가? | 객체 생성, 의존성 연결, 생명주기 제어를 애플리케이션 코드가 아니라 컨테이너가 가져가는 구조입니다. |
+| BeanFactory와 ApplicationContext의 차이는? | ApplicationContext가 BeanFactory 기능에 이벤트, 메시지, 리소스 로딩, 환경 추상화 등을 더한 컨테이너입니다. |
+| 객체를 Bean으로 관리하면 무엇을 얻는가? | 생성자 주입으로 의존성 명시, scope 관리, `@Transactional`/`@Async`/`@Cacheable` 같은 AOP 적용, 테스트 대체·profile 변경, 초기화·소멸 콜백의 일관된 관리를 얻습니다. |
+| Bean 생명주기의 대표 흐름은? | definition 등록 → 인스턴스 생성 → 의존성 주입 → Aware 콜백 → BeanPostProcessor before → `@PostConstruct`/InitializingBean/custom init → BeanPostProcessor after → 사용 → `@PreDestroy`/DisposableBean/custom destroy 순입니다. |
+| 생성자에서 트랜잭션·lazy association을 기대하면 안 되는 이유는? | 생성자 시점에는 아직 proxy, transaction, lazy association 같은 런타임 기능이 준비되지 않기 때문입니다. |
+| 생성자 주입을 기본으로 두는 이유는? | 필수 의존성을 명시하고, 불변성과 테스트 용이성을 확보하며, 순환 의존성이 시작 시점에 바로 드러나기 때문입니다. |
+| Singleton Bean은 thread-safe한가? | 인스턴스가 하나라는 뜻일 뿐, 내부 mutable field는 여러 요청이 공유하므로 thread-safe를 보장하지 않습니다. |
+| request/session scope Bean을 singleton Bean에 직접 주입하면? | scope mismatch가 생기므로, scoped proxy나 `ObjectProvider`로 실제 사용 시점에 꺼내도록 설계합니다. |
+| prototype scope의 주의점은? | 요청할 때마다 새 인스턴스를 주지만 소멸 콜백을 컨테이너가 끝까지 관리해주지는 않습니다. |
+| 순환 의존성이 생기면 어떻게 대응하는가? | 공통 책임을 별도 Bean으로 분리하고, 직접 호출 대신 domain/application event를 검토하며, 정말 필요하면 `ObjectProvider`·`@Lazy`를 쓰되 설계 냄새인지 먼저 봅니다. |
 
-### MockMvc와 통합 테스트
+### AOP와 프록시
 
-| 도구 | 특징 |
+| 질문 | 답변 |
 | --- | --- |
-| `MockMvc` | Servlet container 없이 MVC 요청/응답 테스트 |
-| `WebTestClient` | WebFlux 또는 server test client |
-| `TestRestTemplate` | 실제 port로 HTTP 호출 |
-| `@SpringBootTest(webEnvironment = RANDOM_PORT)` | 내장 서버를 띄운 통합 테스트 |
+| Spring AOP의 기본 구현 방식은? | proxy 기반으로, Client → Proxy → Target 구조에서 프록시가 메서드 호출 전후에 공통 기능을 적용합니다. |
+| JDK Dynamic Proxy와 CGLIB Proxy의 차이는? | JDK는 interface 기반이고 CGLIB은 class 상속 기반입니다. |
+| final class·method, private method가 프록시에 주는 영향은? | class 기반 프록시에서는 final class/method 적용이 어렵고 private 메서드는 프록시가 감쌀 수 없습니다. |
+| self-invocation에서 `@Transactional`이 동작하지 않는 이유는? | 같은 클래스 안에서 메서드를 직접 호출하면 proxy를 거치지 않아 트랜잭션·`@Async`·`@Cacheable` 같은 부가기능이 적용되지 않습니다. |
+| self-invocation은 어떻게 해결하는가? | 경계가 다른 메서드를 별도 Bean으로 분리하거나 application service를 나눠 외부에서 public 메서드를 호출하게 합니다. 자기 proxy 주입이나 `AopContext`는 결합·순환이 커져 우선순위가 낮습니다. |
+| Advisor란 무엇인가? | pointcut과 advice의 조합입니다. |
+| Join point와 Pointcut의 차이는? | Join point는 advice를 적용할 수 있는 지점이고, Pointcut은 그중 어떤 지점에 적용할지 고르는 조건입니다. |
+| `@Around` advice의 특징은? | target 호출 전후 전체를 감싸는 advice입니다. |
 
-주의:
+### MVC 요청 처리
 
-- `MockMvc`는 빠르지만 실제 network stack 전체를 검증하지 않습니다.
-- `RANDOM_PORT` 테스트는 서버가 별도 thread에서 돌아 test transaction rollback 범위가 다를 수 있습니다.
-
-### 테스트 격리
-
-| 방법 | 장점 | 주의 |
-| --- | --- | --- |
-| `@Transactional` rollback | 빠르고 간단 | 운영과 다른 transaction 조건 가능 |
-| `@Sql` cleanup | DB 상태 명시적 초기화 | 스크립트 유지보수 필요 |
-| `@DirtiesContext` | ApplicationContext까지 완전 격리 | 매우 느림 |
-| Testcontainers | 실제 DB와 가까운 검증 | 실행 비용 증가 |
-
-주의:
-
-- Spring test transaction은 기본적으로 test method 종료 후 rollback됩니다.
-- manual flush가 없으면 Hibernate test에서 false positive가 날 수 있습니다.
-- `REQUIRES_NEW`, `@Async`, 별도 thread 작업은 test transaction 밖에서 commit될 수 있습니다.
-
-### 자주 나오는 Spring 면접 질문
-
-#### IoC / Bean
-
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| Spring이 객체를 Bean으로 관리하는 이유는? | DI, lifecycle, scope, AOP, test 대체, 설정 일관성을 얻기 위해서입니다. |
-| BeanFactory와 ApplicationContext 차이는? | ApplicationContext가 BeanFactory 기능에 이벤트, 메시지, 리소스, 환경 추상화 등을 더합니다. |
-| Singleton Bean은 thread-safe한가? | Bean 인스턴스가 하나라는 뜻이지 내부 mutable state가 thread-safe하다는 뜻은 아닙니다. |
-| 생성자 주입을 선호하는 이유는? | 필수 의존성, 불변성, 테스트 용이성, 순환 의존성 조기 발견 때문입니다. |
-| 순환 의존성이 생기면 어떻게 하나? | 역할을 분리하고, 필요하면 이벤트나 지연 조회를 검토합니다. |
+| DispatcherServlet의 역할은? | front controller로서 요청을 받아 HandlerMapping, HandlerAdapter, Controller, Converter 흐름을 조율합니다. |
+| DispatcherServlet 요청 처리 흐름은? | Filter chain → DispatcherServlet → HandlerMapping → HandlerAdapter → ArgumentResolver → Controller/Service → ReturnValueHandler → HttpMessageConverter, 예외 시 HandlerExceptionResolver 체인으로 이어집니다. |
+| `@RequestBody`와 `@ModelAttribute`의 차이는? | `@RequestBody`는 body를 HttpMessageConverter로 읽고, `@ModelAttribute`는 query/form/multipart를 WebDataBinder로 바인딩합니다. |
+| Filter와 Interceptor의 차이는? | Filter는 Servlet container(DispatcherServlet 전후)에 있고, Interceptor는 Spring MVC handler 전후에 위치하며 handler method 정보를 알 수 있습니다. |
+| Spring Security는 주로 어디서 동작하는가? | 주로 filter chain에서 동작합니다. |
+| `ResponseEntity`는 언제 쓰는가? | status code, header, error body를 함께 제어해야 할 때 사용합니다. |
+| Bean Validation과 비즈니스 규칙 검증의 경계는? | 형식·단순 제약은 Bean Validation으로, DB 조회가 필요한 중복 검사나 상태 전이 검사 같은 비즈니스 규칙은 service/domain에서 처리합니다. |
+| `@ControllerAdvice`의 역할은? | 여러 Controller에 공통으로 적용할 예외 처리, 바인딩, 모델 설정을 모으며, `@RestControllerAdvice`로 JSON API 예외 응답을 표준화합니다. |
+| ArgumentResolver의 장단점은? | Controller 반복 코드를 줄여주지만 숨은 의존성을 만들 수 있습니다. |
 
-#### AOP / Transaction
+### 트랜잭션
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| self-invocation에서 `@Transactional`이 안 되는 이유는? | 같은 객체 내부 호출은 proxy를 거치지 않기 때문입니다. |
-| JDK proxy와 CGLIB proxy 차이는? | JDK는 interface 기반, CGLIB은 class 상속 기반입니다. |
-| checked exception에서 rollback하려면? | `rollbackFor`를 명시합니다. |
-| `REQUIRES_NEW`의 위험은? | 기존 transaction을 보류하고 새 connection이 필요할 수 있어 pool 고갈 위험이 있습니다. |
-| `@Async`와 transaction을 같이 쓸 때 주의점은? | thread가 바뀌면 transaction context가 자동 전파되지 않습니다. |
+| `@Transactional`은 어떻게 동작하는가? | proxy가 메서드 호출을 감싸고 `PlatformTransactionManager`로 begin/commit/rollback을 제어합니다. |
+| 기본 rollback 규칙은? | `RuntimeException`과 `Error`는 rollback, checked exception은 commit입니다. |
+| checked exception도 rollback하려면? | `rollbackFor`에 해당 예외를 명시합니다. |
+| REQUIRED와 REQUIRES_NEW의 차이는? | REQUIRED는 기존 트랜잭션이 있으면 참여, 없으면 새로 시작(기본값)이고, REQUIRES_NEW는 항상 새 트랜잭션을 만들고 기존 트랜잭션은 보류합니다. |
+| REQUIRES_NEW의 위험은? | outer 트랜잭션이 connection을 잡은 상태에서 inner가 새 connection을 요구할 수 있어, pool이 작고 동시 요청이 많으면 connection pool 고갈 위험이 있습니다. |
+| NESTED 전파의 조건은? | savepoint 기반 중첩으로, transaction manager와 DB의 지원이 필요합니다. |
+| 격리 수준별로 방지하는 현상은? | READ_COMMITTED는 dirty read, REPEATABLE_READ는 dirty·non-repeatable read, SERIALIZABLE은 dirty·non-repeatable·phantom read까지 방지합니다. |
+| DB별 기본 격리 수준이 다른 예는? | MySQL InnoDB는 REPEATABLE_READ, PostgreSQL은 READ_COMMITTED가 기본값입니다. |
+| `@Async`와 트랜잭션을 함께 쓸 때 주의점은? | 다른 thread로 넘어가면 기존 transaction context가 자동 전파되지 않습니다. |
+| Spring은 트랜잭션 컨텍스트를 어떻게 관리하는가? | thread-bound resource로 관리하며, DataSource 트랜잭션에서는 connection이 현재 thread에 묶이고 JPA에서는 EntityManager·persistence context가 트랜잭션 범위와 연결됩니다. |
+| 트랜잭션 경계 설계의 기준은? | DB 변경 단위와 비즈니스 불변식 단위를 묶되, 외부 API 호출·파일 업로드·긴 계산을 트랜잭션 안에 오래 두지 않고 lock을 잡은 채 network I/O를 기다리지 않습니다. |
 
-#### MVC / Boot
+### Spring Boot
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| DispatcherServlet 역할은? | front controller로 요청을 받아 handler 조회, 호출, 응답 변환을 조율합니다. |
-| Filter와 Interceptor 차이는? | Filter는 Servlet container, Interceptor는 Spring MVC handler 전후에 위치합니다. |
-| `@RequestBody`와 `@ModelAttribute` 차이는? | body를 message converter로 읽는지, query/form/multipart를 data binding하는지의 차이입니다. |
-| Boot 자동 설정은 어떻게 동작하나? | classpath, property, Bean 존재 여부를 조건으로 Bean을 등록합니다. |
-| Actuator를 운영에서 열 때 주의점은? | endpoint 노출 범위, 인증/인가, 민감 정보 노출을 제어해야 합니다. |
-| 웹서버와 WAS(서블릿 컨테이너)의 차이는? | 웹서버는 정적 리소스와 요청 전달을 담당하고, WAS는 서블릿 컨테이너로 동적 요청을 실행합니다. Spring Boot는 Tomcat 등 서블릿 컨테이너를 내장해 별도 WAS 배포 없이 실행됩니다. |
-| Spring MVC와 WebFlux 차이는? | MVC는 요청당 스레드(blocking, 서블릿 기반), WebFlux는 이벤트 루프 기반 논블로킹(Reactor)입니다. I/O 대기가 많고 고동시성이면 WebFlux가 유리하지만, blocking 라이브러리를 섞으면 이점이 사라집니다. |
+| Spring과 Spring Boot의 차이는? | Boot는 자동 설정, starter, 내장 서버(Tomcat/Jetty/Undertow), 실행 가능한 jar, Actuator 같은 운영 기능을 제공해 설정 비용을 줄입니다. |
+| `@SpringBootApplication`이 포함하는 것은? | `@SpringBootConfiguration`, `@EnableAutoConfiguration`, `@ComponentScan`을 대표적으로 포함합니다. |
+| component scan 범위는 무엇이 결정하는가? | main class의 package 위치가 결정하며, 범위가 너무 넓으면 의도치 않은 Bean 등록과 테스트 비용 증가가 생깁니다. |
+| 자동 설정은 어떻게 동작하는가? | starter가 classpath를 구성하고, auto-configuration이 classpath·property·Bean 존재 여부를 조건(`@ConditionalOnClass`, `@ConditionalOnProperty` 등)으로 후보 Bean을 등록합니다. |
+| 사용자가 등록한 Bean이 자동 설정을 대체하는 원리는? | `@ConditionalOnMissingBean` 덕분에 같은 역할의 Bean을 직접 등록하면 기본 자동 설정을 대체할 수 있습니다. |
+| `@Value`와 `@ConfigurationProperties`의 차이는? | `@Value`는 단일 값 주입에, `@ConfigurationProperties`는 relaxed binding으로 설정 묶음 바인딩과 검증에 적합합니다. |
+| Profile 사용 시 주의점은? | 조합이 많아지면 운영 설정 추적이 어려워지고, 민감 정보는 repository가 아니라 secret manager나 환경 변수로 분리해야 합니다. |
+| Actuator를 운영에서 열 때 주의점은? | endpoint 노출 범위를 최소화하고 인증·인가를 적용하며, health는 liveness/readiness로 나눠 보고, metrics tag cardinality가 높으면 모니터링 비용·성능 문제가 생깁니다. |
+| 웹서버와 WAS(서블릿 컨테이너)의 차이는? | 웹서버는 정적 리소스와 요청 전달을, WAS는 서블릿 컨테이너로 동적 요청 실행을 담당하며, Spring Boot는 서블릿 컨테이너를 내장해 별도 WAS 배포 없이 실행됩니다. |
+| Spring MVC와 WebFlux의 차이는? | MVC는 요청당 스레드(blocking, 서블릿 기반), WebFlux는 이벤트 루프 기반 논블로킹(Reactor)이며, blocking 라이브러리를 섞으면 WebFlux의 이점이 사라집니다. |
 
-#### JPA / Test
+### JPA와 영속성
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| 영속성 컨텍스트의 장점은? | 1차 캐시, 동일성 보장, 변경 감지, 쓰기 지연을 제공합니다. |
-| N+1 해결 방법은? | fetch join, EntityGraph, batch fetch, DTO projection을 상황에 맞게 씁니다. |
-| OSIV 장단점은? | lazy loading 편의는 있지만 connection 점유와 계층 의존 위험이 있습니다. |
-| `ddl-auto=update`를 운영에서 피하는 이유는? | 의도치 않은 schema 변경과 데이터 손실/불일치 위험이 있습니다. |
-| Spring test rollback의 한계는? | 별도 thread, `REQUIRES_NEW`, `@Async`, 실제 HTTP server 경계에서는 기대와 다를 수 있습니다. |
-| QueryDsl을 쓰는 이유는? | 문자열 JPQL과 달리 타입 안전하게 쿼리를 작성해 컴파일 시점에 오류를 잡고, 동적 조건 조합을 코드로 안전하게 구성할 수 있습니다. |
+| JPA, Hibernate, Spring Data JPA의 관계는? | JPA는 ORM 표준 명세, Hibernate는 그 구현체, Spring Data JPA는 Repository 구현을 줄여주는 추상화입니다. |
+| 영속성 컨텍스트가 제공하는 기능은? | 1차 캐시(동일성 보장), 변경 감지, 쓰기 지연, 지연 로딩을 제공합니다. |
+| 엔티티의 상태 종류는? | 비영속, 영속, 준영속, 삭제 상태가 있습니다. |
+| Flush란 무엇이고 언제 발생하는가? | persistence context의 변경을 DB SQL로 동기화하는 작업으로, transaction commit 전, JPQL 실행 전, 명시적 `flush()`, flush mode에 따른 시점에 발생합니다. |
+| flush와 commit의 차이는? | flush는 commit이 아니며, flush 후에도 트랜잭션이 rollback되면 DB 변경은 취소됩니다. |
+| Dirty checking이 동작하는 조건은? | 엔티티가 영속 상태이고 트랜잭션 안에서 변경되어야 하며, flush 시점에 snapshot과 현재 상태를 비교합니다. 준영속 엔티티는 자동 update되지 않습니다. |
+| Spring Data JPA `save()`는 어떻게 동작하는가? | 신규 엔티티면 `persist`, 기존 엔티티면 `merge`를 선택합니다. |
+| `merge`의 주의점은? | 전달 객체를 그대로 영속화하는 것이 아니라 병합된 managed instance를 반환하며, 직접 ID를 할당하면 신규 판단이 애매해져 `Persistable` 구현이나 version field로 명확히 할 수 있습니다. |
+
+### JPA 성능과 운영 주의점
+
+| 질문 | 답변 |
+| --- | --- |
+| N+1 문제란? | 부모 N개를 조회한 뒤 연관 데이터를 N번 추가 조회하는 문제입니다. |
+| N+1 해결 방법은? | Fetch Join, EntityGraph, Batch Fetch, DTO Projection을 상황에 맞게 사용합니다. |
+| `@OneToMany` fetch join에 paging을 함께 쓰면 위험한 이유는? | Hibernate가 DB paging 대신 memory paging을 해서 전체 결과를 메모리에 올릴 수 있어 OOM 위험이 있고, 부모 row가 자식 수만큼 늘어 page 기준이 틀어집니다. |
+| fetch join + paging의 대안은? | 부모 ID만 먼저 paging한 뒤 batch fetch로 collection을 조회하거나 조회 전용 DTO query를 사용합니다. |
+| 양방향 `@OneToOne`에서 lazy loading이 기대대로 안 되는 이유는? | FK가 없는 `mappedBy` 쪽은 연관 row 존재 여부를 알기 어려워 lazy loading이 기대대로 동작하지 않을 수 있습니다. |
+| IDENTITY와 SEQUENCE 전략의 차이는? | IDENTITY는 insert 후에야 ID를 알 수 있어 batch insert에 불리하고, SEQUENCE는 ID를 선할당해 allocationSize로 최적화할 수 있습니다. |
+| 운영에서 `ddl-auto=update`를 피하는 이유는? | 의도치 않은 schema 변경과 데이터 손실·불일치 위험이 있어, 운영 스키마 변경은 Flyway·Liquibase 같은 migration tool을 사용하는 것이 안전합니다. |
+| OSIV의 장단점은? | LazyInitializationException을 줄이고 Controller/View에서 엔티티 탐색이 가능하지만, DB connection 점유 시간이 늘고 표현 계층이 엔티티에 의존하게 됩니다. |
+
+### 심화: 컨테이너와 프록시 내부
+
+| 질문 | 답변 |
+| --- | --- |
+| ApplicationContext `refresh()`의 핵심 단계는? | BeanDefinition 로딩 → BeanFactoryPostProcessor 실행 → BeanPostProcessor 등록 → 싱글톤 인스턴스화(생성자 → 의존성 주입 → 초기화) 순입니다. |
+| BeanFactoryPostProcessor와 BeanPostProcessor의 차이는? | 전자는 BeanDefinition(정의)을 인스턴스화 이전에 조작하고, 후자는 Bean(인스턴스)을 각 빈 초기화 전후에 가공합니다. `@Value` 치환은 정의 단계, AOP 프록시 래핑은 인스턴스 단계입니다. |
+| AOP 프록시는 무엇이 언제 만드는가? | `AbstractAutoProxyCreator`라는 BeanPostProcessor가 `postProcessAfterInitialization()`에서 advisor에 걸린 빈을 프록시로 감싸며, 컨테이너에 등록되는 것은 원본이 아니라 프록시입니다. |
+| self-invocation 함정의 근본 원인은? | 컨테이너에 등록되고 주입되는 것이 프록시인데, 같은 클래스 내부의 `this.method()` 호출은 프록시를 우회하기 때문입니다. private 메서드도 프록시가 감쌀 수 없습니다. |
+| 순환 의존성 해결에 쓰는 3단계 캐시는? | 완성된 빈을 담는 `singletonObjects`(1차), 초기화 전 조기 노출 빈을 담는 `earlySingletonObjects`(2차), 조기 참조를 만들어 줄 `ObjectFactory`를 담는 `singletonFactories`(3차)입니다. |
+| 생성자 주입의 순환 의존성이 해결 불가한 이유는? | 3차 캐시에 factory를 등록하려면 먼저 인스턴스가 있어야 하는데, 생성자 순환은 인스턴스 생성 자체가 서로를 기다려 `BeanCurrentlyInCreationException`이 납니다. 조기 노출로 풀 수 있는 것은 setter/field 주입뿐입니다. |
+| AOP가 걸린 빈이 순환에 포함되면 어떻게 처리되는가? | 3차 캐시의 factory가 `getEarlyBeanReference`로 조기에 프록시를 만들어, 주입된 참조와 최종 빈이 같은 프록시가 되도록 맞춥니다. |
+| `@Configuration` 클래스의 CGLIB 프록시는 무슨 역할을 하는가? | full mode에서는 `@Bean` 메서드 내부 호출을 CGLIB이 가로채 컨테이너의 싱글톤을 반환해 한 개만 생성되게 하고, `proxyBeanMethods = false`(lite mode)면 프록시하지 않아 메서드 호출마다 새 인스턴스가 만들어집니다. |
+
+### 테스트
+
+| 질문 | 답변 |
+| --- | --- |
+| 테스트 종류와 비용은 어떻게 나뉘는가? | 단위 테스트(낮음), slice test(중간), `@SpringBootTest`(높음), end-to-end test(높음)로 나뉩니다. |
+| 대표적인 slice test 애너테이션은? | `@WebMvcTest`(Controller·MVC 중심), `@DataJpaTest`(JPA repository·EntityManager 중심), `@JsonTest`, `@RestClientTest`가 있습니다. |
+| MockMvc의 특징과 한계는? | Servlet container 없이 MVC 요청/응답을 빠르게 테스트하지만 실제 network stack 전체를 검증하지는 않습니다. |
+| Spring test transaction의 기본 동작은? | 기본적으로 test method 종료 후 rollback됩니다. |
+| Spring test rollback의 한계는? | 별도 thread, `REQUIRES_NEW`, `@Async`, 실제 HTTP server 경계에서는 test transaction 밖에서 commit될 수 있습니다. |
+| `@DirtiesContext`의 트레이드오프는? | ApplicationContext까지 완전히 격리하지만 매우 느립니다. |
 
 ## 참고한 공식 문서
 

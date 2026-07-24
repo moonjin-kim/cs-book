@@ -594,45 +594,140 @@ Sorted Set이 커지면 **skiplist + hashtable** 조합으로 저장됩니다.
 - balanced tree(red-black 등) 대신 skiplist를 쓰는 이유는 **구현이 단순하고 range 순회가 쉬우며**, 확률적으로 균형을 유지해 평균 O(log N)을 보장하기 때문입니다.
 - 두 구조를 함께 두어 "값으로 score 찾기"(hashtable)와 "순위/범위 조회"(skiplist)를 모두 O(1)~O(log N)에 처리합니다. 랭킹 보드가 Sorted Set의 대표 사례인 이유입니다.
 
-## 9. 실전 면접 Q&A
+## 9. 핵심 개념 퀴즈
 
-### 자료구조 / 실행 모델
+### 자료구조와 실행 모델
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| Redis가 빠른 이유는? | memory 기반, 효율적인 자료구조, 단일 thread event loop, 적은 context switching 때문입니다. |
-| Redis는 single-thread인데 왜 병목이 안 되나? | command가 짧고 memory 연산이라 빠르지만 big key나 긴 command는 병목이 됩니다. |
-| Hash와 String JSON blob 중 무엇을 고르나? | 필드 일부 갱신/조회가 많으면 Hash, 통째로 저장/조회하면 String도 가능하지만 크기와 갱신 비용을 봅니다. |
-| Sorted Set은 언제 쓰나? | score 기반 ranking, priority queue, delay queue에 적합합니다. |
+| Redis는 한 문장으로 무엇인가? | in-memory data structure server로, database, cache, message broker, streaming engine처럼 사용할 수 있습니다. |
+| Redis가 빠른 이유를 여러 요인으로 설명하라 | 대부분 데이터를 memory에 두고, 자료구조별 atomic command를 제공하며, 단일 thread event loop로 순차 처리해 lock과 context switching 비용이 적기 때문입니다. |
+| 객체의 필드 일부만 자주 갱신할 때 String과 Hash 중 무엇을 쓰나? | Hash가 유리합니다. 큰 JSON blob을 String으로 두면 일부 필드 갱신이 비효율적입니다. |
+| 랭킹이나 priority queue, delay queue에는 어떤 자료구조가 적합한가? | score 기반 정렬이 필요하므로 Sorted Set이 자연스럽습니다. |
+| 유실되면 안 되고 재처리가 필요한 메시지는 Pub/Sub과 Stream 중 무엇인가? | Stream입니다. 메시지 저장, consumer group, ACK가 필요하면 Pub/Sub보다 Stream이 적합합니다. |
+| 정확한 distinct count가 필요할 때 HyperLogLog를 써도 되나? | 안 됩니다. HyperLogLog는 근사 distinct count라 정확한 count가 필요하면 부적합합니다. |
+| Redis command가 모두 O(1)인가? 위험한 패턴은? | 아닙니다. `KEYS *`(전체 scan), 큰 컬렉션 전체 조회, 큰 key 삭제, 무거운 Lua script, 큰 pipeline은 event loop를 오래 막습니다. |
+| `KEYS`와 큰 key 삭제의 대안은? | `KEYS` 대신 `SCAN` 계열을, 큰 key 삭제에는 `UNLINK`를 검토하고 big key는 shard key 단위로 나눕니다. |
+| single-thread인데 왜 병목이 잘 안 생기나? 언제 병목이 되나? | command가 짧고 memory 연산이라 빠르지만, big key나 긴 command 하나가 전체 요청을 막아 병목이 됩니다. |
+| Redis 6의 network I/O thread가 command도 병렬 실행하나? | 아닙니다. network I/O만 스레드로 나누고 command execution은 여전히 순차(단일 스레드) 모델을 유지합니다. |
 
-### 캐시 / 메모리
+### 캐시 전략과 만료 정책
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| Cache Aside를 설명하라 | miss 시 DB 조회 후 cache에 저장하는 애플리케이션 주도 패턴입니다. |
-| Cache Stampede 대응은? | 분산 락, single flight, background refresh, TTL jitter, stale-while-revalidate를 씁니다. |
-| `allkeys-lru`와 `volatile-lru` 차이는? | 전자는 모든 key, 후자는 TTL 있는 key만 eviction 대상입니다. |
-| Big Key가 위험한 이유는? | command latency, network 전송, memory free, replication에 큰 지연을 만들 수 있습니다. |
+| Cache Aside 패턴의 흐름을 설명하라 | cache get → miss면 DB 조회 → TTL과 함께 cache set → response 순으로, 애플리케이션이 key와 TTL을 제어하는 패턴입니다. |
+| Cache Aside의 주의점은? | miss 순간 DB 부하가 늘고, DB update 후 invalidation 누락 시 stale data가 남으며, hot key 만료 시 stampede가 생깁니다. |
+| Write Through와 Write Behind의 트레이드오프는? | Write Through는 DB와 cache를 동시 갱신해 쓰기 지연이 늘고, Write Behind는 cache 먼저 쓰고 DB에 비동기 반영해 데이터 손실 위험이 있습니다. |
+| TTL은 freshness를 보장하는가? | 아닙니다. TTL은 절대 장치가 아니라 stale data 기간을 제한할 뿐입니다. |
+| 대량 key에 같은 TTL을 주면 무슨 문제가 생기나? | 동시에 만료되어 DB 부하가 급증하는 cache avalanche가 발생할 수 있습니다. |
+| `SET key value`로 값을 갱신할 때 TTL 관련 주의점은? | 기존 TTL을 제거할 수 있으므로 `EX`, `PX`, `KEEPTTL` 등 옵션으로 TTL 정책을 명확히 해야 합니다. |
+| Stampede, Penetration, Avalanche를 구분하라 | Stampede는 인기 key 만료 시 다수 요청이 DB로 몰림, Penetration은 존재하지 않는 key 요청이 계속 DB로 감, Avalanche는 많은 key가 동시 만료되어 부하 급증입니다. |
+| Cache Stampede 대응법은? | 한 요청만 재계산하도록 분산 락(single flight), TTL 만료 전 비동기 refresh, TTL random jitter, stale-while-revalidate를 씁니다. |
+| Cache Penetration 대응법은? | null caching, bloom filter, rate limit을 사용합니다. |
+| Stampede 대응으로 락을 걸 때의 주의점은? | 락 자체도 장애 지점이 될 수 있어, cache miss 시 DB 보호를 위한 timeout, bulkhead, rate limit이 함께 필요합니다. |
 
-### Persistence / Cluster
+### 메모리와 Eviction
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| RDB와 AOF 차이는? | RDB는 snapshot, AOF는 write log이며 손실 범위와 복구 속도가 다릅니다. |
-| AOF `everysec`의 의미는? | 보통 1초마다 fsync해 성능과 데이터 손실 범위를 절충합니다. |
-| Sentinel과 Cluster 차이는? | Sentinel은 HA, Cluster는 hash slot 기반 sharding과 HA입니다. |
-| Redis Cluster multi-key 제약은? | 모든 key가 같은 hash slot에 있어야 하며 hash tag로 같은 slot에 둘 수 있습니다. |
-| MOVED와 ASK는 언제 보나? | slot 소유권 변경이나 resharding 중 cluster redirect로 발생합니다. |
+| Redis에서 memory sizing이 왜 중요한가? | in-memory 기반이라 memory sizing이 곧 capacity planning이기 때문입니다. |
+| 메모리 사용을 볼 때 확인할 요소는? | key 수와 value 크기, 자료구조별 overhead, TTL 없는 key 비율, replication backlog, client output buffer, fork 시 copy-on-write 여유 memory입니다. |
+| eviction 여부와 hit/miss를 보는 핵심 지표는? | `evicted_keys`, `expired_keys`, `keyspace_hits`, `keyspace_misses`, `used_memory`, `mem_fragmentation_ratio` 등입니다. |
+| `maxmemory` 도달 시 무슨 일이 일어나나? | eviction policy에 따라 key를 제거하거나 쓰기를 거부합니다. |
+| `allkeys-lru`와 `volatile-lru`의 차이는? | `allkeys-lru`는 모든 key를, `volatile-lru`는 TTL 있는 key만 eviction 대상으로 오래 안 쓴 key를 제거합니다. |
+| LRU와 LFU 정책은 각각 어떤 cache에 적합한가? | LRU는 일반 cache, LFU는 hot key가 뚜렷한 cache에 적합합니다. |
+| `noeviction`은 언제 쓰고 무엇을 감수하나? | 유실되면 안 되는 데이터에 쓰며, 데이터 유실은 막지만 애플리케이션이 write error를 처리해야 합니다. |
+| `volatile-*` 정책의 함정은? | TTL 없는 key가 많으면 회수 대상이 부족해질 수 있습니다. |
+| eviction 발생은 무엇을 의미하는 신호인가? | 이미 memory pressure가 있다는 운영 신호입니다. |
+| Big Key가 위험한 이유는? | command latency, network 전송, memory free, replication에 큰 지연(latency spike)을 만들 수 있습니다. |
+| Hot Key와 Hot Partition의 대응은? | Hot Key는 local cache·request coalescing·key sharding, Hot Partition은 hash tag 재검토와 key 분산으로 대응합니다. |
+| Big/Hot key 진단 도구는? | slowlog, commandstats, keyspace 분석, client-side latency tracking, Cluster node별 ops/memory 편차입니다. |
 
-### Lock / Messaging
+### 영속화와 복구
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| Redis lock에서 random token이 필요한 이유는? | unlock 시 lock 소유자만 삭제하도록 확인하기 위해서입니다. |
-| RedLock을 언제 조심해야 하나? | 강한 정합성, network partition, clock drift, process pause가 문제가 되는 자원 제어에서 조심해야 합니다. |
-| Pipelining과 Transaction 차이는? | pipelining은 RTT 최적화, transaction은 `EXEC` 시 순차 원자 실행입니다. |
-| Redis transaction은 rollback되나? | RDBMS처럼 전체 rollback되지 않습니다. |
-| Pub/Sub과 Stream 차이는? | Pub/Sub은 저장/ACK가 없고, Stream은 저장, consumer group, ACK, 재처리를 제공합니다. |
+| RDB와 AOF의 근본 차이는? | RDB는 특정 시점 snapshot, AOF는 모든 쓰기 명령을 append하는 방식입니다. |
+| RDB와 AOF의 파일 크기·복구 속도 비교는? | RDB는 파일이 작고 복구가 빠르며, AOF는 파일이 크고 복구가 상대적으로 느립니다. |
+| RDB의 데이터 손실 특성은? | snapshot 사이에 발생한 데이터가 손실될 수 있습니다. |
+| RDB + AOF를 함께 쓰는 이유는? | 복구성과 성능 사이 균형을 잡기 위해서입니다. |
+| AOF fsync `everysec`의 의미는? | 보통 1초마다 fsync해 성능과 안전을 절충하며, 장애 시 최근 약 1초 데이터 손실을 감수하는 선택입니다. |
+| AOF fsync `always`와 `no`의 트레이드오프는? | `always`는 매 쓰기 fsync로 가장 안전하지만 느리고, `no`는 OS에 맡겨 빠르지만 손실 가능합니다. |
+| AOF rewrite의 목적과 비용은? | 파일 크기를 줄이지만 fork/COW와 I/O 비용을 만듭니다. |
+| RDB save와 AOF rewrite가 만드는 프로세스는? | background child process를 만듭니다(fork). |
+| fork와 copy-on-write가 왜 위험할 수 있나? | fork 순간 page table 복사 비용이 들고, child 작업 중 parent가 page를 바꾸면 COW memory가 늘어 memory 여유가 부족하면 latency spike나 OOM 위험이 커집니다. |
+| fork/COW 관련 운영 지표는? | `rdb_bgsave_in_progress`, `aof_rewrite_in_progress`, `current_cow_size`, `latest_fork_usec`, persistence 실패 여부입니다. |
+| persistence를 끄는 것은 언제 가능한가? | 순수 cache로만 쓸 때 가능하지만 재시작 시 데이터가 사라집니다. |
+
+### 복제, Sentinel, Cluster
+
+| 질문 | 답변 |
+| --- | --- |
+| Redis replication은 기본적으로 동기인가 비동기인가? | 기본적으로 asynchronous replication이라 lag가 발생할 수 있습니다. |
+| replication에서 발생 가능한 데이터 문제는? | failover 순간 일부 write가 유실될 수 있고, replica read는 stale data를 반환할 수 있습니다. |
+| partial resync에 영향을 주는 요소는? | replication backlog 크기와 network 안정성입니다. |
+| Sentinel의 네 가지 역할은? | monitoring, notification, automatic failover, configuration provider입니다. |
+| Sentinel은 sharding을 제공하나? | 아닙니다. Sentinel은 sharding 없이 master-replica 장애 조치만 제공합니다. |
+| Sentinel 운영에서 중요한 설정은? | quorum과 failover timeout이며, client가 Sentinel을 통해 새 primary를 찾아야 합니다. |
+| Redis Cluster는 key를 어떻게 분산하나? | `slot = CRC16(key) mod 16384` 공식으로 0~16383, 총 16384개 hash slot에 나눕니다. |
+| hash tag는 무엇을 위한 것인가? | `user:{1000}:profile`처럼 `{}` 안만 hashing해 여러 key를 같은 slot에 두어 multi-key command를 가능하게 합니다. |
+| Cluster의 multi-key command 제약은? | 같은 hash slot에 있는 key끼리만 가능합니다. |
+| Cluster는 여러 DB(`SELECT`)를 지원하나? | 아닙니다. database 0만 지원하고 `SELECT`로 DB를 바꾸는 방식을 지원하지 않습니다. |
+| `MOVED`와 `ASK`는 언제 발생하나? | resharding 중 `ASK`, 소유권 변경 후 `MOVED` redirect가 발생하며 client library가 redirect와 topology refresh를 처리해야 합니다. |
+| Sentinel과 Cluster를 언제 각각 선택하나? | 단일 primary 메모리로 충분하면 Sentinel(HA), 데이터/처리량이 커서 sharding이 필요하면 Cluster(수평 확장 + HA)입니다. |
+
+### Pipelining, Transaction, Lua
+
+| 질문 | 답변 |
+| --- | --- |
+| Pipelining은 무엇을 최적화하나? | 여러 명령을 한 번에 보내고 응답도 한 번에 받아 network RTT를 줄입니다. |
+| Pipelining은 transaction인가? | 아닙니다. 원자성이 필요하면 `MULTI/EXEC`나 Lua script를 고려해야 합니다. |
+| 너무 큰 pipeline의 위험은? | server/client memory와 응답 지연을 키웁니다. |
+| Redis transaction의 실행 방식은? | `MULTI` 이후 명령을 queue에 쌓고 `EXEC`에서 순차 실행하며, 실행 중 다른 명령이 끼어들지 않습니다. |
+| Redis transaction은 RDBMS처럼 rollback되나? | 아닙니다. 실행 중 일부 command가 실패해도 자동 rollback되지 않습니다. |
+| queue 단계 오류와 EXEC 이후 오류의 차이는? | queue 단계의 문법 오류와 `EXEC` 이후 실행 오류를 구분해야 하며, 후자는 rollback되지 않습니다. |
+| `WATCH`는 어떤 락 방식인가? 실패 시 어떻게 되나? | optimistic locking으로, 감시 중인 key가 변경되면 `EXEC`가 실패하고 client가 retry해야 합니다. |
+| Cluster에서 transaction의 제약은? | 관련 key가 같은 slot에 있어야 합니다. |
+| Lua script의 장점은? | 여러 command를 원자적으로 묶고, network round trip을 줄이며, check-and-set 로직을 안전하게 만듭니다. |
+| Lua script의 주의점은? | 긴 script는 event loop를 막고, 접근하는 key는 cluster에서 같은 slot에 있어야 하며, 복잡한 비즈니스 로직을 과도하게 넣으면 운영·디버깅이 어렵습니다. |
+
+### 분산 락과 메시징
+
+| 질문 | 답변 |
+| --- | --- |
+| 기본 Redis 락 명령과 각 옵션의 의미는? | `SET lock-key random-token NX PX 3000`으로, `NX`는 key 없을 때만 획득, `PX`는 만료 시간, random token은 unlock 시 소유자 확인용입니다. |
+| unlock에 random token이 왜 필요한가? | token 확인 없이 삭제하면 다른 client의 lock을 지울 수 있어, 소유자만 삭제하도록 확인하기 위해서입니다. |
+| unlock을 Lua로 하는 이유는? | get으로 token이 일치할 때만 del 하는 check-and-delete를 원자적으로 수행하기 위해서입니다. |
+| 락 TTL이 너무 짧거나 너무 길면? | 너무 짧으면 작업 중 lock이 만료되고, 너무 길면 장애 후 복구가 늦어집니다. |
+| 단일 Redis 락의 대표적 유실 시나리오는? | primary 장애와 replica 승격 사이에 lock이 유실될 수 있습니다. |
+| RedLock의 동작 원리는? | 여러 독립 Redis node에 lock을 시도해 과반수가 성공하면 획득으로 판단합니다. |
+| RedLock을 언제 조심해야 하나? | 완전한 합의 알고리즘이 아니므로 clock drift, network partition, process pause가 있으면 기대와 달라질 수 있어 강한 정합성이 필요한 자원 제어에 신중해야 합니다. |
+| 돈·재고·결제처럼 강한 상호 배제가 필요하면 어떤 대안이 있나? | DB constraint, fencing token, ZooKeeper/etcd 같은 대안을 검토합니다. |
+| Fencing token은 무엇을 막나? | lock 획득마다 단조 증가 token을 발급하고 자원 저장소가 더 작은 token 요청을 거부해, 만료된 오래된 client의 뒤늦은 write를 막습니다. |
+| Pub/Sub과 Stream의 핵심 차이는? | Pub/Sub은 메시지 저장·ACK·재처리가 없고 broadcast만, Stream은 저장·consumer group·ACK·pending 기반 재처리를 제공합니다. |
+| Pub/Sub은 언제 적합한가? | 현재 연결된 client에게만 전달하면 되고 유실 허용 가능한 실시간 fan-out/알림에 적합합니다. |
+| Stream 운영에서 관리할 항목은? | trimming(길이 제한), consumer group, pending entries, retry/claim, idempotency입니다. |
+| Redis Stream과 Kafka의 선택 기준은? | 대규모 장기 보관, partition 기반 순서, ecosystem이 필요하면 Kafka가 더 적합할 수 있습니다. |
+
+### 심화: 내부 동작 원리
+
+| 질문 | 답변 |
+| --- | --- |
+| 같은 타입이라도 Redis가 표현을 바꾼다는 게 무슨 뜻인가? | 요소 수와 값 크기에 따라 내부 인코딩을 자동 전환해, 작을 때는 조밀한 표현을, 커지면 연산이 빠른 표현을 씁니다. `OBJECT ENCODING`으로 확인합니다. |
+| String의 인코딩 전환 기준은? | `int`(정수), `embstr`(≤44B)이고 44바이트를 초과하면 `raw`로 바뀝니다. |
+| Hash는 어떤 조건에서 listpack에서 hashtable로 바뀌나? | `hash-max-listpack-entries`(기본 128), `hash-max-listpack-value`(기본 64) 임계값을 넘으면 hashtable로 전환됩니다. |
+| Set의 인코딩과 전환 기준은? | 정수만 있으면 `intset`, 아니면 `listpack`이며 `set-max-intset-entries`(512), `set-max-listpack-entries`(128)를 넘으면 hashtable이 됩니다. |
+| Sorted Set이 커지면 어떤 구조로 저장되나? | `zset-max-listpack-entries`(128), value 임계값(64)을 넘으면 `skiplist` + hashtable 조합이 됩니다. |
+| 인코딩 전환이 메모리에 주는 영향은? | 임계값을 넘어 hashtable/skiplist로 바뀌면 메모리 사용량이 계단식으로 증가하며, Big Key 문제의 상당수가 이 전환과 연결됩니다. |
+| listpack 임계값을 크게 잡으면 왜 위험한가? | listpack은 연속 메모리라 조회가 O(N)이라, 요소가 많은데 임계값이 크면 조회가 느려집니다. |
+| Redis 7에서 ziplist는 어떻게 바뀌었나? | `ziplist`가 `listpack`으로 대체되었고, 작은 데이터를 연속 메모리에 조밀 저장한다는 개념은 같습니다. |
+| 이벤트 루프는 어떻게 동작하나? | epoll/kqueue 기반 단일 스레드가 소켓 read → 명령 parse → 명령 실행 → 응답 write를 non-blocking으로 한 바퀴씩 처리합니다. |
+| `io-threads`를 켜면 명령이 병렬 실행되나? | 아닙니다. 소켓 read·파싱·응답 write만 IO threads로 병렬화되고 명령 실행은 여전히 단일 스레드라 원자성이 유지됩니다. |
+| CPU 코어를 늘리면 명령 처리량이 선형으로 느나? | 아닙니다. 단일 스레드 실행이라 선형으로 늘지 않으며 수평 확장은 Cluster(샤딩)로 합니다. |
+| RESP 프로토콜이 속도에 기여하는 방식은? | prefix에 길이를 담아(`$5`) 파싱이 빠르고 구현이 단순해 파싱 오버헤드를 줄입니다. |
+| RESP3가 추가한 것은? | map/set 등 타입과 client-side caching(key 변경 push 알림)을 지원합니다. |
+| Sorted Set이 balanced tree 대신 skiplist를 쓰는 이유는? | 구현이 단순하고 range 순회가 쉬우며 확률적 균형으로 평균 O(log N)을 보장하기 때문입니다. |
+| Sorted Set이 hashtable과 skiplist를 함께 두는 이유는? | hashtable로 member→score 조회 O(1), skiplist로 순서 정렬·range 조회 O(log N)을 모두 처리하기 위해서입니다. |
 
 ## 참고한 공식 문서
 

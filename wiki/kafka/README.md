@@ -631,46 +631,115 @@ sparse index    → 적은 메모리로 빠른 offset lookup
 
 이 다섯이 맞물려 broker 한 대가 초당 수십만~수백만 메시지를 처리할 수 있습니다. 반대로 **TLS, 압축 변환, 큰 consumer lag**은 이 최적화를 하나씩 무너뜨리는 요인이라는 점을 함께 기억하면 좋습니다.
 
-## 9. 실전 면접 Q&A
+## 9. 핵심 개념 퀴즈
 
-### 로그 모델 / 파티션
+### 로그 모델과 기본 구성
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| Kafka를 queue가 아니라 log라고 하는 이유는? | 소비해도 메시지를 즉시 삭제하지 않고 partition log에 retention 동안 보관하기 때문입니다. |
-| partition이 중요한 이유는? | 순서 보장, 병렬 처리, 복제, 저장 분산의 단위이기 때문입니다. |
-| topic 전체 순서가 보장되는가? | 아닙니다. partition 내부 순서만 보장됩니다. |
-| 같은 주문 이벤트 순서를 지키려면? | 같은 orderId를 key로 보내 같은 partition에 기록되게 합니다. |
+| Kafka의 핵심 저장 모델을 한마디로? | partitioned replicated log입니다. 메시지를 큐가 아니라 topic-partition의 append-only log에 저장합니다. |
+| Kafka를 queue가 아니라 log라고 부르는 이유는? | 소비해도 메시지를 즉시 삭제하지 않고 retention 정책 동안 보관하며, consumer가 offset을 이동시키며 읽고 여러 consumer group이 독립적으로 재처리할 수 있기 때문입니다. |
+| Topic과 Partition의 차이는? | Topic은 메시지의 논리적 분류(이름)이고, Partition은 실제 저장·순서 보장·병렬 처리·복제의 단위입니다. |
+| 순서는 어디까지 보장되나? | partition 내부에서만 보장되고 topic 전체 순서는 보장되지 않습니다. |
+| ISR이란 무엇인가? | leader와 동기화가 충분히 유지되는 replica 집합입니다. |
+| Leader와 Follower replica의 역할은? | Leader는 해당 partition의 read/write를 주로 처리하고 Follower는 leader log를 복제하며, leader 장애 시 leader election으로 새 leader를 뽑습니다. |
+| `replication.factor=3`, `min.insync.replicas=2`, `acks=all` 조합의 의미는? | leader만 기록하고 성공하는 것보다 손실 위험을 줄이는 안정성 기준입니다. |
+| Retention 정책 세 가지는? | time retention(시간 초과 삭제), size retention(크기 초과 삭제), log compaction(같은 key의 최신 value 중심 보관)입니다. |
+| Log compaction과 tombstone은? | 같은 key의 최신 value만 남기는 정책이며 삭제는 tombstone(value=null) record로 표현합니다. 즉시가 아니라 background 작업입니다. |
 
-### Producer / Consumer
+### Producer와 쓰기 보장
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| `acks=all`이면 메시지 손실이 없나? | min.insync.replicas, replication factor, producer error 처리까지 함께 봐야 합니다. |
-| idempotent producer가 막는 중복은? | producer retry로 같은 partition에 중복 기록되는 것을 broker가 sequence로 제거합니다. |
-| consumer group 병렬성 한계는? | 같은 group에서는 partition 수가 병렬 처리 상한입니다. |
-| auto commit이 위험한 이유는? | 처리 전에 offset이 commit되면 장애 시 메시지가 유실될 수 있습니다. |
-| poison pill은 어떻게 처리하나? | retry 제한, DLQ, error classification, alert, idempotency를 둡니다. |
+| Producer 전송 흐름은? | key/value serialize → partitioner가 partition 결정 → producer buffer에 적재 → batch로 leader에게 전송 → acks 조건 충족 시 성공 callback입니다. |
+| `acks` 0/1/all의 차이와 위험은? | 0은 응답을 안 기다려 손실 확인 불가, 1은 leader 기록 후 성공이라 leader 장애 시 손실 가능, all은 ISR 복제 조건 충족 후 성공이라 latency가 증가합니다. |
+| `acks=all`이면 손실이 없나? | `min.insync.replicas`가 1이면 leader만 있어도 성공할 수 있어 부족합니다. replication factor와 min ISR을 함께 봐야 하고 ISR이 부족하면 producer가 error를 받습니다. |
+| Idempotent producer는 무엇으로 중복을 막나? | producer id, epoch, sequence number를 이용해 retry로 인한 같은 partition 중복 write를 broker가 제거하며, partition 내부 순서 안정성도 높입니다. |
+| Idempotence 활성화의 설정 제약은? | `enable.idempotence=true`가 필요하고 `acks=all`, `retries>0`, `max.in.flight.requests.per.connection` 제약을 가집니다. |
+| Idempotent producer의 한계는? | producer session과 partition write에 대한 중복 제거일 뿐 외부 DB side effect까지 보장하지는 않습니다. |
+| key 기반 partitioning의 효과와 주의점은? | 같은 key는 같은 partition으로 가 순서를 지킬 수 있지만, partition 수를 늘리면 key-to-partition mapping이 바뀌고 특정 key 집중 시 hot partition이 생깁니다. |
+| `linger.ms`와 `batch.size`의 trade-off는? | linger.ms는 처리량 vs latency, batch.size는 처리량 vs memory의 trade-off입니다. |
 
-### Rebalance / Delivery
+### Consumer Group과 Offset
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| rebalance는 언제 발생하나? | consumer join/leave, heartbeat 실패, max.poll.interval 초과, partition 변경 때 발생합니다. |
-| rebalance가 왜 문제인가? | 소비 중단, partition revocation, 중복 처리, state restore 비용이 생깁니다. |
+| Consumer Group이란? | 같은 `group.id`를 가진 consumer들의 집합으로, partition을 그룹 내 consumer에게 나눠 병렬 처리합니다. |
+| partition 4개에 consumer 5개면? | 1개 consumer는 idle이 됩니다. 같은 group의 병렬 처리 상한은 partition 수입니다. |
+| 하나의 partition을 같은 group의 여러 consumer가 나눠 읽을 수 있나? | 아닙니다. 하나의 partition은 같은 group 안에서 동시에 하나의 consumer에게만 할당됩니다. |
+| commit하는 offset이 가리키는 값은? | 보통 다음에 읽을 위치입니다. |
+| auto commit이 위험한 이유는? | 처리 전에 offset이 commit되어 장애 시 메시지가 유실될 수 있습니다. |
+| `commitSync()`와 `commitAsync()`의 차이는? | Sync는 실패 확인이 쉽지만 blocking 비용이 있고, Async는 빠르지만 실패 처리와 순서 관리가 필요합니다. |
+| at-least-once 흐름과 장애 모드는? | poll→process→commit이며, process 후 commit 전에 죽으면 재처리, commit 후 process 전에 죽으면 유실될 수 있어 consumer 처리는 멱등해야 합니다. |
+| `auto.offset.reset`의 세 값은? | earliest(가장 오래된 record부터), latest(새 record부터), none(offset 없으면 예외)이며, 운영에 earliest를 잘못 적용하면 대량 재처리가 발생합니다. |
+| Poison pill 대응 방법은? | 재시도 횟수 제한, error classification, dead letter topic, 실패 record/exception context 저장, alerting, 멱등 처리입니다. 무한 재시도는 partition 전체 지연을 만듭니다. |
+
+### Rebalancing과 Backpressure
+
+| 질문 | 답변 |
+| --- | --- |
+| Rebalancing이란? | consumer group 안에서 partition assignment를 다시 계산하는 과정입니다. |
+| Rebalancing 발생 조건은? | consumer 합류/이탈, heartbeat 실패, `max.poll.interval.ms` 초과, partition 수 변경, subscription topic 변화입니다. |
+| Rebalancing이 왜 문제인가? | partition revocation 중 소비가 중단되고, offset commit 타이밍에 따라 중복 처리가 생기며, stateful consumer는 state restore 비용이 큽니다. |
+| Rebalancing 완화 방법은? | `max.poll.records` 축소, `max.poll.interval.ms` 조정, `CooperativeStickyAssignor`, `group.instance.id` static membership, `ConsumerRebalanceListener`에서 revoke 전 offset commit/state 정리입니다. |
+| poll()을 계속 호출해야 하는 이유는? | group membership을 유지하기 위해서이며, 처리 시간이 `max.poll.interval.ms`를 넘으면 consumer가 죽은 것으로 간주되어 rebalance가 발생합니다. |
+| `max.poll.records`의 역할은? | 한 번에 가져오는 record 수를 제한해 poll batch 처리 시간을 예측 가능하게 만듭니다. |
+| 파티션 할당 전략(assignor)에는 무엇이 있나? | Range(토픽별 파티션 순서 분배, 토픽 많으면 편중), RoundRobin(전체 파티션 고루 분배), Sticky(재할당 시 기존 할당 최대 유지), CooperativeSticky(전체 revoke 없이 필요한 파티션만 점진 이동)입니다. |
+| downstream이 느릴 때 backpressure 대응은? | `pause()`로 특정 partition fetch를 일시 중단하고 처리 후 `resume()`하며, external queue에 무제한 적재하지 않고 circuit breaker와 DLQ를 함께 설계합니다. |
+
+### 전달 보장과 Exactly Once
+
+| 질문 | 답변 |
+| --- | --- |
+| 세 가지 전달 보장과 조건은? | at-most-once(처리 전 commit, 유실 가능), at-least-once(처리 후 commit, 중복 가능), exactly-once(idempotence + transaction)입니다. |
 | at-least-once가 중복을 만드는 이유는? | 처리 후 commit 전에 장애가 나면 같은 record를 다시 읽기 때문입니다. |
-| Kafka EOS는 외부 DB까지 보장하나? | 아닙니다. Kafka 내부 read-process-write에 강하고 외부 DB는 outbox/idempotency가 필요합니다. |
-| 파티션 할당 전략(assignor)에는 뭐가 있나? | Range(토픽별로 파티션을 순서 분배, 토픽 수가 많으면 편중), RoundRobin(전체 파티션을 고루 분배), Sticky(재할당 시 기존 할당을 최대한 유지해 이동 최소화), CooperativeSticky(rebalance 때 전체 revoke 없이 필요한 파티션만 점진 이동)로 나뉩니다. |
+| Kafka EOS의 구성 요소는? | Idempotent Producer, Transactional Producer, `sendOffsetsToTransaction`, `read_committed`입니다. |
+| EOS 처리 흐름은? | beginTransaction → consume → process → produce → sendOffsetsToTransaction → commitTransaction입니다. |
+| `read_committed`의 역할은? | commit된 transaction의 메시지만 읽습니다. |
+| Kafka EOS가 외부 DB/API까지 보장하나? | 아닙니다. Kafka topic 간 read-process-write에 강하며 외부 DB는 transactional outbox, CDC, idempotency로 다뤄야 합니다. |
+| 실무에서 외부 side effect는 어떻게 설계하나? | 대부분 at-least-once + idempotency로 설계하며, DB write는 unique constraint/idempotency key/processed event table, 외부 API는 request idempotency key를 씁니다. |
+| Transactional Outbox 패턴은? | business table update와 outbox table insert를 같은 DB transaction으로 commit한 뒤 CDC/poller가 outbox event를 Kafka로 publish합니다. consumer idempotency와 aggregate key 기준 ordering이 필요합니다. |
 
-### 운영 / 비교
+### 파티션 설계와 운영
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| partition 수는 어떻게 정하나? | 처리량, consumer 병렬성, broker 부하, key 순서, rebalance 비용을 함께 봅니다. |
-| consumer lag가 커지는 원인은? | producer 증가, consumer 처리 지연, downstream 장애, hot partition 등이 있습니다. |
-| retention보다 consumer 장애가 길면? | 읽어야 할 offset의 record가 삭제되어 offset reset이나 재처리가 필요할 수 있습니다. |
-| Kafka Streams와 Connect 차이는? | Streams는 topic 간 처리 library, Connect는 외부 시스템 연동 framework입니다. |
-| Kafka와 RabbitMQ 선택 기준은? | 재처리 가능한 로그/스트리밍이면 Kafka, 작업 큐와 복잡한 routing이면 RabbitMQ가 자연스럽습니다. |
+| partition 수는 무엇을 고려해 정하나? | 목표 처리량, consumer 병렬성, broker 부하 분산, replication traffic, file handle/page cache, rebalancing 비용, key 순서 요구, hot key/hot partition 가능성입니다. |
+| partition 수 변경의 비대칭성은? | 늘릴 수는 있지만 줄이기 어렵고, 운영 중 추가는 key-to-partition mapping과 순서 보장에 영향을 줍니다. |
+| partition이 너무 많으면 무엇이 늘어나나? | controller/broker metadata, file handle, recovery 비용이 증가합니다. |
+| consumer lag의 정의와 원인은? | consumer가 최신 log end offset에 얼마나 뒤처졌는지를 나타내며, producer 증가/consumer 처리 지연/downstream 지연/hot key가 원인입니다. |
+| 특정 partition만 lag가 크면 무엇을 의심하나? | hot key를 의심합니다. |
+| 봐야 할 운영 지표에는 무엇이 있나? | consumer lag, consumed/produced rate, request latency, under-replicated partitions, offline partitions, ISR shrink/expand, rebalance count/time입니다. |
+| offset out of range 사고 시나리오와 대응은? | consumer 장애가 오래 지속돼 lag가 retention을 넘으면 committed offset의 record가 삭제되어 발생합니다. 중요한 topic은 retention을 복구 시간보다 길게 잡고 lag alert과 offset reset 절차를 둡니다. |
+| Schema evolution 전략과 위험은? | JSON+version, Avro/Protobuf/JSON Schema+Schema Registry, backward/forward 호환 규칙을 씁니다. 필드 삭제·타입 변경·required 필드 추가는 호환성을 깨기 쉬워 event를 API 계약처럼 관리해야 합니다. |
+
+### Streams / Connect / 비교
+
+| 질문 | 답변 |
+| --- | --- |
+| Kafka Streams와 Kafka Connect의 차이는? | Streams는 Kafka topic 간 실시간 처리 Java library(filter/map/join/aggregate)이고, Connect는 외부 시스템과 Kafka를 연결하는 worker framework(DB source, S3/Elasticsearch sink)입니다. |
+| Kafka Streams의 상태 관리 방식은? | state store와 changelog topic으로 상태를 관리합니다. |
+| Kafka Connect의 확장 방식은? | worker/connector/task를 분산해 확장합니다. |
+| 복잡한 stream processing의 대안은? | Flink, Spark Streaming 등과 비교할 수 있습니다. |
+| Kafka와 RabbitMQ의 모델·보존 차이는? | Kafka는 분산 append-only log로 소비 후에도 보존 기간 동안 유지하고, RabbitMQ는 queue+exchange로 ACK 후 queue에서 제거합니다. |
+| 재처리 관점에서 Kafka와 RabbitMQ 차이는? | Kafka는 offset reset으로 재처리가 쉽고 RabbitMQ는 기본적으로 어렵습니다. |
+| Kafka를 쓰지 않아도 되는 경우는? | 단순 비동기 작업 큐만 필요하거나, 장기 보관·재처리가 불필요하거나, 순서·보장이 단순하거나, broker/schema/lag/idempotency 운영 여력이 없을 때입니다. |
+| Kafka의 대안에는 무엇이 있나? | RabbitMQ/SQS 같은 queue, DB outbox + worker, Redis Stream, managed event bus입니다. |
+
+### 심화: 내부 동작 원리
+
+| 질문 | 답변 |
+| --- | --- |
+| 디스크 기반인데 빠른 이유 세 가지는? | 순차(sequential) I/O, OS page cache, zero-copy가 맞물려 디스크와 네트워크 병목을 줄이기 때문입니다. |
+| 순차 write가 빠른 이유는? | log 끝에만 append하므로 디스크 head 이동(seek)이 없어 random write보다 수백 배 빠릅니다. |
+| Kafka는 내구성을 어떻게 확보하나? | fsync를 매 메시지마다 강제하지 않고 복제(replication)로 확보합니다. 손실 방어선은 디스크 flush가 아니라 다른 broker로의 복제입니다. |
+| broker가 JVM heap 대신 page cache에 의존하는 이유는? | heap에 대용량 데이터를 두면 GC pause가 커지는데 page cache는 GC와 무관하고, 재시작 후에도 warm 상태로 유지되며, 애플리케이션 캐시와 page cache의 중복 보관을 피할 수 있습니다. |
+| lag와 page cache의 관계는? | lag가 작아 최신 offset을 읽으면 대부분 page cache hit라 디스크를 거의 안 치지만, lag가 커져 오래된 offset을 읽으면 page cache miss로 디스크 read가 늘어납니다. |
+| zero-copy는 복사를 몇 번에서 몇 번으로 줄이나? | 전통적 read()+send()의 4회 복사(disk→page cache DMA, page cache→user buffer CPU, user buffer→socket buffer CPU, socket→NIC DMA)를 sendfile로 2회 DMA(disk→page cache, page cache→NIC scatter-gather)로 줄여 CPU 복사 2회와 context switch를 제거합니다. |
+| zero-copy가 깨지는 경우는? | TLS/SSL 암호화는 user space(또는 kernel TLS)에서 이뤄져야 해 sendfile 경로가 깨지고, broker가 메시지를 재압축/변환하면 데이터를 user space로 올려야 해 zero-copy를 못 씁니다. |
+| record batch 압축이 end-to-end로 유지되면 뭐가 좋은가? | producer가 batch로 묶어 압축하면 broker가 풀지 않고 그대로 저장·전송하므로 zero-copy가 유지되고 broker CPU도 아낍니다. producer-broker 압축 타입이 불일치하면 재압축으로 이 이점이 사라집니다. |
+| log segment와 인덱스 구조는? | partition은 여러 segment 파일(.log, .index, .timeindex)로 나뉘며, .log 파일명이 base offset이고 .index는 offset→물리 위치의 sparse index, active segment에만 write하며 `segment.bytes`/`segment.ms` 초과 시 roll합니다. |
+| offset 조회 흐름은? | base offset으로 segment를 선택하고, mmap된 sparse `.index`에서 binary search로 가장 가까운 낮은 위치를 찾은 뒤 그 지점부터 `.log`를 순차 스캔합니다. retention/compaction은 segment 단위로 동작합니다. |
 
 ## 참고한 공식 문서
 
