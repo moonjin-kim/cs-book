@@ -1313,76 +1313,142 @@ CPU는 메모리를 **cache line**(보통 64바이트) 단위로 캐싱합니다
 - 해결은 변수 사이에 padding을 넣거나 `@Contended`(`jdk.internal.vm.annotation.Contended`)로 별도 line에 배치하는 것입니다.
 - `LongAdder`가 `AtomicLong`보다 고경합에서 빠른 이유가 이것입니다. 여러 cell로 카운터를 분산하고 각 cell을 padding해 false sharing을 피한 뒤, 읽을 때만 합산합니다.
 
-## 10. 실전 면접 Q&A
+## 10. 핵심 개념 퀴즈
 
-### JVM / 메모리
+### 런타임과 메모리
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| JVM, JRE, JDK의 차이는? | JVM은 실행 엔진, JRE는 실행 환경, JDK는 개발 도구까지 포함합니다. |
-| Java가 platform independent하다는 의미는? | source가 아니라 bytecode가 JVM 위에서 실행되기 때문에 OS별 JVM만 있으면 같은 bytecode를 실행할 수 있습니다. |
-| Stack과 Heap의 차이는? | Stack은 스레드별 frame과 지역 변수, Heap은 공유 객체 저장소입니다. |
-| 지역 변수는 thread-safe한가? | 변수 자체는 스레드별 stack에 있지만, 지역 변수가 참조하는 객체가 공유 객체면 thread-safe하지 않을 수 있습니다. |
-| static field는 어디에 저장되고 어떤 위험이 있나? | 클래스 단위 공유 상태라 동시성, 테스트 격리, 메모리 누수 위험이 있습니다. |
-| ClassLoader leak은 왜 생기나? | 오래 사는 static/thread/local/native 참조가 이전 ClassLoader가 로딩한 class/object를 계속 잡으면 unload되지 못합니다. |
-| JIT가 하는 일은? | 자주 실행되는 bytecode를 native code로 바꾸고 runtime profile 기반 최적화를 적용합니다. |
-| Java에도 memory leak이 있나? | 있습니다. 객체가 더 이상 의미는 없어도 GC Root에서 도달 가능하면 회수되지 않습니다. |
+| LTS와 non-LTS 버전을 어떤 기준으로 선택하나? | 운영 안정성과 라이브러리 호환성이 중요하면 LTS를 우선하고, non-LTS는 다음 release가 나오면 곧 대체되어 장기 운영 기준선으로 삼기 어렵습니다. |
+| JVM 실행 흐름을 설명하라 | `javac`가 `.java`를 `.class` bytecode로 컴파일하고 ClassLoader가 로딩한 뒤 loading/linking/initialization을 거치며, 처음엔 interpreter가 실행하고 자주 실행되는 hot code는 JIT가 native code로 최적화합니다. |
+| Class Loading의 단계는? | Loading, Verification, Preparation(static 필드 기본값 할당), Resolution(symbolic→direct 참조 변환), Initialization(static initializer와 초기값 실행) 순입니다. |
+| ClassLoader delegation model이란? | 먼저 부모 ClassLoader에 로딩을 위임하고 부모가 못 찾으면 자식이 직접 로딩하며, 핵심 Java class를 애플리케이션이 임의로 바꾸는 위험을 줄입니다. |
+| 같은 이름의 클래스가 다른 타입으로 취급될 수 있는 경우는? | ClassLoader가 다르면 같은 이름의 클래스라도 JVM에서 서로 다른 타입으로 취급될 수 있습니다. |
+| 클래스 초기화 순서는? | 부모 static → 자식 static → 부모 instance 필드/initializer → 부모 생성자 → 자식 instance 필드/initializer → 자식 생성자 순이며, static 초기화는 클래스당 한 번만 실행됩니다. |
+| 생성자에서 override 가능한 메서드를 호출하면 왜 위험한가? | 자식 필드가 초기화되기 전 상태를 볼 수 있어 위험합니다. |
+| Interpreter, JIT, AOT의 차이는? | Interpreter는 한 줄씩 해석해 시작은 빠르나 반복이 느리고, JIT는 hot code를 native로 컴파일해 warm-up 이후 빨라지며, AOT/Native Image는 실행 전 native binary로 컴파일해 빠른 시작을 기대하지만 reflection/dynamic proxy 제약을 검토해야 합니다. |
+| JVM 메모리 영역 중 공유와 스레드별을 구분하라 | Method Area/Metaspace와 Heap은 공유이고, Stack, PC Register, Native Method Stack은 스레드별입니다. |
 
-### GC
+### GC와 메모리 장애
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| GC Root에는 무엇이 있나? | stack 지역 변수, static 참조, JNI 참조 등이 대표적입니다. |
-| Mark and Sweep을 설명하라 | 도달 가능한 객체를 표시하고, 표시되지 않은 객체를 회수하는 방식입니다. |
-| Stop-the-world란? | GC나 safepoint 작업을 위해 애플리케이션 스레드가 멈추는 구간입니다. |
-| G1 GC의 특징은? | Heap을 region으로 나누고 pause 목표를 고려해 회수 대상을 선택합니다. |
-| GC 튜닝 전에 무엇을 확인하나? | GC log, allocation rate, pause 목표, heap dump, latency 지표를 먼저 봅니다. |
+| GC는 객체 생존을 어떻게 판단하나? | 도달 가능성(Reachability)으로 판단해, GC Root에서 참조 사슬로 도달 가능한 객체는 살리고 도달 불가능한 객체는 회수합니다. |
+| 주요 GC들의 특징은? | Serial(단일 스레드), Parallel(처리량 중심), G1(region 기반으로 pause와 throughput 균형), ZGC/Shenandoah(저지연), Epsilon(회수하지 않음)입니다. |
+| Minor/Major/Full GC의 차이는? | Minor는 Young 영역, Major는 Old 영역 중심 회수이며, Full GC는 Heap과 Metaspace 등을 넓게 정리하는 stop-the-world로 긴 pause의 원인이 될 수 있습니다. |
+| Java 참조 4종류는? | Strong(살아 있으면 회수 안 됨), Soft(메모리 부족 시 회수), Weak(다음 GC에서 회수), Phantom(finalize 이후 후처리 감지)입니다. |
+| GC가 있는데도 memory leak이 생기는 이유는? | 도달 가능한 객체는 회수되지 않기 때문이며, static collection 저장, listener 미해제, ThreadLocal remove 누락, unbounded cache/queue 등이 흔한 원인입니다. |
+| 대표 OOM 종류와 원인은? | `Java heap space`(객체/cache 누수), `GC overhead limit exceeded`(회수량 극소), `Metaspace`(class metadata/classloader leak), `Unable to create new native thread`(스레드 과다), `Direct buffer memory`(NIO/Netty buffer)입니다. |
+| OOM 분석 순서는? | GC log와 heap 사용량 추세 → heap dump의 dominator tree/retained size → thread dump → cache/queue/ThreadLocal/static field 순으로 의심합니다. |
+| G1의 humongous 객체가 위험한 이유는? | 큰 객체가 연속 region을 차지해 단편화와 Full GC 위험을 높입니다. |
+| `finalize()` 대신 무엇을 쓰나? | 예측 가능성이 낮고 deprecated되어 `try-with-resources`, `Cleaner`, 명시적 close를 우선합니다. |
 
-### Collection
+### 문자열과 컬렉션
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| HashMap의 평균 O(1)이 항상 보장되지 않는 이유는? | hash 충돌, resize, 나쁜 hash 분포 때문에 비용이 커질 수 있습니다. |
-| HashMap key는 왜 불변이어야 하나? | key 값이 바뀌면 hash bucket 위치가 달라져 값을 찾지 못할 수 있습니다. |
-| HashMap과 Hashtable의 차이는? | Hashtable은 오래된 synchronized Map이고 null을 허용하지 않으며, 현대 코드에서는 보통 HashMap 또는 ConcurrentHashMap을 선택합니다. |
-| ConcurrentHashMap이 있는데 왜 복합 연산에 주의해야 하나? | 개별 메서드는 thread-safe해도 `get` 후 `put` 같은 조합은 원자적이지 않습니다. |
-| ArrayList와 LinkedList 중 무엇을 기본 선택하나? | 대부분 ArrayList입니다. LinkedList는 index 접근 비용과 cache locality 때문에 일반적 기본값으로 불리합니다. |
-| fail-fast iterator는 thread-safe를 의미하나? | 아닙니다. 구조 변경을 빠르게 감지하려는 장치일 뿐 동시성 보장은 아닙니다. |
+| String, StringBuilder, StringBuffer의 차이는? | String은 불변이라 안전하고, StringBuilder는 가변이지만 동기화되지 않아 단일 스레드용, StringBuffer는 가변이며 동기화되어 여러 스레드 공유에 씁니다. |
+| `new String("abc")`와 리터럴의 `==` 비교 결과가 다를 수 있는 이유는? | 문자열 리터럴은 String Constant Pool에 저장되지만 `new String`은 새 객체를 만들 수 있어 참조가 달라지기 때문입니다. |
+| ArrayList와 LinkedList 중 기본 선택은? | 대부분 ArrayList이며, LinkedList의 삽입/삭제 O(1)은 이미 노드 위치를 알 때뿐이고 index 탐색은 O(n)에 cache locality도 낮습니다. |
+| HashMap의 resize 시점은 어떻게 계산되나? | `threshold = capacity * loadFactor`이며, 기본 capacity 16, load factor 0.75면 threshold는 12입니다. |
+| HashMap 내부 조회 동작은? | key의 hashCode로 bucket index를 찾고 같은 bucket 안에서 equals로 실제 key를 비교하며, Java 8 이후 충돌 bucket이 커지면 linked list가 red-black tree로 바뀔 수 있습니다. |
+| HashMap과 ConcurrentHashMap의 차이는? | HashMap은 thread-safe하지 않고 null key/value를 허용하며, ConcurrentHashMap은 thread-safe하고 null을 허용하지 않으며 compute/merge/putIfAbsent 복합 연산을 제공합니다. |
+| ConcurrentHashMap도 주의해야 하는 이유는? | 개별 메서드는 안전해도 `get` 후 `put`을 따로 호출하면 원자적이지 않아, 원자 갱신에는 `computeIfAbsent`, `compute`, `merge`를 써야 합니다. |
+| HashMap key를 mutable 객체로 만들면 왜 위험한가? | key로 쓰는 값이 바뀌면 hash 위치가 달라져 값을 못 찾을 수 있습니다. |
+| Fail-fast와 Fail-safe iterator의 차이는? | Fail-fast(ArrayList, HashMap)는 순회 중 구조 변경을 감지해 `ConcurrentModificationException`을 던지지만 동시성 보장은 아니고, Fail-safe/weakly consistent(ConcurrentHashMap)는 순회 중 변경을 허용하되 최신 상태 전체를 보장하지 않을 수 있습니다. |
+| `List.of`와 `Collections.unmodifiableList`의 차이는? | `List.of`는 수정 불가능한 컬렉션을 새로 만들고, `unmodifiableList`는 원본 list가 바뀌면 view도 영향을 받아 방어적 복사에는 `List.copyOf`가 더 명확합니다. |
 
-### 동시성
+### 동시성 핵심
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| process와 thread 차이는? | process는 독립 주소 공간을 갖고, thread는 같은 process 안에서 heap을 공유합니다. |
-| `volatile`과 `synchronized` 차이는? | volatile은 가시성과 일부 순서를 보장하고, synchronized는 mutual exclusion과 가시성을 함께 제공합니다. |
-| `AtomicInteger`와 `LongAdder` 차이는? | AtomicInteger는 단일 값 CAS, LongAdder는 경합을 분산해 높은 쓰기 경합에서 유리할 수 있습니다. |
-| `ThreadLocal`은 왜 remove가 필요한가? | 스레드 풀에서 스레드가 재사용되므로 이전 요청 값이 남거나 누수될 수 있습니다. |
-| deadlock을 어떻게 찾나? | thread dump에서 blocked monitor와 순환 대기를 확인합니다. |
-| `sleep`과 `wait` 차이는? | sleep은 lock을 놓지 않고, wait은 monitor lock을 놓고 notify를 기다립니다. |
-| virtual thread를 쓰면 pool size 튜닝이 사라지나? | platform thread pool 튜닝 부담은 줄지만 DB connection, HTTP connection, rate limit 같은 외부 자원 제어는 필요합니다. |
-| Sync/Async와 Blocking/Non-blocking 차이는? | Sync/Async는 "결과를 누가 언제 확인·통지하는가"(직접 확인이면 sync, 콜백/알림 위임이면 async), Blocking/Non-blocking은 "호출이 제어권을 즉시 돌려주는가"입니다. 두 축은 독립이라 4가지 조합이 가능합니다. |
+| 동시성 4대 문제와 대응은? | 공유 상태(불변/락/ThreadLocal), 가시성(volatile/synchronized/lock), 원자성(lock/Atomic/concurrent collection), 순서 보장(happens-before 확보)입니다. |
+| 대표적인 happens-before 관계는? | 같은 스레드 내 앞선 작업, unlock→이후 lock, volatile write→이후 read, `Thread.start()` 이전→시작된 스레드 작업, 스레드의 작업→다른 스레드의 `join()` 이후가 happens-before입니다. |
+| volatile은 무엇을 보장하고 무엇을 못 하나? | 최신 값 가시성과 일부 재정렬 제한은 보장하지만 `count++` 같은 read-modify-write의 원자성은 보장하지 못합니다. |
+| synchronized가 가시성까지 보장하는 이유는? | mutual exclusion뿐 아니라 lock/unlock의 happens-before 관계를 통해 가시성도 함께 보장합니다. |
+| sleep과 wait의 차이는? | sleep은 lock을 놓지 않고, wait은 monitor lock을 놓고 대기하며, wait/notify/notifyAll은 같은 monitor를 가진 synchronized 블록 안에서 호출해야 합니다. |
+| synchronized와 ReentrantLock의 차이는? | synchronized는 블록 종료 시 자동 해제되고, ReentrantLock은 `unlock()` 직접 호출과 `tryLock()` 타임아웃, `lockInterruptibly()`, fair mode를 제공합니다. |
+| Deadlock의 4가지 필요 조건과 예방책은? | 상호 배제, 점유와 대기, 비선점, 순환 대기가 조건이며, lock 획득 순서 고정, timeout 있는 tryLock, 짧은 lock 범위, lock 안에서 I/O 회피로 예방합니다. |
+| wait 조건 검사에 왜 if가 아닌 while을 쓰나? | spurious wakeup과 다른 소비자가 먼저 조건을 바꾸는 상황이 있어 while로 조건을 다시 확인해야 하기 때문입니다. |
+| CAS의 장점과 ABA 문제는? | 락 없이 원자 갱신이 가능하고 저경합에서 빠르지만, 경합이 심하면 재시도로 CPU를 많이 쓰고 A→B→A 변화를 감지 못하는 ABA 문제가 있어 `AtomicStampedReference`로 완화합니다. |
+| Thread 상태 종류는? | NEW, RUNNABLE, BLOCKED(monitor lock 대기), WAITING(무기한 대기), TIMED_WAITING(제한 시간 대기), TERMINATED입니다. |
 
-### 언어 기능
+### Executor와 비동기
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| Java는 call by reference인가? | 아닙니다. 항상 call by value이며, 객체 인자는 참조값의 복사본이 전달됩니다. |
-| `==`와 `equals` 차이는? | `==`는 참조 동일성, `equals`는 논리적 동등성입니다. |
-| `String`이 불변인 이유는? | constant pool 공유, hash cache, 보안, thread-safety에 유리합니다. |
-| `StringBuilder`와 `StringBuffer` 차이는? | Builder는 동기화하지 않고, Buffer는 주요 메서드가 동기화되어 있습니다. |
-| `Optional`을 field로 쓰지 않는 이유는? | 반환 타입의 부재 표현 용도에 가깝고, field/parameter로 쓰면 직렬화와 모델 의미가 어색해질 수 있습니다. |
-| generic type erasure란? | 컴파일 후 대부분의 generic 타입 정보가 지워져 런타임에는 raw type 중심으로 동작하는 방식입니다. |
-| record는 불변 객체인가? | component field는 final이지만 내부 참조 객체가 가변이면 깊은 불변은 아닙니다. |
-| sealed class는 언제 쓰나? | 가능한 하위 타입 집합이 닫혀 있고 switch exhaustiveness를 활용하고 싶을 때 적합합니다. |
+| ThreadPoolExecutor의 핵심 구성 요소는? | corePoolSize, maximumPoolSize, workQueue, RejectedExecutionHandler입니다. |
+| 거부 정책 4가지는? | AbortPolicy(예외 발생), DiscardPolicy(새 작업 폐기), DiscardOldestPolicy(가장 오래된 대기 작업 폐기), CallerRunsPolicy(요청 스레드가 직접 실행)입니다. |
+| CPU-bound와 I/O-bound의 pool size 기준은? | CPU-bound는 CPU core 수 근처에서 시작해 측정으로 조정하고, I/O-bound는 대기 시간이 길어 core 수보다 크게 잡을 수 있지만 외부 자원 한도와 함께 조정합니다. |
+| unbounded queue가 위험한 이유는? | 요청 폭증 시 메모리 증가와 latency 증가가 뒤늦게 드러나 장애를 메모리 문제로 바꿉니다. |
+| Virtual Thread는 언제 적합하고 무엇을 못 하나? | HTTP call, DB query, file/network I/O처럼 대기 긴 작업과 단순 thread-per-request 구조에 적합하지만, CPU-bound 작업을 더 빠르게 만들지는 못합니다. |
+| Virtual Thread에서 carrier thread pinning은 언제 생기나? | synchronized 블록 안에서 blocking I/O를 하면 carrier thread pinning 문제가 생길 수 있습니다. |
+| Fork/Join의 work stealing이란? | 바쁜 worker와 한가한 worker의 작업량 차이를 줄이는 방식이며, blocking I/O를 common pool에 많이 넣으면 다른 병렬 작업까지 막을 수 있습니다. |
+| CompletableFuture에서 executor를 지정하지 않으면? | `ForkJoinPool.commonPool`을 사용하므로 I/O 중심 작업은 별도 executor를 지정하는 편이 안전합니다. |
+| thenApply와 thenCompose의 차이는? | thenApply는 결과를 동기 변환하고, thenCompose는 비동기 작업을 평탄화해 `CompletableFuture<CompletableFuture<T>>` 중첩을 피할 때 씁니다. |
+| Scoped Value와 ThreadLocal의 차이는? | ThreadLocal은 `set()`으로 변경 가능하고 `remove()` 누락 시 누수 위험이 있으나, Scoped Value는 바인딩된 범위 안에서 불변 공유되고 lexical scope 종료와 함께 해제되어 virtual thread 대량 사용에 적합합니다. |
+| ThreadLocal 사용 시 주의점은? | 스레드 풀에서 스레드가 재사용되므로 `remove()`가 필요하고, `@Async`처럼 다른 스레드로 넘어가면 값이 자동 전파되지 않습니다. |
 
-### 예외와 API 설계
+### Java 언어 기능
 
-| 질문 | 답변 핵심 |
+| 질문 | 답변 |
 | --- | --- |
-| checked exception은 언제 쓰나? | 호출자가 의미 있게 복구할 수 있고 처리 책임을 강제하고 싶을 때 씁니다. |
-| RuntimeException은 언제 쓰나? | 프로그래밍 오류, 잘못된 인자, 복구 어려운 비즈니스 실패에 주로 씁니다. |
-| 예외를 삼키면 왜 위험한가? | 실패가 관측되지 않아 데이터 불일치나 장애 원인 추적 실패로 이어집니다. |
-| try-with-resources의 장점은? | `AutoCloseable` 자원을 예외 상황에서도 안정적으로 닫고 suppressed exception도 보존합니다. |
+| primitive와 wrapper의 차이 및 주의점은? | wrapper는 null 가능·객체 참조·generic 사용이 가능하지만 boxing/unboxing 비용이 있고, `Integer 128 == 128`이 false일 수 있어 값 비교는 `equals()`를 쓰며 null wrapper unboxing은 NPE를 냅니다. |
+| final은 무엇을 제한하나? | final 변수는 재할당을, final 메서드는 override를, final 클래스는 상속을 제한하지만, final 참조 변수는 참조 대상 객체의 내부 변경까지 막지는 못합니다. |
+| Optional은 어디에 쓰고 어디에 지양하나? | 메서드 반환 타입으로 값 부재를 표현할 때 쓰고, 필드·메서드 파라미터·컬렉션 원소 타입·무분별한 `get()`은 지양합니다. |
+| Stream의 중간 연산과 최종 연산의 차이는? | 중간 연산(filter, map 등)은 lazy하고 Stream을 반환하며, 최종 연산(collect, count 등)이 호출돼야 실제 실행되고 Stream은 한 번만 소비할 수 있습니다. |
+| 람다가 캡처하는 지역 변수의 조건은? | effectively final이어야 하며, 람다는 함수형 인터페이스 타입이 있어야 작성할 수 있습니다. |
+| type erasure의 결과는? | 런타임에 대부분의 generic 타입 정보가 지워져 `new T()`·`T.class` 불가, primitive를 타입 인자로 사용 불가, erasure 후 같은 signature가 되는 overload 불가입니다. |
+| PECS 원칙이란? | 읽기(producer)에는 `<? extends T>`, 쓰기(consumer)에는 `<? super T>`를 쓰며, Java generic은 기본적으로 invariant입니다. |
+| record의 자동 생성 요소와 제약은? | canonical constructor, accessor, equals, hashCode, toString을 자동 생성하고 모든 필드가 final이며 다른 클래스를 `extends`할 수 없습니다. |
+| sealed class는 언제 적합하며 pattern matching과 어떻게 쓰나? | 가능한 하위 타입 집합이 닫혀 있는 도메인에 적합하고, pattern matching for switch와 함께 쓰면 타입 검사·캐스팅·분기 누락을 줄이고 exhaustiveness 검사를 활용할 수 있습니다. |
+| Annotation의 retention 종류는? | SOURCE(컴파일 후 소멸), CLASS(class 파일엔 남지만 런타임 조회 대상 아님), RUNTIME(reflection 조회 가능)이며, annotation 자체는 동작을 만들지 않고 처리기가 해석해야 의미가 생깁니다. |
+| enum을 DB에 저장할 때 주의점은? | `ordinal`보다 `name`으로 저장하는 편이 안전하며, enum 상수 이름을 바꾸면 직렬화/DB 호환성 문제가 생길 수 있습니다. |
+| BigDecimal 사용 시 주의점은? | `new BigDecimal("0.1")`처럼 문자열로 생성하고, `equals()`는 값과 scale을 모두 비교하므로 크기 비교는 `compareTo()`를 쓰며 나눗셈은 scale과 rounding mode를 명시합니다. |
+| static 변수의 위험은? | 상태를 가진 static 변수는 전역 상태가 되어 테스트 격리와 동시성 문제가 생기기 쉽고, 객체를 계속 참조하면 GC 대상이 되지 않아 누수가 날 수 있습니다. |
+| java.time에서 Instant와 LocalDateTime의 차이는? | Instant는 UTC timeline의 한 시점이고 LocalDateTime은 timezone이 없어, 전 세계 서비스의 절대 시각 표현에는 LocalDateTime이 부적합할 수 있습니다. |
+| Java serialization의 면접 포인트는? | serialVersionUID가 다르면 역직렬화 호환성 문제가 나고 transient 필드는 제외되며, 역직렬화는 생성자 우회·gadget chain 같은 보안 위험이 있어 신뢰할 수 없는 입력에 쓰면 안 됩니다. |
+
+### 객체 설계와 예외
+
+| 질문 | 답변 |
+| --- | --- |
+| equals를 재정의하면 hashCode도 재정의해야 하는 이유는? | HashMap/HashSet은 먼저 hashCode로 bucket을 찾고 이후 equals로 동등성을 확인하므로, 둘 중 하나만 재정의하면 중복 판단이 깨질 수 있습니다. |
+| 동일성과 동등성의 차이는? | 동일성(`==`)은 같은 객체 참조인지, 동등성(`equals()`)은 논리적으로 같은 값인지를 비교합니다. |
+| 얕은 복사와 깊은 복사의 차이는? | 얕은 복사는 내부 참조 객체를 공유해 한쪽 변경이 다른 쪽에 영향을 주고, 깊은 복사는 내부 참조 객체까지 새로 생성해 비용은 크지만 독립성을 보장합니다. |
+| clone() 대신 무엇이 더 명확한가? | Cloneable은 marker interface라 복사 정책 표현이 어렵고 `Object.clone()`은 얕은 복사라, 상속 구조에서는 복사 생성자나 정적 factory가 더 명확한 경우가 많습니다. |
+| 방어적 복사는 언제 하고 왜 검증 전에 하나? | 생성자에서 가변 인자를 받을 때와 getter에서 내부 컬렉션을 반환할 때 하며, 검증 전에 먼저 복사해야 TOCTOU 문제가 줄어듭니다. |
+| checked와 unchecked exception의 차이는? | checked는 컴파일러가 처리를 강제하고 호출자가 복구 가능할 때, unchecked는 처리를 강제하지 않고 프로그래밍 오류나 복구가 어려운 상황에 씁니다. |
+| Error와 Exception의 차이는? | Error는 JVM 수준의 심각한 문제로 일반적으로 복구 대상이 아니고, Exception은 애플리케이션 실행 중 발생 가능한 예외 상황입니다. |
+| Java는 call by reference인가? | 아닙니다. 항상 call by value로 객체 인자는 참조값의 복사본이 전달되어, 객체 내부 상태는 바꿀 수 있지만 파라미터를 새 객체로 바꿔도 호출자의 참조 변수는 바뀌지 않습니다. |
+
+### 성능 분석과 운영 진단
+
+| 질문 | 답변 |
+| --- | --- |
+| Deoptimization이란? | JIT가 "대부분 이 타입일 것"이라 가정해 최적화했는데 런타임 상황이 바뀌면 최적화 코드를 버리는 것으로, reflection·dynamic proxy·polymorphic call site가 많으면 최적화가 어려워집니다. |
+| Escape analysis로 가능한 최적화는? | 객체가 메서드나 스레드 밖으로 escape하지 않으면 allocation 제거(scalar replacement)와 lock elision이 가능하지만, JVM 구현·상황에 따라 달라져 "무조건 stack allocation된다"고 설명하면 부정확합니다. |
+| Safepoint와 stop-the-world의 관계는? | safepoint는 GC·class unloading·deoptimization 같은 전역 작업을 위해 모든 Java thread가 도달해야 하는 지점이며, stop-the-world는 GC에서만 생기는 게 아니고 긴 native call·큰 loop로 time-to-safepoint가 길어지면 latency spike로 보일 수 있습니다. |
+| 증상별로 어떤 진단 도구를 조합하나? | 메모리 증가는 GC log/heap dump, CPU 높음은 thread dump/profiler/JFR, 응답 지연은 thread dump/metrics/trace, GC pause는 GC log/JFR, 스레드 폭증은 thread dump/OS limit을 봅니다. |
+| JFR, jcmd, jstack, jmap의 용도는? | JFR은 저부담 JVM event 관측, jcmd는 JVM command 실행·JFR 제어·GC heap 조회, jstack은 thread dump 수집, jmap은 heap dump/summary 확인입니다. |
+| Heap 밖 메모리에는 무엇이 있나? | Metaspace, thread stack, direct buffer, mmap, JNI/native library allocation, JIT compiled code cache 등이 있습니다. |
+| Direct buffer 관련 장애는 어떻게 다루나? | GC 대상 객체가 direct memory 참조를 놓아야 정리가 진행되며, leak detection·pool 설정·`MaxDirectMemorySize`를 확인해야 합니다. |
+| Thread pool의 본질은 무엇인가? | 요청을 빠르게 만드는 장치가 아니라 동시 실행량과 대기열을 제한하는 자원 경계이며, queue가 길어지는 것은 처리량 부족 신호로 timeout·bulkhead·circuit breaker·rate limit으로 backpressure를 설계합니다. |
+| container 환경 JVM에서 확인할 것은? | JVM이 cgroup memory/CPU 제한을 제대로 인식하는지 확인합니다. |
+
+### 심화: 객체 메모리 레이아웃과 락 내부
+
+| 질문 | 답변 |
+| --- | --- |
+| 빈 객체도 최소 16바이트인 이유는? | object header(약 12B, mark word + klass pointer)와 8바이트 정렬 padding 때문에 빈 객체도 최소 16바이트이며, 작은 객체를 수억 개 만들면 이 오버헤드가 커집니다. |
+| object header의 구성은? | Mark Word(identity hashCode, GC age, 락 상태 비트)와 Klass Pointer(클래스 메타데이터 위치)로 구성되고, 배열이면 length가 추가됩니다. |
+| Compressed Oops와 "32GB 근처를 피하라"의 근거는? | heap이 32GB 이하이면 64-bit 참조를 32-bit로 압축해 메모리·캐시 효율을 높이는데, 32GB를 살짝 넘기면 오히려 참조가 커져 실효 메모리가 줄 수 있기 때문입니다. |
+| synchronized 락은 어떻게 단계적으로 확장되나? | 경합이 없으면 mark word에 CAS로 lightweight lock을 잡아 매우 저렴하고(사용자 공간), 경합이 생기면 OS mutex 기반 heavyweight monitor로 승격돼 스레드가 커널에서 blocking/park됩니다. |
+| "synchronized는 무조건 느리다"가 옛말인 이유는? | 경합이 없을 때는 CAS 한 번 수준으로 저렴하고, 심한 경합으로 heavyweight 승격될 때만 context switch 비용이 발생해 락 구간을 짧게 유지하는 것이 중요합니다. |
+| biased locking은 현재 어떤 상태인가? | 단일 스레드 반복 획득 최적화였으나 JDK 15부터 기본 비활성화·deprecated(JEP 374)되어 최신 JVM에는 해당하지 않습니다. |
+| ReentrantLock은 synchronized와 구현이 어떻게 다른가? | JVM monitor가 아니라 AQS(AbstractQueuedSynchronizer) 기반으로 CAS + FIFO 대기 큐를 사용자 공간에서 구현해 tryLock·타임아웃·공정성을 제공합니다. |
+| False sharing이란 무엇이고 어떻게 해결하나? | 서로 다른 스레드가 같은 cache line(보통 64B) 안의 다른 변수를 각각 갱신하면 캐시 일관성 프로토콜이 그 line을 계속 무효화해 성능이 급락하는 현상으로, 변수 사이 padding이나 `@Contended`로 별도 line에 배치해 해결합니다. |
+| LongAdder가 고경합에서 AtomicLong보다 빠른 이유는? | 카운터를 여러 cell로 분산하고 각 cell을 padding해 false sharing을 피한 뒤, 읽을 때만 합산하기 때문입니다. |
 
 ## 참고한 공식 문서
 
