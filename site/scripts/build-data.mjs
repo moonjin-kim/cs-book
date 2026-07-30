@@ -106,6 +106,45 @@ const wikiDocs = mdFiles.map((relPath) => {
 
 const wikiIndex = { docs: wikiDocs };
 
+// quiz: 각 도메인 노트의 `| 질문 | 답변 |` 표를 파싱해 퀴즈 데이터로 추출
+function parseQuiz(md) {
+  const lines = md.split('\n');
+  const questions = [];
+  let group = '';
+  for (let i = 0; i < lines.length; i++) {
+    const heading = lines[i].match(/^###\s+(.+?)\s*$/);
+    if (heading) {
+      group = heading[1].trim();
+      continue;
+    }
+    const isQuizHeader = /^\s*\|\s*질문\s*\|/.test(lines[i]);
+    const isSeparator = i + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1]);
+    if (isQuizHeader && isSeparator) {
+      let j = i + 2;
+      while (j < lines.length && /^\s*\|/.test(lines[j])) {
+        const cells = lines[j].split('|').map((c) => c.trim());
+        const q = cells[1];
+        const a = cells.slice(2, cells.length - 1).join(' | ').trim();
+        if (q && a) questions.push({ q, a, group });
+        j++;
+      }
+      i = j - 1;
+    }
+  }
+  return questions;
+}
+
+const quizDomains = domains
+  .map((d) => {
+    const notePath = path.join(wikiRoot, d.id, 'README.md');
+    if (!fs.existsSync(notePath)) return null;
+    const questions = parseQuiz(fs.readFileSync(notePath, 'utf-8'));
+    return { id: d.id, name: d.name, count: questions.length, questions };
+  })
+  .filter((d) => d && d.count > 0);
+
+const quizData = { domains: quizDomains };
+
 // wiki MD 복사
 const wikiOutDir = path.join(OUT_DIR, 'wiki');
 for (const relPath of mdFiles) {
@@ -125,7 +164,13 @@ fs.writeFileSync(
   path.join(OUT_DIR, 'wiki-index.json'),
   JSON.stringify(wikiIndex, null, 2),
 );
+fs.writeFileSync(
+  path.join(OUT_DIR, 'quiz.json'),
+  JSON.stringify(quizData, null, 2),
+);
 
+const quizTotal = quizDomains.reduce((sum, d) => sum + d.count, 0);
 console.log(`ontology.json: ${domains.length} domains, ${sharedInfra.length} infra`);
 console.log(`wiki-index.json: ${wikiDocs.length} docs`);
+console.log(`quiz.json: ${quizDomains.length} domains, ${quizTotal} questions`);
 console.log(`wiki files copied to public/data/wiki/`);

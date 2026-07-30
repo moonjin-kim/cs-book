@@ -7,6 +7,7 @@ import { CategoryPage } from './pages/CategoryPage';
 import { DomainGraph } from './pages/DomainGraph';
 import { OverviewGraph } from './pages/OverviewGraph';
 import { WikiPage } from './pages/WikiPage';
+import { Quiz } from './pages/Quiz';
 
 function AppShell() {
   const { pathname } = useLocation();
@@ -20,6 +21,7 @@ function AppShell() {
             <Route path="/graph/domain/:id" element={<DomainGraph />} />
             <Route path="/overview" element={<OverviewGraph />} />
             <Route path="/wiki/*" element={<WikiPage />} />
+            <Route path="/quiz" element={<Quiz />} />
           </Route>
         </Routes>
       </OntologyProvider>
