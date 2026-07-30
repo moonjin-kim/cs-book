@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useOntology } from '@/hooks/useOntologyData';
 import { CATEGORY_GROUPS } from '@/lib/categories';
 import { ThemeToggle } from './ThemeToggle';
@@ -45,6 +45,16 @@ export function TopNavigation() {
                 {group.title}
               </Link>
             ))}
+            <NavLink
+              to="/quiz"
+              className={({ isActive }) =>
+                `px-3 py-2 rounded-md text-[13px] transition-colors ${
+                  isActive ? 'bg-accent-dim text-accent' : 'text-text-muted hover:bg-bg-hover hover:text-text-primary'
+                }`
+              }
+            >
+              🎯 퀴즈
+            </NavLink>
           </nav>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -83,6 +93,17 @@ export function TopNavigation() {
                 {group.title}
               </button>
             ))}
+            <NavLink
+              to="/quiz"
+              onClick={() => setMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `rounded-md px-3 py-2 text-[13px] ${
+                  isActive ? 'bg-accent-dim text-accent' : 'text-text-muted hover:bg-bg-hover hover:text-text-primary'
+                }`
+              }
+            >
+              🎯 퀴즈
+            </NavLink>
           </nav>
         )}
       </div>
