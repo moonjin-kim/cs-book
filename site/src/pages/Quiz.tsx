@@ -35,6 +35,7 @@ export function Quiz() {
   const [started, setStarted] = useState(false);
   const [drawn, setDrawn] = useState<DrawnQuestion[]>([]);
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
+  const [notes, setNotes] = useState<Record<number, string>>({});
 
   useEffect(() => {
     fetch('./data/quiz.json')
@@ -60,12 +61,14 @@ export function Quiz() {
     setMode(nextMode);
     setStarted(true);
     setRevealed(new Set());
+    setNotes({});
     if (nextMode === 'random') setDrawn(shuffle(poolFor(topic)).slice(0, DRAW_SIZE));
   };
 
   const redraw = () => {
     setDrawn(shuffle(poolFor(selected)).slice(0, DRAW_SIZE));
     setRevealed(new Set());
+    setNotes({});
   };
 
   const toggleReveal = (index: number) => {
@@ -196,6 +199,13 @@ export function Quiz() {
                           </div>
                         )}
                         <p className="text-[15px] font-medium leading-relaxed text-text-primary">{item.q}</p>
+                        <input
+                          type="text"
+                          value={notes[index] ?? ''}
+                          onChange={(e) => setNotes((prev) => ({ ...prev, [index]: e.target.value }))}
+                          placeholder="생각한 답 적어보기 (선택)"
+                          className="mt-2 w-full rounded-md border border-border bg-bg px-2.5 py-1.5 text-[13px] text-text-primary outline-none transition-colors placeholder:text-text-dim focus:border-accent"
+                        />
                       </div>
                     </div>
                     {isRevealed ? (
