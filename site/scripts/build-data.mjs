@@ -107,6 +107,13 @@ const wikiDocs = mdFiles.map((relPath) => {
 const wikiIndex = { docs: wikiDocs };
 
 // quiz: 각 도메인 노트의 `| 질문 | 답변 |` 표를 파싱해 퀴즈 데이터로 추출
+// 그룹명으로 난이도를 판정한다: '기초' 그룹→기초, '심화' 그룹→심화, 나머지→중급
+function levelFor(group) {
+  if (/기초/.test(group)) return '기초';
+  if (/^심화/.test(group)) return '심화';
+  return '중급';
+}
+
 function parseQuiz(md) {
   const lines = md.split('\n');
   const questions = [];
@@ -125,7 +132,7 @@ function parseQuiz(md) {
         const cells = lines[j].split('|').map((c) => c.trim());
         const q = cells[1];
         const a = cells.slice(2, cells.length - 1).join(' | ').trim();
-        if (q && a) questions.push({ q, a, group });
+        if (q && a) questions.push({ q, a, group, level: levelFor(group) });
         j++;
       }
       i = j - 1;
