@@ -1,10 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 
+type Level = '기초' | '중급' | '심화';
+
 interface QuizQuestion {
   q: string;
   a: string;
   group: string;
+  level: Level;
 }
+
+const LEVELS: Level[] = ['기초', '중급', '심화'];
+const LEVEL_ORDER: Record<Level, number> = { 기초: 0, 중급: 1, 심화: 2 };
+const LEVEL_STYLE: Record<Level, string> = {
+  기초: 'bg-green-500/15 text-green-600',
+  중급: 'bg-amber-500/15 text-amber-600',
+  심화: 'bg-red-500/15 text-red-600',
+};
 
 interface QuizDomain {
   id: string;
@@ -31,6 +42,7 @@ export function Quiz() {
   const [domains, setDomains] = useState<QuizDomain[] | null>(null);
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState<string>('all');
+  const [level, setLevel] = useState<Level | '전체'>('전체');
   const [mode, setMode] = useState<Mode>('random');
   const [started, setStarted] = useState(false);
   const [drawn, setDrawn] = useState<DrawnQuestion[]>([]);
@@ -48,25 +60,30 @@ export function Quiz() {
   }, []);
 
   const poolFor = useMemo(
-    () => (topic: string): DrawnQuestion[] => {
+    () => (topic: string, lvl: Level | '전체'): DrawnQuestion[] => {
       if (!domains) return [];
       const target = topic === 'all' ? domains : domains.filter((d) => d.id === topic);
-      return target.flatMap((d) => d.questions.map((q) => ({ ...q, domain: d.name })));
+      const all = target.flatMap((d) => d.questions.map((q) => ({ ...q, domain: d.name })));
+      return lvl === '전체' ? all : all.filter((q) => q.level === lvl);
     },
     [domains],
   );
 
-  const selectTopic = (topic: string, nextMode: Mode = mode) => {
+  const start = (opts: { topic?: string; lvl?: Level | '전체'; nextMode?: Mode } = {}) => {
+    const topic = opts.topic ?? selected;
+    const lvl = opts.lvl ?? level;
+    const nextMode = opts.nextMode ?? mode;
     setSelected(topic);
+    setLevel(lvl);
     setMode(nextMode);
     setStarted(true);
     setRevealed(new Set());
     setNotes({});
-    if (nextMode === 'random') setDrawn(shuffle(poolFor(topic)).slice(0, DRAW_SIZE));
+    if (nextMode === 'random') setDrawn(shuffle(poolFor(topic, lvl)).slice(0, DRAW_SIZE));
   };
 
   const redraw = () => {
-    setDrawn(shuffle(poolFor(selected)).slice(0, DRAW_SIZE));
+    setDrawn(shuffle(poolFor(selected, level)).slice(0, DRAW_SIZE));
     setRevealed(new Set());
     setNotes({});
   };
@@ -88,7 +105,10 @@ export function Quiz() {
   }
 
   const totalQuestions = domains.reduce((sum, d) => sum + d.count, 0);
-  const list = mode === 'random' ? drawn : poolFor(selected);
+  const list =
+    mode === 'random'
+      ? drawn
+      : [...poolFor(selected, level)].sort((a, b) => LEVEL_ORDER[a.level] - LEVEL_ORDER[b.level]);
   const allRevealed = list.length > 0 && revealed.size === list.length;
 
   return (
@@ -110,7 +130,7 @@ export function Quiz() {
               <button
                 key={m}
                 type="button"
-                onClick={() => selectTopic(selected, m)}
+                onClick={() => start({ nextMode: m })}
                 className={`rounded px-3 py-1.5 text-[12px] font-medium transition-colors ${
                   mode === m ? 'bg-accent text-white' : 'text-text-muted hover:text-text-primary'
                 }`}
@@ -122,16 +142,34 @@ export function Quiz() {
         </div>
 
         <div>
+          <div className="mb-2 text-[12px] font-semibold text-text-dim">난이도</div>
+          <div className="inline-flex rounded-md border border-border p-0.5">
+            {(['전체', ...LEVELS] as const).map((lv) => (
+              <button
+                key={lv}
+                type="button"
+                onClick={() => start({ lvl: lv })}
+                className={`rounded px-3 py-1.5 text-[12px] font-medium transition-colors ${
+                  level === lv ? 'bg-accent text-white' : 'text-text-muted hover:text-text-primary'
+                }`}
+              >
+                {lv}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
           <div className="mb-2 text-[12px] font-semibold text-text-dim">주제 선택</div>
           <div className="flex flex-wrap gap-2">
-            <TopicChip label="전체" count={totalQuestions} active={selected === 'all'} onClick={() => selectTopic('all')} />
+            <TopicChip label="전체" count={totalQuestions} active={selected === 'all'} onClick={() => start({ topic: 'all' })} />
             {domains.map((d) => (
               <TopicChip
                 key={d.id}
                 label={d.name}
                 count={d.count}
                 active={selected === d.id}
-                onClick={() => selectTopic(d.id)}
+                onClick={() => start({ topic: d.id })}
               />
             ))}
           </div>
@@ -140,10 +178,10 @@ export function Quiz() {
 
       {!started ? (
         <section className="rounded-[8px] border border-dashed border-border bg-bg-card px-6 py-10 text-center">
-          <div className="text-[15px] font-medium text-text-primary">주제를 선택해 퀴즈를 시작하세요</div>
+          <div className="text-[15px] font-medium text-text-primary">주제와 난이도를 고르고 퀴즈를 시작하세요</div>
           <button
             type="button"
-            onClick={() => selectTopic(selected)}
+            onClick={() => start()}
             className="mt-4 rounded-md bg-accent px-4 py-2 text-[13px] font-medium text-white transition-opacity hover:opacity-85"
           >
             시작하기
@@ -192,12 +230,17 @@ export function Quiz() {
                         {String(index + 1).padStart(2, '0')}
                       </span>
                       <div className="min-w-0 flex-1">
-                        {mode === 'random' && (
-                          <div className="mb-1 flex flex-wrap gap-1.5 text-[11px] text-text-dim">
-                            <span className="rounded bg-bg-tag px-1.5 py-0.5">{item.domain}</span>
-                            {item.group && <span className="rounded bg-bg-tag px-1.5 py-0.5">{item.group}</span>}
-                          </div>
-                        )}
+                        <div className="mb-1 flex flex-wrap items-center gap-1.5 text-[11px] text-text-dim">
+                          <span className={`rounded px-1.5 py-0.5 font-medium ${LEVEL_STYLE[item.level]}`}>
+                            {item.level}
+                          </span>
+                          {mode === 'random' && (
+                            <>
+                              <span className="rounded bg-bg-tag px-1.5 py-0.5">{item.domain}</span>
+                              {item.group && <span className="rounded bg-bg-tag px-1.5 py-0.5">{item.group}</span>}
+                            </>
+                          )}
+                        </div>
                         <p className="text-[15px] font-medium leading-relaxed text-text-primary">{item.q}</p>
                         <input
                           type="text"
