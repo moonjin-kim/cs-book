@@ -759,6 +759,27 @@ sparse index    → 적은 메모리로 빠른 offset lookup
 | log segment와 인덱스 구조는? | partition은 여러 segment 파일(.log, .index, .timeindex)로 나뉘며, .log 파일명이 base offset이고 .index는 offset→물리 위치의 sparse index, active segment에만 write하며 `segment.bytes`/`segment.ms` 초과 시 roll합니다. |
 | offset 조회 흐름은? | base offset으로 segment를 선택하고, mmap된 sparse `.index`에서 binary search로 가장 가까운 낮은 위치를 찾은 뒤 그 지점부터 `.log`를 순차 스캔합니다. retention/compaction은 segment 단위로 동작합니다. |
 
+### 경험자 감별 질문
+
+"카프카 써봤어요"라고 말하는 지원자가 개념을 관계로 엮어 이해하는지, 실무에서 부딪혀봤는지를 가르는 질문들입니다.
+
+| 질문 | 답변 |
+| --- | --- |
+| 토픽과 파티션이 무엇이고 둘의 관계는? | 토픽은 메시지를 분류하는 단위, 파티션은 토픽을 물리적으로 쪼갠 단위입니다. 핵심은 관계입니다 — 순서는 토픽이 아니라 파티션 단위로 보장되고, 파티션 수가 컨슈머 그룹 내 병렬 처리의 상한이며, 파티션이 여러 브로커에 분산돼 토픽이 수평 확장됩니다. |
+| 브로커와 클러스터의 관계, 클러스터가 주는 가치는? | 브로커는 카프카 서버 한 대로 메시지에 offset을 붙여 디스크에 저장하고 읽기 요청에 응답합니다. 클러스터는 브로커를 묶어 한 서버처럼 동작하게 한 것으로, 브로커 하나가 죽어도 유지되는 가용성과 브로커를 더하면 처리량이 느는 확장성을 줍니다. 확장은 온라인으로 가능하고 컨트롤러가 파티션 할당·브로커 상태를 관리합니다. |
+| 결제 완료 이벤트를 담을 토픽 이름을 어떻게 짓나? | 명령이 아니라 "일어난 사실"을 과거형으로 짓습니다. `do_payment`가 아니라 `pay_completed`처럼요. 여러 컨슈머가 각자 목적으로 나눠 소비할 것을 전제한 이벤트 기반 네이밍이며, 성격이 다른 이벤트를 한 토픽에 섞지 않습니다. |
+| 컨슈머 그룹이 왜 핵심 개념인가? | 같은 `group.id`를 공유하는 컨슈머들이 파티션을 나눠 병렬 소비하고, 한 파티션은 그룹 안에서 오직 한 컨슈머만 가져갑니다. 그래서 컨슈머를 파티션 수보다 많이 붙이면 노는 컨슈머가 생깁니다. 서로 다른 컨슈머 그룹이 같은 토픽을 각자의 offset으로 독립 소비하는 점이 일반 메시지 큐와의 결정적 차이입니다. |
+| 주문 완료/취소처럼 순서가 중요한 이벤트는 어떻게 처리하나? | 순서는 파티션 단위로만 보장되므로, 같은 순서로 처리해야 하는 이벤트를 같은 키(예: 주문 ID)로 발행해 같은 파티션에 모읍니다. 키를 지정하지 않으면 어느 파티션으로 갈지 정해지지 않아 순서가 흐트러집니다(round-robin이든 sticky든 키 없는 분배는 순서를 지켜주지 않습니다). |
+| 모든 메시지의 순서를 지키려면? | 파티션을 1개로 해야 하는데 그건 확장성을 버리는 것입니다. 그래서 순서가 꼭 필요한 단위(한 주문의 완료→취소)만 키로 묶어 그 안에서만 순서를 보장하고, 파티션은 여러 개로 유지하는 균형을 잡습니다. |
+| 중복 컨슈밍은 왜 생기나? | 컨슈머가 메시지를 처리했지만 commit 직전에 rebalancing이 일어나면, 새 소유자가 마지막으로 커밋된 offset부터 다시 읽어 그 구간이 중복 처리됩니다. 카프카가 기본 at-least-once이기 때문입니다. |
+| 중복 컨슈밍을 어떻게 막나? | 여러 번 실행해도 결과가 같은 멱등 처리(가능한 경우가 제한적), 또는 처리한 메시지 ID를 유니크 인덱스로 저장하고 비즈니스 로직과 한 트랜잭션으로 묶어 중복을 걸러냅니다. exactly-once는 카프카 내부(read-process-write)에선 트랜잭션으로 되지만 외부 시스템까지 보장이 이어지지는 않습니다. |
+| DB 커밋 후 반드시 카프카 발행이 성공해야 한다면? | DB와 카프카 두 시스템에 쓰는 이중 쓰기(dual write) 문제입니다. 로직과 발행을 원자적으로 묶는 아웃박스 패턴(비즈니스 로직 + OUTBOX 테이블 insert를 한 트랜잭션으로, 별도 릴레이가 그 테이블을 읽어 발행)이나 CDC(Debezium이 binlog를 읽어 발행)로 해결합니다. |
+| 아웃박스와 CDC의 트레이드오프는? | 아웃박스는 애플리케이션이 명시적으로 OUTBOX 테이블에 쓰고 릴레이를 운영해야 합니다. CDC는 구현 부담이 적지만 스키마 변경에 취약하고 운영 학습 비용이 듭니다. 정답보다 두 대안의 비용 차이를 설명하는 게 중요합니다. |
+| 배포마다 겪는 rebalancing의 문제는? | 컨슈머가 재기동될 때마다 rebalancing이 일어나고, 그동안 컨슈머들이 잠시 메시지를 못 읽고 멈춥니다(stop-the-world). 이 멈춤은 2.4 이후 협력적 rebalancing으로 상당히 개선됐습니다. |
+| 파티션 수를 정할 때의 트레이드오프는? | 파티션은 나중에 늘릴 수는 있어도 줄일 수 없고, 늘리는 순간 키가 매핑되는 파티션이 바뀌어 키 기반 순서 보장이 흐트러집니다. 내구성은 replication factor·`min.insync.replicas`·`acks=all` 조합으로 정하며 내구성과 지연 사이의 선택입니다. |
+| 카프카 장애는 어떻게 발견하고 대응하나? | 컨슈머 lag를 모니터링(kafka-lag-exporter, MSK 지표 등)하고, 브로커 다운·디스크 풀·SSL handshake 실패·보안 그룹 오설정 같은 구체적 장애를 겪고 해결해본 경험이 신뢰의 기준입니다. |
+| 이벤트별로 토픽을 나눴다면 완료→취소 순서는 어떻게 보장하나? | 순서는 한 토픽의 한 파티션 안에서만 보장되므로, 완료와 취소가 다른 토픽에 흩어지면 키를 잘 잡아도 둘 사이 순서는 지켜지지 않습니다. 토픽 이름 짓는 방식(사실/과거형)과 토픽을 묶는 단위(이벤트별로 쪼갤지, 결제 같은 엔티티 단위로 묶을지)를 분리해서 판단해야 합니다. |
+
 ## 참고한 공식 문서
 
 - Apache Kafka Introduction: https://kafka.apache.org/documentation/#gettingStarted
@@ -769,4 +790,5 @@ sparse index    → 적은 메모리로 빠른 offset lookup
 - Kafka Streams: https://kafka.apache.org/documentation/streams/
 - Kafka Connect: https://kafka.apache.org/documentation/#connect
 - KafkaConsumer Javadoc: https://kafka.apache.org/41/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html
+- (커뮤니티) greglee-lab — "Kafka 써봤어요"라는 후보자에게 질문할 것들: https://medium.com/greglee-lab/kafka-%EC%8D%A8%EB%B4%A4%EC%96%B4%EC%9A%94-%EB%9D%BC%EB%8A%94-%ED%9B%84%EB%B3%B4%EC%9E%90%EC%97%90%EA%B2%8C-%EC%A7%88%EB%AC%B8%ED%95%A0-%EA%B2%83%EB%93%A4-913d7890eb28
 - (커뮤니티 면접 정리) Backend Interview for Beginner — Kafka: https://github.com/backtony/Backend_Interview_for_Beginner/blob/master/Kafka.md
